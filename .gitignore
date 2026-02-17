@@ -1,0 +1,125 @@
+# Put the .gitignore and .gitattributes in the repo's git root folder.
+# If the Unity project is not in that folder, append the paths here with the Unity folder name.
+
+#############
+# Unity Core
+#############
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+[Uu]nityGenerated/
+[Uu]serSettings/
+
+# Cache and auto-generated data
+[Ll]ocal[Cc]ache/
+[Aa]ssets/AssetStoreTools*
+
+# DOTS/Entities
+*.asmdef.cache
+*.entitiesjournal
+
+# Addressables
+[Aa]ssets/AddressableAssetsData/*.bin*
+[Aa]ssets/AddressableAssetsData/*.link*
+[Aa]ssets/AddressableAssetsData/*.hash
+[Aa]ssets/AddressableAssetsData/*/catalog.json
+[Aa]ssets/AddressableAssetsData/*/catalog.hash
+[Aa]ssets/AddressableAssetsData/*/*.bundle
+[Aa]ssets/AddressableAssetsData/*/*.bundle.manifest
+
+#############
+# FMOD
+#############
+# FMOD banks and cache
+[Aa]ssets/StreamingAssets/*.bank
+[Aa]ssets/StreamingAssets/*.strings.bank
+[Aa]ssets/Plugins/FMOD/lib/*
+[Aa]ssets/Plugins/FMOD/Cache/
+[Aa]ssets/Plugins/FMOD/Cache.meta
+
+#############
+# IDEs & Tools
+#############
+# VS Code
+.vscode/
+
+# JetBrains / Rider / IntelliJ
+.idea/
+*.sln.iml
+
+# Visual Studio
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.VC.db
+
+#############
+# OS Generated
+#############
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+.directory
+
+#############
+# Crash & Logs
+#############
+sysinfo.txt
+*.stacktrace
+
+#############
+# Others (optional)
+#############
+# Unity Collab
+.collab/
+
+# Plastic SCM (if used)
+.PlasticSCM/
+
+# Ignore any log or backup files
+*.log
+*.bak
+*.backup
+
+# Node modules (if you use npm/yarn for tooling)
+node_modules/
+
+# Python (if used)
+__pycache__/
+*.py[cod]
+*.env
+*.venv
+.env/
+.venv/
+
+# Package artifacts
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.gz
+*.whl
+
+# Git LFS: don't ignore large binary assets managed by LFS
+# (Make sure to set patterns in .gitattributes instead)
