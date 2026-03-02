@@ -12,5 +12,7 @@ public static class Constants
         public const string Message = "Message";
         public const string Username = "Username";
         public const string Bubble = "Bubble";
+        public const string TopBar = "Top Bar";
+        public const string CloseButton = "Close";
     }
 }
