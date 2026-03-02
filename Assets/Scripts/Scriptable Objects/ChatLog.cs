@@ -1,0 +1,16 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "ChatLog", menuName = "Scriptable Objects/ChatLog")]
+public class ChatLog : ScriptableObject
+{
+    public List<ChatBubble> messages;
+}
+
+[System.Serializable]
+public class ChatBubble
+{
+    public ChatUserId chatUserId;
+    [TextArea(2, 5)]
+    public string message;
+}
