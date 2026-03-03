@@ -30,8 +30,8 @@ public class ChatBubbleUI : MonoBehaviour
         usernameText.text = chatUser.username;
         messageText.text = chatBubble.message;
 
-        bubblePointerHandler.OnPointerUpEvent += chatBubbleController.OnBubbleButtonPointerUp;
-        bubblePointerHandler.OnPointerDownEvent += chatBubbleController.OnBubbleButtonPointerDown;
+        bubblePointerHandler.OnPointerUpEvent += chatBubbleController.ReleaseBubble;
+        bubblePointerHandler.OnPointerDownEvent += chatBubbleController.PressBubble;
 
         isSetUp = true;
     }
@@ -61,8 +61,8 @@ public class ChatBubbleUI : MonoBehaviour
     {
         if(bubblePointerHandler || chatBubbleController)
         {
-            bubblePointerHandler.OnPointerUpEvent -= chatBubbleController.OnBubbleButtonPointerUp;
-            bubblePointerHandler.OnPointerDownEvent -= chatBubbleController.OnBubbleButtonPointerDown;
+            bubblePointerHandler.OnPointerUpEvent -= chatBubbleController.ReleaseBubble;
+            bubblePointerHandler.OnPointerDownEvent -= chatBubbleController.PressBubble;
         }
     }
 }

@@ -3,13 +3,13 @@ using UnityEngine.EventSystems;
 
 public class ChatBubbleController : MonoBehaviour
 {
-    public void OnBubbleButtonPointerUp(PointerEventData eventData)
-    {
-        Debug.Log("bubble up");
-    }
-
-    public void OnBubbleButtonPointerDown(PointerEventData evetnData)
+    public void PressBubble(PointerEventData evetnData)
     {
         Debug.Log("bubble down");
+    }
+
+    public void ReleaseBubble(PointerEventData eventData)
+    {
+        Debug.Log("bubble up");
     }
 }

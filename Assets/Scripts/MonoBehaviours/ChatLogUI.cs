@@ -1,4 +1,3 @@
-using Unity.Burst.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,7 +23,9 @@ public class ChatLogUI : MonoBehaviour
         chatLogController = GetComponent<ChatLogController>();
         content = GetComponentInChildren<ContentSizeFitter>().transform;
         chatBubblePrefab = await AddressableController.Instance().RetrieveAddressable<GameObject>(Constants.Addressable.ChatBubble);
-        closePointerHandler = transform.Find(Constants.GameObjectNames.TopBar).Find(Constants.GameObjectNames.CloseButton).AddComponent<PointerHandler>();
+        Transform topBar = transform.Find(Constants.GameObjectNames.TopBar);
+        topBar.AddComponent<DragHandler>().objectToDrag = transform;
+        closePointerHandler = topBar.Find(Constants.GameObjectNames.CloseButton).AddComponent<PointerHandler>();
 
         closePointerHandler.OnPointerClickEvent += chatLogController.Close;
 
@@ -43,7 +44,7 @@ public class ChatLogUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        if(closePointerHandler || chatLogController)
+        if(!closePointerHandler || !chatLogController)
         {
             closePointerHandler.OnPointerUpEvent -= chatLogController.Close;
         }
