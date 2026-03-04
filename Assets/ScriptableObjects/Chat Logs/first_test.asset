@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ce07874a0e1d7d4d93f5cd5a5632d3c, type: 3}
   m_Name: first_test
   m_EditorClassIdentifier: Assembly-CSharp::ChatLog
+  logName: tinder_log_1
   messages:
   - chatUserId: 1
     message: wazzzuuuuup

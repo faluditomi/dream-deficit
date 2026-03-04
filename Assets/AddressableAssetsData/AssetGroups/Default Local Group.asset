@@ -20,8 +20,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 198d4527fb3dff84ca7294c19b4abadc
+    m_Address: chat_ui/chat_log
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 63f3b356ee1fc094fac403e05bdd4aa4
     m_Address: chat_logs/first_test
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: afc6da96988f5c6438db68558a763d5c
+    m_Address: chat_ui/log_directory_entry
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

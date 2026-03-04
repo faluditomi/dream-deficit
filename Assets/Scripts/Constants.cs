@@ -3,6 +3,8 @@ public static class Constants
     public static class Addressable
     {
         public const string ChatUserPrefix = "chat_user/";
+        public const string LogDirectoryEntry = "chat_ui/log_directory_entry";
+        public const string ChatLog = "chat_ui/chat_log";
         public const string ChatBubble = "chat_ui/chat_bubble";
     }
 
@@ -14,5 +16,6 @@ public static class Constants
         public const string Bubble = "Bubble";
         public const string TopBar = "Top Bar";
         public const string CloseButton = "Close";
+        public const string LogName = "Name";
     }
 }

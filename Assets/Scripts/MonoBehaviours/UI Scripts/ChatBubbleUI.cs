@@ -1,7 +1,6 @@
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class ChatBubbleUI : MonoBehaviour
@@ -19,7 +18,7 @@ public class ChatBubbleUI : MonoBehaviour
 
     public async void Setup(ChatBubble chatBubble)
     {
-        if(!FindElements() || isSetUp) return;
+        if(isSetUp || !FindElements()) return;
 
         string address = Constants.Addressable.ChatUserPrefix + chatBubble.chatUserId.ToString().ToLower();
         ChatUser chatUser = await AddressableController.Instance().RetrieveAddressable<ChatUser>(address);
