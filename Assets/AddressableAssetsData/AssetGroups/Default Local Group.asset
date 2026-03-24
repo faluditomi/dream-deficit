@@ -35,6 +35,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d71676cbaf8fa2b4db5b34f9e322061f
+    m_Address: Assets/ScriptableObjects/Chat Logs/second_test.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dc5b763af3024d046b17891968d255be
     m_Address: chat_user/delilah
     m_ReadOnly: 0

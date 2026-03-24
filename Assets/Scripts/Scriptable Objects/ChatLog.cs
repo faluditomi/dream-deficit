@@ -6,6 +6,7 @@ public class ChatLog : ScriptableObject
 {
     public string logName;
     public List<ChatBubble> messages;
+    public bool isOpen = false;
 }
 
 [System.Serializable]

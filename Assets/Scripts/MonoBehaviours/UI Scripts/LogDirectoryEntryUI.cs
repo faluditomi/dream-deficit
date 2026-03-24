@@ -14,6 +14,7 @@ public class LogDirectoryEntryUI : MonoBehaviour
     {
         if(isSetUp || !FindElements()) return;
 
+        chatLog.isOpen = false;
         logNameText.text = chatLog.logName;
 
         entryPointerHandler.OnPointerClickEvent += (eventData) => logDirectoryEntryController.OpenLog(chatLog);

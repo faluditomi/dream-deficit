@@ -11,10 +11,11 @@ public class LogDirectoryEntryController : MonoBehaviour
         uiCanvas = FindFirstObjectByType<Canvas>().transform;
     }
 
-    // TODO: start tracking whether a log is open, and only open it if its not already open
     // TODO: this is a general todo, but combine the UI and Controller scripts into one... it's getting confusing af
     public void OpenLog(ChatLog chatLog)
     {
+        if(chatLog.isOpen) return;
+
         ChatLogUI chatLogUI = Instantiate(chatLogPrefab, uiCanvas).GetComponent<ChatLogUI>();
         chatLogUI.Setup(chatLog);
     }

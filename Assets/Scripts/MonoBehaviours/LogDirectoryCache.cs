@@ -24,6 +24,8 @@ public class ActiveChatLogCache : MonoBehaviour
     {
         ChatLog testLog = await AddressableController.Instance().RetrieveAddressable<ChatLog>("chat_logs/first_test");
         activeLogs.Add(testLog);
+        ChatLog testLogAlso = await AddressableController.Instance().RetrieveAddressable<ChatLog>("chat_logs/second_test");
+        activeLogs.Add(testLogAlso);
         return activeLogs;
     }
 }
