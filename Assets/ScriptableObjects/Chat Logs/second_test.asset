@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ce07874a0e1d7d4d93f5cd5a5632d3c, type: 3}
   m_Name: second_test
   m_EditorClassIdentifier: Assembly-CSharp::ChatLog
-  logName: k23nv92mo09j
+  logName: k23v92mo0j
   messages:
   - chatUserId: 0
     message: k'a'ut naq tqak'e qach'ool
-  isOpen: 0
+  isOpen: 1

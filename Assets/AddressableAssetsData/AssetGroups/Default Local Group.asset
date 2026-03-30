@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 61a7b4814a2b1024dbd7be1d12cd4a61
+    m_Address: chat_bubble_sequence/cryptic_sequence
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 63f3b356ee1fc094fac403e05bdd4aa4
     m_Address: chat_logs/first_test
     m_ReadOnly: 0
@@ -36,7 +41,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d71676cbaf8fa2b4db5b34f9e322061f
-    m_Address: Assets/ScriptableObjects/Chat Logs/second_test.asset
+    m_Address: chat_logs/second_test
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
