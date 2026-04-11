@@ -21,13 +21,15 @@ public class ChatBubbleController : MonoBehaviour
 
         // NOTE: Depending on how large and numerous our chat logs will be, these per bubble addressable calls might get expensive
         string address = Constants.AddressablePaths.ChatUserPrefix + chatBubble.chatUserId.ToString().ToLower();
-        ChatUser chatUser = await AddressableController.Instance().RetrieveAddressable<ChatUser>(address);
+        ChatUser chatUser = await AddressableManager.Instance().RetrieveAddressable<ChatUser>(address);
 
         if(chatUser == null) Debug.LogError($"ChatUser Addressable wasn't found for ChatUser: {chatBubble.chatUserId}. Setup of ChatBubble failed.");
 
         profilePictureImage = chatUser.profilePicture;
         usernameText.text = chatUser.username;
         messageText.text = chatBubble.message;
+
+        messageText.gameObject.AddComponent<HighlightHandler>().Setup(messageText, true);
 
         bubblePointerHandler.OnPointerUpEvent += ReleaseBubble;
         bubblePointerHandler.OnPointerDownEvent += PressBubble;

@@ -2,16 +2,16 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-public class AddressableController : MonoBehaviour
+public class AddressableManager : MonoBehaviour
 {
-    private static AddressableController _instance;
+    private static AddressableManager _instance;
 
-    public static AddressableController Instance()
+    public static AddressableManager Instance()
     {
         if(_instance == null)
         {
             var obj = new GameObject("AddressableController");
-            _instance = obj.AddComponent<AddressableController>();
+            _instance = obj.AddComponent<AddressableManager>();
             DontDestroyOnLoad(obj);
         }
 

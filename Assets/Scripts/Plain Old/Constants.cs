@@ -4,9 +4,16 @@ public static class Constants
     {
         public const string ChatUserPrefix = "chat_user/";
         public const string LogDirectoryEntry = "chat_ui/log_directory_entry";
-        public const string ChatLog = "chat_ui/chat_log";
+        public const string ChatLogPrefab = "chat_ui/chat_log";
+        public const string ChatLogPrefix = "chat_log/";
         public const string ChatBubble = "chat_ui/chat_bubble";
         public const string ChatBubbleSequence = "chat_bubble_sequence/";
+    }
+
+    public static class ChatLogs
+    {
+        public const string TinderLog = "tinder_log_1";
+        public const string Nonsense = "k23v92mo0j";
     }
 
     public static class ChatBubbleSequenceCodes

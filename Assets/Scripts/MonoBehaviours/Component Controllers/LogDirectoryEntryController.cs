@@ -20,7 +20,7 @@ public class LogDirectoryEntryController : MonoBehaviour
 
         this.chatLog = chatLog;
         logNameText.text = chatLog.logName;
-        chatLogPrefab = await AddressableController.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatLog);
+        chatLogPrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatLogPrefab);
 
         entryPointerHandler.OnPointerClickEvent += (eventData) => OpenLog(chatLog);
 

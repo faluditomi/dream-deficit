@@ -31,7 +31,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 63f3b356ee1fc094fac403e05bdd4aa4
-    m_Address: chat_logs/first_test
+    m_Address: chat_log/tinder_log_1
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -41,7 +41,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d71676cbaf8fa2b4db5b34f9e322061f
-    m_Address: chat_logs/second_test
+    m_Address: chat_log/k23v92mo0j
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

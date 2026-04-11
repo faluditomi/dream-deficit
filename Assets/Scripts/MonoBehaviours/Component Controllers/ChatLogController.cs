@@ -24,6 +24,7 @@ public class ChatLogController : MonoBehaviour
     // NOTE: marker data could be collected here at runtime
 
     #region Setup
+    // TODO: have a safety check -> return and self-destruct if there is already an instance of ChatLog open
     public async void Setup(ChatLog chatLog)
     {
         if(isSetUp || !FindElements()) return;
@@ -31,7 +32,7 @@ public class ChatLogController : MonoBehaviour
         PopulateChatLogProperties(chatLog);
 
         bubbleContainer = GetComponentInChildren<ContentSizeFitter>().transform;
-        chatBubblePrefab = await AddressableController.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatBubble);
+        chatBubblePrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatBubble);
 
         foreach(ChatBubble chatBubble in messages)
         {
@@ -44,7 +45,7 @@ public class ChatLogController : MonoBehaviour
         isSetUp = true;
 
         // TODO: remove this
-        RunBubbleSequence(await AddressableController.Instance().RetrieveAddressable<ChatBubbleSequence>(Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.CrypticSequence));
+        RunBubbleSequence(await AddressableManager.Instance().RetrieveAddressable<ChatBubbleSequence>(Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.CrypticSequence));
     }
 
     private bool FindElements()
@@ -103,7 +104,6 @@ public class ChatLogController : MonoBehaviour
         {
             yield return new WaitForSeconds(chatBubble.delayLength);
 
-            // TODO: indicator doesn't show up in game view for some reason
             typingIdicator.SetActive(true);
 
             yield return new WaitForSeconds(chatBubble.typingFlagLength);

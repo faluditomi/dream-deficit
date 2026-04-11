@@ -16,4 +16,5 @@ MonoBehaviour:
   messages:
   - chatUserId: 0
     message: k'a'ut naq tqak'e qach'ool
-  isOpen: 1
+    delayLength: 0
+    typingFlagLength: 4.63
