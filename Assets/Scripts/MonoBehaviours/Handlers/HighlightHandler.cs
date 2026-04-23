@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(TMP_Text))]
-public class HighlightHandler : MonoBehaviour, IPointerDownHandler,IPointerMoveHandler, IPointerUpHandler, IPointerClickHandler, IDragHandler
+public class HighlightHandler : MonoBehaviour, IPointerDownHandler
 {
     public Color hoverColour = Color.red;
     public Color activeColour = Color.lightBlue;
@@ -16,6 +18,7 @@ public class HighlightHandler : MonoBehaviour, IPointerDownHandler,IPointerMoveH
 
     private int currentSelectionStart = -1;
     private int currentSelectionEnd = -1;
+    private bool isMouseDown = false;
     public bool canTag;
 
     private void Awake()
@@ -30,51 +33,73 @@ public class HighlightHandler : MonoBehaviour, IPointerDownHandler,IPointerMoveH
         this.canTag = canTag;
     }
 
-    public void OnPointerDown(PointerEventData eventData)
+    private void Update()
     {
-        currentSelectionStart = GetCharIndex(eventData);
-        currentSelectionEnd = currentSelectionStart;
-    }
+        if(Mouse.current == null) return;
 
-    public void OnPointerMove(PointerEventData eventData)
-    {
-        int hoveredCharIndex = GetCharIndex(eventData);
-        var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
-        List<MarkerData> overlapping = markers.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
 
-        if(overlapping.Count > 0)
+        if(isMouseDown)
         {
-            hoveredMarker = overlapping[overlapping.Count - 1];
+            currentSelectionEnd = GetClosestCharIndex();
+            Rebuild(activeColour);
 
-            if(previousHoveredMarker != hoveredMarker)
-            {
-                currentSelectionStart = hoveredMarker.startIndex;
-                currentSelectionEnd = hoveredMarker.endIndex;
-                previousHoveredMarker = hoveredMarker;
-                Rebuild(hoverColour);
-            }
+            if(Mouse.current.leftButton.wasReleasedThisFrame) OnMouseUp();
         }
         else
         {
-            if(previousHoveredMarker == null) return;
-            currentSelectionStart = previousHoveredMarker.startIndex;
-            currentSelectionEnd = previousHoveredMarker.endIndex;
-            Rebuild(previousHoveredMarker.markerType.colour);
-            previousHoveredMarker = hoveredMarker = null;
+            int hoveredCharIndex = GetCurrentCharIndex();
+            // NOTE: would it be better if we placed trigger colliders on the markers for hover detection?
+            var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
+            List<MarkerData> overlapping = markers.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
+
+            if(overlapping.Count > 0)
+            {
+                hoveredMarker = overlapping[overlapping.Count - 1];
+
+                if(previousHoveredMarker != hoveredMarker)
+                {
+                    currentSelectionStart = hoveredMarker.startIndex;
+                    currentSelectionEnd = hoveredMarker.endIndex;
+                    previousHoveredMarker = hoveredMarker;
+                    Rebuild(hoverColour);
+                }
+            }
+            else
+            {
+                if(previousHoveredMarker == null) return;
+                currentSelectionStart = previousHoveredMarker.startIndex;
+                currentSelectionEnd = previousHoveredMarker.endIndex;
+                Rebuild(previousHoveredMarker.markerType.colour);
+                previousHoveredMarker = hoveredMarker = null;
+            }
         }
     }
 
-    public void OnDrag(PointerEventData eventData)
+    public void OnPointerDown(PointerEventData eventData)
     {
-        currentSelectionEnd = GetCharIndex(eventData);
-        Rebuild(activeColour);
+        OnMouseDown();
     }
 
-    public void OnPointerUp(PointerEventData eventData)
+    public void OnMouseDown()
     {
-        int endIndex = GetCharIndex(eventData);
-        currentSelectionEnd = endIndex;
+        isMouseDown = true;
+        currentSelectionStart = currentSelectionEnd = GetClosestCharIndex();
+    }
+
+    private void OnMouseUp()
+    {
+        isMouseDown = false;
+        currentSelectionEnd = GetClosestCharIndex();
         MarkerData marker = null;
+        
+        // TODO: "currentSelectionStart == currentSelectionEnd" check can later turn into 
+        // "is the user holding down a marker button" check
+        if(hoveredMarker != null && currentSelectionStart == currentSelectionEnd)
+        {
+            MarkerManager.Instance().RemoveMarker(hoveredMarker);
+            Rebuild(Color.clear);
+            hoveredMarker = previousHoveredMarker = null;
+        }
 
         if(canTag && currentSelectionStart >= 0 && currentSelectionEnd >= 0)
         {
@@ -101,22 +126,28 @@ public class HighlightHandler : MonoBehaviour, IPointerDownHandler,IPointerMoveH
         Rebuild(newMarkerColour);
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    private int GetCurrentCharIndex()
     {
-        if(hoveredMarker == null) return;
-        MarkerManager.Instance().RemoveMarker(hoveredMarker);
-        Rebuild(Color.clear);
-        hoveredMarker = previousHoveredMarker = null;
-    }
+        Camera cam = null;
+        Canvas canvas = myText.canvas;
+        if(canvas.renderMode != RenderMode.ScreenSpaceOverlay) cam = canvas.worldCamera;
 
-    private int GetCharIndex(PointerEventData eventData)
-    {
         return TMP_TextUtilities.FindIntersectingCharacter(
             myText,
-            eventData.position,
-            eventData.pressEventCamera,
+            Mouse.current.position.ReadValue(),
+            cam,
             true
         );
+    }
+
+    private int GetClosestCharIndex()
+    {
+        if(Mouse.current == null) return -1;
+        Vector2 pointerPos = Mouse.current.position.ReadValue();
+        Camera cam = null;
+        Canvas canvas = myText.canvas;
+        if(canvas.renderMode != RenderMode.ScreenSpaceOverlay) cam = canvas.worldCamera;
+        return TMP_TextUtilities.FindNearestCharacter(myText, pointerPos, cam, true);
     }
 
     public void Rebuild(Color overrideColor)
