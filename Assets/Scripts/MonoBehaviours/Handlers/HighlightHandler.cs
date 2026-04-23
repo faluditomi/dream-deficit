@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.UIElements;
 
 [RequireComponent(typeof(TMP_Text))]
-public class HighlightHandler : MonoBehaviour, IPointerDownHandler
+public class HighlightHandler : MonoBehaviour, IHighlightable
 {
     public Color hoverColour = Color.red;
     public Color activeColour = Color.lightBlue;
@@ -18,7 +16,6 @@ public class HighlightHandler : MonoBehaviour, IPointerDownHandler
 
     private int currentSelectionStart = -1;
     private int currentSelectionEnd = -1;
-    private bool isMouseDown = false;
     public bool canTag;
 
     private void Awake()
@@ -33,62 +30,52 @@ public class HighlightHandler : MonoBehaviour, IPointerDownHandler
         this.canTag = canTag;
     }
 
-    private void Update()
+    public void OnMouseHover()
     {
-        if(Mouse.current == null) return;
+        Debug.Log("Hovering");
+        int hoveredCharIndex = GetCurrentCharIndex();
+        // NOTE: would it be better if we placed trigger colliders on the markers for hover detection?
+        var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
+        List<MarkerData> overlapping = markers.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
 
-
-        if(isMouseDown)
+        if(overlapping.Count > 0 && MarkerManager.Instance().activeMarkerType == null)
         {
-            currentSelectionEnd = GetClosestCharIndex();
-            Rebuild(activeColour);
+            hoveredMarker = overlapping[overlapping.Count - 1];
 
-            if(Mouse.current.leftButton.wasReleasedThisFrame) OnMouseUp();
+            if(previousHoveredMarker != hoveredMarker)
+            {
+                currentSelectionStart = hoveredMarker.startIndex;
+                currentSelectionEnd = hoveredMarker.endIndex;
+                previousHoveredMarker = hoveredMarker;
+                Rebuild(hoverColour);
+            }
         }
         else
         {
-            int hoveredCharIndex = GetCurrentCharIndex();
-            // NOTE: would it be better if we placed trigger colliders on the markers for hover detection?
-            var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
-            List<MarkerData> overlapping = markers.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
-
-            if(overlapping.Count > 0 && MarkerManager.Instance().activeMarkerType == null)
-            {
-                hoveredMarker = overlapping[overlapping.Count - 1];
-
-                if(previousHoveredMarker != hoveredMarker)
-                {
-                    currentSelectionStart = hoveredMarker.startIndex;
-                    currentSelectionEnd = hoveredMarker.endIndex;
-                    previousHoveredMarker = hoveredMarker;
-                    Rebuild(hoverColour);
-                }
-            }
-            else
-            {
-                if(previousHoveredMarker == null) return;
-                currentSelectionStart = previousHoveredMarker.startIndex;
-                currentSelectionEnd = previousHoveredMarker.endIndex;
-                Rebuild(previousHoveredMarker.markerType.colour);
-                previousHoveredMarker = hoveredMarker = null;
-            }
+            if(previousHoveredMarker == null) return;
+            currentSelectionStart = previousHoveredMarker.startIndex;
+            currentSelectionEnd = previousHoveredMarker.endIndex;
+            Rebuild(previousHoveredMarker.markerType.colour);
+            previousHoveredMarker = hoveredMarker = null;
         }
-    }
-
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        OnMouseDown();
     }
 
     public void OnMouseDown()
     {
-        isMouseDown = true;
+        Debug.Log("MouseDown");
         currentSelectionStart = currentSelectionEnd = GetClosestCharIndex();
     }
 
-    private void OnMouseUp()
+    public void OnMouseHeld()
     {
-        isMouseDown = false;
+        Debug.Log("Holding");
+        currentSelectionEnd = GetClosestCharIndex();
+        Rebuild(activeColour);
+    }
+
+    public void OnMouseUp()
+    {
+        Debug.Log("MouseUp");
         currentSelectionEnd = GetClosestCharIndex();
         MarkerData marker = null;
         MarkerType activeMarkerType = MarkerManager.Instance().activeMarkerType;
