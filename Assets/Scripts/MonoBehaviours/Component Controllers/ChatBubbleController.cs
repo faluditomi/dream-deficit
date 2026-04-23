@@ -6,8 +6,8 @@ using UnityEngine.UI;
 
 public class ChatBubbleController : MonoBehaviour
 {
+    private ChatBubble myChatBubble;
     private PointerHandler bubblePointerHandler;
-
     private Image profilePictureImage;
     private TMP_Text usernameText;
     private TMP_Text messageText;
@@ -15,21 +15,23 @@ public class ChatBubbleController : MonoBehaviour
     private bool isSetUp = false;
 
     #region Setup
-    public async void Setup(ChatBubble chatBubble)
+    public async void Setup(ChatBubble chatBubble, ChatLog chatlog)
     {
         if(isSetUp || !FindElements()) return;
 
+        myChatBubble = chatBubble;
         // NOTE: Depending on how large and numerous our chat logs will be, these per bubble addressable calls might get expensive
-        string address = Constants.AddressablePaths.ChatUserPrefix + chatBubble.chatUserId.ToString().ToLower();
+        string address = Constants.AddressablePaths.ChatUserPrefix + myChatBubble.chatUserId.ToString().ToLower();
         ChatUser chatUser = await AddressableManager.Instance().RetrieveAddressable<ChatUser>(address);
 
-        if(chatUser == null) Debug.LogError($"ChatUser Addressable wasn't found for ChatUser: {chatBubble.chatUserId}. Setup of ChatBubble failed.");
+        if(chatUser == null) Debug.LogError($"ChatUser Addressable wasn't found for ChatUser: {myChatBubble.chatUserId}. Setup of ChatBubble failed.");
 
         profilePictureImage = chatUser.profilePicture;
         usernameText.text = chatUser.username;
-        messageText.text = chatBubble.message;
+        messageText.text = myChatBubble.message;
 
-        messageText.gameObject.AddComponent<HighlightHandler>().Setup(messageText, true);
+        usernameText.AddComponent<HighlightHandler>().Init(chatlog, myChatBubble, true);
+        messageText.AddComponent<HighlightHandler>().Init(chatlog, myChatBubble, true);
 
         bubblePointerHandler.OnPointerUpEvent += ReleaseBubble;
         bubblePointerHandler.OnPointerDownEvent += PressBubble;
@@ -56,7 +58,7 @@ public class ChatBubbleController : MonoBehaviour
     }
     #endregion
     
-    public void PressBubble(PointerEventData evetnData)
+    public void PressBubble(PointerEventData eventData)
     {
         Debug.Log("bubble down");
     }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -70,13 +69,13 @@ public class SaveManager : MonoBehaviour
         }
     }
 
-    [Serializable]
+    [System.Serializable]
     private class ObjectWrapper
     {
         public string json;
     }
 
-    [Serializable]
+    [System.Serializable]
     private class SaveWrapper
     {
         public List<string> objects;

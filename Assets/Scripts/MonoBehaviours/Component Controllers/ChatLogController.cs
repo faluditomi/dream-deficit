@@ -9,6 +9,7 @@ using UnityEngine.UI;
 //       so that other scripts can simply query a chat log by logName (or smth more safe) and send sequences to it
 public class ChatLogController : MonoBehaviour
 {
+    private ChatLog myChatLog;
     private GameObject chatBubblePrefab;
     private Transform bubbleContainer;
     private GameObject typingIdicator;
@@ -21,23 +22,23 @@ public class ChatLogController : MonoBehaviour
 
     private bool isSetUp = false;
 
-    // NOTE: marker data could be collected here at runtime
-
     #region Setup
     // TODO: have a safety check -> return and self-destruct if there is already an instance of ChatLog open
     public async void Setup(ChatLog chatLog)
     {
         if(isSetUp || !FindElements()) return;
+
+        myChatLog = chatLog;
         
-        PopulateChatLogProperties(chatLog);
+        PopulateChatLogProperties(myChatLog);
 
         bubbleContainer = GetComponentInChildren<ContentSizeFitter>().transform;
-        chatBubblePrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatBubble);
+        chatBubblePrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatBubblePrefab);
 
         foreach(ChatBubble chatBubble in messages)
         {
             ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer).GetComponent<ChatBubbleController>();
-            chatBubbleInstance.Setup(chatBubble);
+            chatBubbleInstance.Setup(chatBubble, myChatLog);
         }
 
         closePointerHandler.OnPointerClickEvent += Close;
@@ -110,7 +111,7 @@ public class ChatLogController : MonoBehaviour
 
             typingIdicator.SetActive(false);
             ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer).GetComponent<ChatBubbleController>();
-            chatBubbleInstance.Setup(chatBubble);
+            chatBubbleInstance.Setup(chatBubble, myChatLog);
         }
     }
 }

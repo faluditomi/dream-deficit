@@ -16,12 +16,12 @@ MonoBehaviour:
   m_GUID: b3a6bee0cba48254b937915e3ed8ac2d
   m_SerializeEntries:
   - m_GUID: 0075dc355a32daf4b8b90c94ebe239f1
-    m_Address: chat_ui/chat_bubble
+    m_Address: prefabs/chat_bubble
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 198d4527fb3dff84ca7294c19b4abadc
-    m_Address: chat_ui/chat_log
+    m_Address: prefabs/chat_log
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -36,7 +36,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: afc6da96988f5c6438db68558a763d5c
-    m_Address: chat_ui/log_directory_entry
+    m_Address: prefabs/log_directory_entry
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

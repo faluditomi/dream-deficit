@@ -21,7 +21,7 @@ public class LogDirectoryController : MonoBehaviour
 
         Transform content = GetComponentInChildren<ContentSizeFitter>().transform;
         activeLogs = await LogDirectoryCacheManager.RetrieveCurrentCache();
-        logDirectoryEntryPrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.LogDirectoryEntry);
+        logDirectoryEntryPrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.LogDirectoryEntryPrefab);
 
         foreach(ChatLog chatLog in activeLogs)
         {

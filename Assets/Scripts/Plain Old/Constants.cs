@@ -2,11 +2,11 @@ public static class Constants
 {
     public static class AddressablePaths
     {
+        public const string LogDirectoryEntryPrefab = "prefabs/log_directory_entry";
+        public const string ChatLogPrefab = "prefabs/chat_log";
+        public const string ChatBubblePrefab = "prefabs/chat_bubble";
         public const string ChatUserPrefix = "chat_user/";
-        public const string LogDirectoryEntry = "chat_ui/log_directory_entry";
-        public const string ChatLogPrefab = "chat_ui/chat_log";
         public const string ChatLogPrefix = "chat_log/";
-        public const string ChatBubble = "chat_ui/chat_bubble";
         public const string ChatBubbleSequence = "chat_bubble_sequence/";
     }
 
