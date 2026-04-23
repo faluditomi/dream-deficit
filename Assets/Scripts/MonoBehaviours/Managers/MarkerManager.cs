@@ -1,11 +1,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 public class MarkerManager : MonoBehaviour, ISavable
 {
     private static MarkerManager _instance;
-    private List<MarkerData> markers = new List<MarkerData>();
+    private List<MarkerData> placedMarkers = new List<MarkerData>();
+    private List<MarkerType> activeMarkerTypeCache = new List<MarkerType>();
+    private InputAction markerHoldAction;
+    public MarkerType activeMarkerType;
 
     public static MarkerManager Instance()
     {
@@ -33,31 +38,66 @@ public class MarkerManager : MonoBehaviour, ISavable
         }
 
         SaveManager.Instance().LoadGame();
+
+        markerHoldAction = new InputAction(type: InputActionType.Button);
+
+        markerHoldAction.started += ctx =>
+        {
+            if(activeMarkerType != null) return;
+
+            if(ctx.control is KeyControl keyControl)
+            {
+                activeMarkerType = activeMarkerTypeCache.Find(mt => mt.keybind == keyControl.keyCode);
+            }
+        };
+
+        markerHoldAction.canceled += ctx =>
+        {
+            activeMarkerType = null;
+        };
+
+        markerHoldAction.Enable();
+
+        // TODO: this will have to be done from the GameManager and there needs to be profiles created for game portions
+        SetActiveMarkerTypes(new List<MarkerType> { Markers.CopyPasteSpam, Markers.SynchronisedActivitySpike });
     }
 
     public void AddMarker(MarkerData markerData)
     {
-        markers.Add(markerData);
+        placedMarkers.Add(markerData);
     }
 
     public void RemoveMarker(MarkerData markerData)
     {
-        markers.Remove(markerData);
+        placedMarkers.Remove(markerData);
+    }
+
+    public void SetActiveMarkerTypes(List<MarkerType> markerTypes)
+    {
+        activeMarkerTypeCache = markerTypes;
+        markerHoldAction.Disable();
+
+        foreach(MarkerType markerType in activeMarkerTypeCache)
+        {
+            markerHoldAction.AddBinding("<Keyboard>/" + markerType.keybind.ToString());
+        }
+
+        markerHoldAction.Enable();
     }
 
     public List<MarkerData> GetMarkersForChatBubble(ChatBubble chatBubble)
     {
-        return markers.Where(m => m.chatBubble == chatBubble).ToList();
+        return placedMarkers.Where(m => m.chatBubble == chatBubble).ToList();
     }
 
     public object Save()
     {
-        return markers;
+        return placedMarkers;
     }
 
     public void Load(object data)
     {
-        markers = (List<MarkerData>)data;
+        placedMarkers = (List<MarkerData>)data;
     }
 }
 

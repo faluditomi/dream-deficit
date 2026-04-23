@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public static class Markers
 {
@@ -6,13 +7,15 @@ public static class Markers
     (
         "Copy Paste Spam",
         "Publishing identical or nearly identical content over and over again.",
-        Color.darkOrange
+        Color.darkOrange,
+        Key.C
     );
     public static readonly MarkerType SynchronisedActivitySpike = new
     (
         "Synchronised Activity Spike",
         "Separate users publishing identical or nearly identical content, or behaving in similar ways all at once.",
-        Color.darkBlue
+        Color.darkBlue,
+        Key.S
     );
 }
 
@@ -21,11 +24,13 @@ public class MarkerType
     public string name;
     public string description;
     public Color colour;
+    public Key keybind;
 
-    public MarkerType(string name, string description, Color colour)
+    public MarkerType(string name, string description, Color colour, Key keybind)
     {
         this.name = name;
         this.description = description;
         this.colour = colour;
+        this.keybind = keybind;
     }
 }

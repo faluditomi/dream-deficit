@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 [RequireComponent(typeof(TMP_Text))]
 public class HighlightHandler : MonoBehaviour, IPointerDownHandler
@@ -52,7 +52,7 @@ public class HighlightHandler : MonoBehaviour, IPointerDownHandler
             var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
             List<MarkerData> overlapping = markers.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
 
-            if(overlapping.Count > 0)
+            if(overlapping.Count > 0 && MarkerManager.Instance().activeMarkerType == null)
             {
                 hoveredMarker = overlapping[overlapping.Count - 1];
 
@@ -91,10 +91,9 @@ public class HighlightHandler : MonoBehaviour, IPointerDownHandler
         isMouseDown = false;
         currentSelectionEnd = GetClosestCharIndex();
         MarkerData marker = null;
+        MarkerType activeMarkerType = MarkerManager.Instance().activeMarkerType;
         
-        // TODO: "currentSelectionStart == currentSelectionEnd" check can later turn into 
-        // "is the user holding down a marker button" check
-        if(hoveredMarker != null && currentSelectionStart == currentSelectionEnd)
+        if(hoveredMarker != null && currentSelectionStart == currentSelectionEnd && activeMarkerType == null)
         {
             MarkerManager.Instance().RemoveMarker(hoveredMarker);
             Rebuild(Color.clear);
@@ -108,9 +107,8 @@ public class HighlightHandler : MonoBehaviour, IPointerDownHandler
 
             if(start != end)
             {
-                // TODO: adding default marker type for now
                 marker = new MarkerData(
-                    Markers.CopyPasteSpam,
+                    activeMarkerType,
                     chatLog,
                     chatBubble,
                     start,
