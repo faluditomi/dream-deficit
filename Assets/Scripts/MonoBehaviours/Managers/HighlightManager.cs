@@ -7,6 +7,7 @@ public class HighlightManager : MonoBehaviour
 {
     private static HighlightManager _instance;
     private IHighlightable currentHighlightable;
+    private IHighlightable previousHighlightable;
     private List<RaycastResult> results = new List<RaycastResult>();
     private PointerEventData pointerData;
 
@@ -45,8 +46,16 @@ public class HighlightManager : MonoBehaviour
     private void OnMouseDown()
     {
         if(!Mouse.current.leftButton.wasPressedThisFrame) return;
-        currentHighlightable = GetTopHighlightableUnderMouse();
-        if(currentHighlightable != null) currentHighlightable.OnMouseDown();
+        var newHighlightable = GetTopHighlightableUnderMouse();
+
+        if(previousHighlightable != null)
+        {
+            previousHighlightable.ClearPersistentSelection();
+        }
+
+        currentHighlightable = newHighlightable;
+        previousHighlightable = newHighlightable;
+        currentHighlightable?.OnMouseDown();
     }
 
     private void OnMouseHeld()

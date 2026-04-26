@@ -4,4 +4,5 @@ public interface IHighlightable
     public void OnMouseDown();
     public void OnMouseHeld();
     public void OnMouseUp();
+    public void ClearPersistentSelection();
 }

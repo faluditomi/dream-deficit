@@ -14,9 +14,12 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     private MarkerData previousHoveredMarker;
     private MarkerData hoveredMarker;
 
+    public bool canMark;
+    private bool hasPersistentHighlight = false;
+    private int persistentSelectionStart = -1;
+    private int persistentSelectionEnd = -1;
     private int currentSelectionStart = -1;
     private int currentSelectionEnd = -1;
-    public bool canTag;
 
     private void Awake()
     {
@@ -27,12 +30,11 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     {
         this.chatLog = chatLog;
         this.chatBubble = chatBubble;
-        this.canTag = canTag;
+        this.canMark = canTag;
     }
 
     public void OnMouseHover()
     {
-        Debug.Log("Hovering");
         int hoveredCharIndex = GetCurrentCharIndex();
         // NOTE: would it be better if we placed trigger colliders on the markers for hover detection?
         var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
@@ -62,32 +64,47 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
     public void OnMouseDown()
     {
-        Debug.Log("MouseDown");
         currentSelectionStart = currentSelectionEnd = GetClosestCharIndex();
     }
 
     public void OnMouseHeld()
     {
-        Debug.Log("Holding");
         currentSelectionEnd = GetClosestCharIndex();
         Rebuild(activeColour);
     }
 
     public void OnMouseUp()
     {
-        Debug.Log("MouseUp");
-        currentSelectionEnd = GetClosestCharIndex();
-        MarkerData marker = null;
         MarkerType activeMarkerType = MarkerManager.Instance().activeMarkerType;
-        
+        currentSelectionEnd = GetClosestCharIndex();
+
         if(hoveredMarker != null && currentSelectionStart == currentSelectionEnd && activeMarkerType == null)
         {
             MarkerManager.Instance().RemoveMarker(hoveredMarker);
             Rebuild(Color.clear);
             hoveredMarker = previousHoveredMarker = null;
         }
+        else
+        {
+            HighlightMouseUp(activeMarkerType);
+        }
 
-        if(canTag && currentSelectionStart >= 0 && currentSelectionEnd >= 0)
+        CanMarkMouseUp(activeMarkerType);
+    }
+    
+    public void ClearPersistentSelection()
+    {
+        hasPersistentHighlight = false;
+        persistentSelectionStart = persistentSelectionEnd = -1;
+        Rebuild(Color.clear);
+    }
+
+    private void CanMarkMouseUp(MarkerType activeMarkerType)
+    {
+        if(!canMark || activeMarkerType == null) return;
+        MarkerData marker = null;
+
+        if(canMark && currentSelectionStart >= 0 && currentSelectionEnd >= 0)
         {
             int start = Mathf.Min(currentSelectionStart, currentSelectionEnd);
             int end = Mathf.Max(currentSelectionStart, currentSelectionEnd);
@@ -109,6 +126,24 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         currentSelectionStart = currentSelectionEnd = -1;
         Color newMarkerColour = marker != null ? marker.markerType.colour : Color.clear;
         Rebuild(newMarkerColour);
+    }
+
+    private void HighlightMouseUp(MarkerType activeMarkerType)
+    {
+        if(canMark && activeMarkerType != null) return;
+        int start = Mathf.Min(currentSelectionStart, currentSelectionEnd);
+        int end = Mathf.Max(currentSelectionStart, currentSelectionEnd);
+
+        if(start != end)
+        {
+            hasPersistentHighlight = true;
+            persistentSelectionStart = start;
+            persistentSelectionEnd = end;
+            Rebuild(activeColour);
+        }
+
+        currentSelectionStart = currentSelectionEnd = -1;
+        return;
     }
 
     private int GetCurrentCharIndex()
@@ -142,6 +177,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
         int selectionStart = Mathf.Min(currentSelectionStart, currentSelectionEnd);
         int selectionEnd = Mathf.Max(currentSelectionStart, currentSelectionEnd);
+        bool hasActiveSelection = selectionStart >= 0 && selectionEnd > selectionStart;
 
         for(int i = 0; i < textInfo.characterCount; i++)
         {
@@ -149,9 +185,13 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
             Color finalColor = myText.color;
 
             // Active selection preview
-            if(selectionStart >= 0 && i >= selectionStart && i <= selectionEnd)
+            if(hasActiveSelection && i >= selectionStart && i <= selectionEnd)
             {
                 finalColor = overrideColor;
+            }
+            else if(hasPersistentHighlight && i >= persistentSelectionStart && i <= persistentSelectionEnd)
+            {
+                finalColor = activeColour;
             }
             else
             {
