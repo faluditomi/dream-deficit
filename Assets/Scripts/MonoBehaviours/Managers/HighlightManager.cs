@@ -38,7 +38,7 @@ public class HighlightManager : MonoBehaviour
 
     private void OnMouseHover()
     {
-        if(Mouse.current.leftButton.isPressed) return;
+        if(Mouse.current.leftButton.isPressed || Mouse.current.leftButton.wasReleasedThisFrame) return;
         currentHighlightable = GetTopHighlightableUnderMouse();
         if(currentHighlightable != null) currentHighlightable.OnMouseHover();
     }

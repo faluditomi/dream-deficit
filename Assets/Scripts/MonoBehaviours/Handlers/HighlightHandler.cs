@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -9,6 +10,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     public Color hoverColour = Color.red;
     public Color activeColour = Color.lightBlue;
     public TMP_Text myText;
+    private string rawText;
     private ChatLog chatLog;
     private ChatBubble chatBubble;
     private MarkerData previousHoveredMarker;
@@ -24,6 +26,8 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     private void Awake()
     {
         myText = GetComponent<TMP_Text>();
+        rawText = myText.text;
+        myText.richText = true;
     }
 
     public void Init(ChatLog chatLog, ChatBubble chatBubble, bool canTag)
@@ -36,7 +40,6 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     public void OnMouseHover()
     {
         int hoveredCharIndex = GetCurrentCharIndex();
-        // NOTE: would it be better if we placed trigger colliders on the markers for hover detection?
         var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
         List<MarkerData> overlapping = markers.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
 
@@ -70,7 +73,9 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     public void OnMouseHeld()
     {
         currentSelectionEnd = GetClosestCharIndex();
-        Rebuild(activeColour);
+        var activeMarkerType = MarkerManager.Instance().activeMarkerType;
+        Color highlightColour = activeMarkerType != null ? activeMarkerType.colour : activeColour;
+        Rebuild(highlightColour);
     }
 
     public void OnMouseUp()
@@ -170,63 +175,89 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         return TMP_TextUtilities.FindNearestCharacter(myText, pointerPos, cam, true);
     }
 
-    public void Rebuild(Color overrideColor)
+    private string GetMarkedText(Color overrideColor, List<MarkerData> markers)
     {
-        myText.ForceMeshUpdate();
-        TMP_TextInfo textInfo = myText.textInfo;
-        var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
+        if(string.IsNullOrEmpty(rawText)) return rawText;
+
         int selectionStart = Mathf.Min(currentSelectionStart, currentSelectionEnd);
         int selectionEnd = Mathf.Max(currentSelectionStart, currentSelectionEnd);
         bool hasActiveSelection = selectionStart >= 0 && selectionEnd > selectionStart;
+        int length = rawText.Length;
+        var hasMark = new bool[length];
+        var markColor = new Color[length];
 
-        for(int i = 0; i < textInfo.characterCount; i++)
+        if(hasActiveSelection && overrideColor != Color.clear)
         {
-            if(!textInfo.characterInfo[i].isVisible) continue;
-            Color finalColor = myText.color;
-
-            // Active selection preview
-            if(hasActiveSelection && i >= selectionStart && i <= selectionEnd)
+            for(int i = selectionStart; i <= selectionEnd && i < length; i++)
             {
-                finalColor = overrideColor;
+                if(i < 0) continue;
+                hasMark[i] = true;
+                markColor[i] = overrideColor;
             }
-            else if(hasPersistentHighlight && i >= persistentSelectionStart && i <= persistentSelectionEnd)
-            {
-                finalColor = activeColour;
-            }
-            else
-            {
-                // Existing markers
-                List<MarkerData> overlapping = markers.FindAll(m => i >= m.startIndex && i <= m.endIndex);
+        }
+        else if(hasPersistentHighlight)
+        {
+            int start = Mathf.Max(0, persistentSelectionStart);
+            int end = Mathf.Min(length - 1, persistentSelectionEnd);
 
-                if(overlapping.Count > 0)
+            for(int i = start; i <= end; i++)
+            {
+                hasMark[i] = true;
+                markColor[i] = activeColour;
+            }
+        }
+
+        foreach(var marker in markers)
+        {
+            int start = Mathf.Max(0, marker.startIndex);
+            int end = Mathf.Min(length - 1, marker.endIndex);
+
+            for(int i = start; i <= end; i++)
+            {
+                if(hasMark[i]) continue;
+                markColor[i] += marker.markerType.colour;
+                hasMark[i] = true;
+            }
+        }
+
+        if(System.Array.TrueForAll(hasMark, m => !m)) return rawText;
+        var sb = new StringBuilder(rawText.Length + 32);
+        bool inMark = false;
+
+        for(int i = 0; i < length; i++)
+        {
+            if(hasMark[i])
+            {
+                if(!inMark)
                 {
-                    Color blended = Color.clear;
-
-                    foreach(var m in overlapping) blended += m.markerType.colour;
-
-                    blended.r = Mathf.Clamp01(blended.r);
-                    blended.g = Mathf.Clamp01(blended.g);
-                    blended.b = Mathf.Clamp01(blended.b);
-                    blended.a = 1f;
-
-                    finalColor = blended;
+                    string tag = ColorUtility.ToHtmlStringRGBA(markColor[i]);
+                    sb.Append($"<mark=#{tag}>");
+                    inMark = true;
+                }
+                else if(ColorUtility.ToHtmlStringRGBA(markColor[i]) != ColorUtility.ToHtmlStringRGBA(markColor[i - 1]))
+                {
+                    sb.Append("</mark>");
+                    string tag = ColorUtility.ToHtmlStringRGBA(markColor[i]);
+                    sb.Append($"<mark=#{tag}>");
                 }
             }
+            else if(inMark)
+            {
+                sb.Append("</mark>");
+                inMark = false;
+            }
 
-            int matIndex = textInfo.characterInfo[i].materialReferenceIndex;
-            int vertIndex = textInfo.characterInfo[i].vertexIndex;
-            var colors = textInfo.meshInfo[matIndex].colors32;
-
-            colors[vertIndex + 0] = finalColor;
-            colors[vertIndex + 1] = finalColor;
-            colors[vertIndex + 2] = finalColor;
-            colors[vertIndex + 3] = finalColor;
+            sb.Append(rawText[i]);
         }
 
-        for(int i = 0; i < textInfo.meshInfo.Length; i++)
-        {
-            textInfo.meshInfo[i].mesh.colors32 = textInfo.meshInfo[i].colors32;
-            myText.UpdateGeometry(textInfo.meshInfo[i].mesh, i);
-        }
+        if(inMark) sb.Append("</mark>");
+        return sb.ToString();
+    }
+
+    public void Rebuild(Color overrideColor)
+    {
+        var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
+        myText.text = GetMarkedText(overrideColor, markers);
+        myText.ForceMeshUpdate();
     }
 }
