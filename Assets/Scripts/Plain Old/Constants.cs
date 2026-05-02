@@ -5,6 +5,7 @@ public static class Constants
         public const string LogDirectoryEntryPrefab = "prefabs/log_directory_entry";
         public const string ChatLogPrefab = "prefabs/chat_log";
         public const string ChatBubblePrefab = "prefabs/chat_bubble";
+        public const string MarkerFlagPrefab = "prefabs/marker_flag";
         public const string ChatUserPrefix = "chat_user/";
         public const string ChatLogPrefix = "chat_log/";
         public const string ChatBubbleSequence = "chat_bubble_sequence/";

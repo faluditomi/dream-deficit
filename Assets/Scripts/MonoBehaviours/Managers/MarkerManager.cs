@@ -7,8 +7,11 @@ using UnityEngine.InputSystem.Controls;
 public class MarkerManager : MonoBehaviour, ISavable
 {
     private static MarkerManager _instance;
+    private GameObject markerFlagPrefab;
+    private Transform uiCanvas;
     private List<MarkerData> placedMarkers = new List<MarkerData>();
     private List<MarkerType> activeMarkerTypeCache = new List<MarkerType>();
+    private Dictionary<MarkerType, MarkerFlagController> activeMarkerFlags = new Dictionary<MarkerType, MarkerFlagController>();
     private InputAction markerHoldAction;
     public MarkerType activeMarkerType;
 
@@ -24,7 +27,7 @@ public class MarkerManager : MonoBehaviour, ISavable
         return _instance;
     }
 
-    private void Awake()
+    private async void Awake()
     {
         if(_instance == null)
         {
@@ -38,28 +41,38 @@ public class MarkerManager : MonoBehaviour, ISavable
         }
 
         SaveManager.Instance().LoadGame();
-
-        markerHoldAction = new InputAction(type: InputActionType.Button);
-
-        markerHoldAction.started += ctx =>
-        {
-            if(activeMarkerType != null) return;
-
-            if(ctx.control is KeyControl keyControl)
-            {
-                activeMarkerType = activeMarkerTypeCache.Find(mt => mt.keybind == keyControl.keyCode);
-            }
-        };
-
-        markerHoldAction.canceled += ctx =>
-        {
-            activeMarkerType = null;
-        };
-
-        markerHoldAction.Enable();
+        markerFlagPrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerFlagPrefab);
+        uiCanvas = FindFirstObjectByType<Canvas>().transform;
 
         // TODO: this will have to be done from the GameManager and there needs to be profiles created for game portions
-        SetActiveMarkerTypes(new List<MarkerType> { Markers.CopyPasteSpam, Markers.SynchronisedActivitySpike });
+        SetActiveMarkerTypes(new List<MarkerType> 
+        { 
+            Markers.CopyPasteSpam, 
+            Markers.SynchronisedActivitySpike, 
+            Markers.PersuasionPattern, 
+            Markers.NarrativeShaping 
+            });
+    }
+
+    public void OnKeyDown(Key key)
+    {
+        if(activeMarkerType != null)
+        {
+            activeMarkerFlags[activeMarkerType].SetRaised(false);
+            activeMarkerType = null;
+        }
+
+        activeMarkerType = activeMarkerTypeCache.Find(mt => mt.keybind == key);
+
+        if(activeMarkerType != null) activeMarkerFlags[activeMarkerType].SetRaised(true);
+    }
+    public void OnKeyUp(Key key)
+    {
+        if(activeMarkerType != null && activeMarkerType.keybind == key)
+        {
+            activeMarkerFlags[activeMarkerType].SetRaised(false);
+            activeMarkerType = null;
+        }
     }
 
     public void AddMarker(MarkerData markerData)
@@ -75,11 +88,42 @@ public class MarkerManager : MonoBehaviour, ISavable
     public void SetActiveMarkerTypes(List<MarkerType> markerTypes)
     {
         activeMarkerTypeCache = markerTypes;
-        markerHoldAction.Disable();
+
+        activeMarkerFlags.Values.ToList().ForEach(mf => Destroy(mf.gameObject));
+        activeMarkerFlags.Clear();
+
+        if(markerHoldAction != null) 
+        {
+            markerHoldAction.Disable();
+            markerHoldAction.Dispose();
+        }
+
+        markerHoldAction = new InputAction(type: InputActionType.PassThrough);
+        markerHoldAction.performed += ctx =>
+        {
+            if(ctx.control is not KeyControl keyControl) return;
+
+            float value = ctx.ReadValue<float>();
+
+            if(value > 0)
+            {
+                OnKeyDown(keyControl.keyCode);
+            }
+            else
+            {
+                OnKeyUp(keyControl.keyCode);
+            }
+        };
+
+        float markerFlagOffset = Screen.width / (activeMarkerTypeCache.Count + 1);
 
         foreach(MarkerType markerType in activeMarkerTypeCache)
         {
             markerHoldAction.AddBinding("<Keyboard>/" + markerType.keybind.ToString());
+            MarkerFlagController newMarkerFlag = Instantiate(markerFlagPrefab, uiCanvas).GetComponent<MarkerFlagController>();
+            activeMarkerFlags[markerType] = newMarkerFlag;
+            float xPos = markerFlagOffset * activeMarkerFlags.Count;
+            newMarkerFlag.Setup(markerType, xPos);
         }
 
         markerHoldAction.Enable();
