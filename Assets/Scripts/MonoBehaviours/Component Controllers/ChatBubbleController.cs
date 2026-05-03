@@ -30,8 +30,8 @@ public class ChatBubbleController : MonoBehaviour
         usernameText.text = chatUser.username;
         messageText.text = myChatBubble.message;
 
-        usernameText.AddComponent<HighlightHandler>().Init(chatlog, myChatBubble, true);
-        messageText.AddComponent<HighlightHandler>().Init(chatlog, myChatBubble, true);
+        usernameText.AddComponent<HighlightHandler>().Setup(chatlog, myChatBubble, true);
+        messageText.AddComponent<HighlightHandler>().Setup(chatlog, myChatBubble, true);
 
         bubblePointerHandler.OnPointerUpEvent += ReleaseBubble;
         bubblePointerHandler.OnPointerDownEvent += PressBubble;

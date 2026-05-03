@@ -2,22 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 // TODO: maybe it would be a good idea to have a central cache for the existing ChatLogControllers in the scene,
 //       so that other scripts can simply query a chat log by logName (or smth more safe) and send sequences to it
-public class ChatLogController : MonoBehaviour
+public class ChatLogController : MonoBehaviour, ITopBar
 {
     private ChatLog myChatLog;
+    private TopBarHandler topBarHandler;
     private GameObject chatBubblePrefab;
     private Transform bubbleContainer;
     private GameObject typingIdicator;
-    private PointerHandler closePointerHandler;
     private Coroutine sequenceCoroutine;
 
-    public string logName;
     public List<ChatBubble> messages;
+    public string logName;
     public bool isOpen = false;
 
     private bool isSetUp = false;
@@ -27,24 +26,20 @@ public class ChatLogController : MonoBehaviour
     public async void Setup(ChatLog chatLog)
     {
         if(isSetUp || !FindElements()) return;
-
         myChatLog = chatLog;
-        
         PopulateChatLogProperties(myChatLog);
-
         bubbleContainer = GetComponentInChildren<ContentSizeFitter>().transform;
         chatBubblePrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatBubblePrefab);
+        topBarHandler = gameObject.AddComponent<TopBarHandler>();
+        topBarHandler.Setup(gameObject);
 
         foreach(ChatBubble chatBubble in messages)
         {
             ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer).GetComponent<ChatBubbleController>();
             chatBubbleInstance.Setup(chatBubble, myChatLog);
         }
-
-        closePointerHandler.OnPointerClickEvent += Close;
         
         isSetUp = true;
-
         // TODO: remove this
         RunBubbleSequence(await AddressableManager.Instance().RetrieveAddressable<ChatBubbleSequence>(Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.CrypticSequence));
     }
@@ -52,10 +47,6 @@ public class ChatLogController : MonoBehaviour
     private bool FindElements()
     {
         typingIdicator = transform.Find(Constants.GameObjectNames.TypingIndicator).gameObject;
-        Transform topBar = transform.Find(Constants.GameObjectNames.TopBar);
-        topBar.AddComponent<DragHandler>().objectToDrag = transform;
-        closePointerHandler = topBar.Find(Constants.GameObjectNames.CloseButton).AddComponent<PointerHandler>();
-
         return true;
     }
 
@@ -66,17 +57,25 @@ public class ChatLogController : MonoBehaviour
     }
     #endregion
 
-    public void Open()
+    #region ITopBar
+    public bool GetIsOpen()
     {
-        isOpen = true;
-        gameObject.SetActive(true);
+        if(!isSetUp) return false;
+        return isOpen;
     }
 
-    public void Close(PointerEventData eventData)
+    public void SetIsOpen(bool isOpen)
     {
-        isOpen = false;
-        gameObject.SetActive(false);
+        if(!isSetUp) return;
+        this.isOpen = isOpen;
     }
+
+    public void Open()
+    {
+        if(!isSetUp) return;
+        topBarHandler.Open();
+    }
+    #endregion
 
     public void RunBubbleSequence(ChatBubbleSequence chatBubbleSequence)
     {
@@ -93,10 +92,6 @@ public class ChatLogController : MonoBehaviour
     private void OnDestroy()
     {
         // NOTE: could call marker aggregator from here
-        if(!closePointerHandler)
-        {
-            closePointerHandler.OnPointerUpEvent -= Close;
-        }
     }
 
     private IEnumerator RunBubbleSequenceBehaviour(ChatBubbleSequence chatBubbleSequence)

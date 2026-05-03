@@ -30,7 +30,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         myText.richText = true;
     }
 
-    public void Init(ChatLog chatLog, ChatBubble chatBubble, bool canTag)
+    public void Setup(ChatLog chatLog, ChatBubble chatBubble, bool canTag)
     {
         this.chatLog = chatLog;
         this.chatBubble = chatBubble;

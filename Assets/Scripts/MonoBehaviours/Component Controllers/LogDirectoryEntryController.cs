@@ -17,13 +17,10 @@ public class LogDirectoryEntryController : MonoBehaviour
     public async void Setup(ChatLog chatLog)
     {
         if(isSetUp || !FindElements()) return;
-
         this.chatLog = chatLog;
         logNameText.text = chatLog.logName;
         chatLogPrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatLogPrefab);
-
         entryPointerHandler.OnPointerClickEvent += (eventData) => OpenLog(chatLog);
-
         isSetUp = true;
     }
 

@@ -30,6 +30,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5760b8ed986290e44ade89436f434c29
+    m_Address: prefabs/top_bar
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 61a7b4814a2b1024dbd7be1d12cd4a61
     m_Address: chat_bubble_sequence/cryptic_sequence
     m_ReadOnly: 0
