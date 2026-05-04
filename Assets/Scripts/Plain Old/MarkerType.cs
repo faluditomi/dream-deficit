@@ -38,13 +38,13 @@ public class MarkerType
     public string name;
     public string description;
     public Color colour;
-    public Key keybind;
+    public Key keycode;
 
-    public MarkerType(string name, string description, Color colour, Key keybind)
+    public MarkerType(string name, string description, Color colour, Key keycode)
     {
         this.name = name;
         this.description = description;
         this.colour = colour;
-        this.keybind = keybind;
+        this.keycode = keycode;
     }
 }

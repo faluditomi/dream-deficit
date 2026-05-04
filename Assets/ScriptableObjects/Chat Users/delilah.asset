@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChatUser
   chatUserId: 0
   username: delilala
-  profilePicture: {fileID: 5750965184838287450, guid: 61c7b3ee38e8bf94a8d7e1da66af2b05, type: 3}
+  profilePicture: {fileID: 21300000, guid: 61c7b3ee38e8bf94a8d7e1da66af2b05, type: 3}

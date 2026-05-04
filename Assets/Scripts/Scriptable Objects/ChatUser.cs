@@ -6,5 +6,5 @@ public class ChatUser : ScriptableObject
 {
     public ChatUserId chatUserId;
     public string username;
-    public Image profilePicture;
+    public Sprite profilePicture;
 }

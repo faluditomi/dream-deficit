@@ -8,10 +8,10 @@ public class TopBarHandler : MonoBehaviour
 
     private bool isSetUp = false;
 
-    public async void Setup(GameObject window)
+    public async void Setup(GameObject window, ITopBar windowInterface)
     {
         myWindow = window;
-        myWindowInterface = myWindow.GetComponent<ITopBar>();
+        myWindowInterface = windowInterface;
         GameObject topBarPrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.TopBarPrefab);
         GameObject topBar = Instantiate(topBarPrefab, myWindow.transform);
         topBar.AddComponent<DragHandler>().Setup(transform);

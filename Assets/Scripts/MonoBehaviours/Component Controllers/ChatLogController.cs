@@ -17,7 +17,7 @@ public class ChatLogController : MonoBehaviour, ITopBar
 
     public List<ChatBubble> messages;
     public string logName;
-    public bool isOpen = false;
+    private bool isOpen = false;
 
     private bool isSetUp = false;
 
@@ -31,7 +31,7 @@ public class ChatLogController : MonoBehaviour, ITopBar
         bubbleContainer = GetComponentInChildren<ContentSizeFitter>().transform;
         chatBubblePrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatBubblePrefab);
         topBarHandler = gameObject.AddComponent<TopBarHandler>();
-        topBarHandler.Setup(gameObject);
+        topBarHandler.Setup(gameObject, this);
 
         foreach(ChatBubble chatBubble in messages)
         {

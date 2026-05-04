@@ -26,7 +26,7 @@ public class ChatBubbleController : MonoBehaviour
 
         if(chatUser == null) Debug.LogError($"ChatUser Addressable wasn't found for ChatUser: {myChatBubble.chatUserId}. Setup of ChatBubble failed.");
 
-        profilePictureImage = chatUser.profilePicture;
+        profilePictureImage.sprite = chatUser.profilePicture;
         usernameText.text = chatUser.username;
         messageText.text = myChatBubble.message;
 

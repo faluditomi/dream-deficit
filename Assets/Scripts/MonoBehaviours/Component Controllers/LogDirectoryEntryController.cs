@@ -25,7 +25,7 @@ public class LogDirectoryEntryController : MonoBehaviour
     private bool FindElements()
     {
         uiCanvas = FindFirstObjectByType<Canvas>().transform;
-        logNameText = transform.Find(Constants.GameObjectNames.LogName).GetComponent<TMP_Text>();
+        logNameText = transform.Find(Constants.GameObjectNames.Name).GetComponent<TMP_Text>();
         
         if(uiCanvas == null || logNameText == null)
         {
@@ -45,7 +45,7 @@ public class LogDirectoryEntryController : MonoBehaviour
             chatLogController.Setup(chatLog);
         }
 
-        if(!chatLogController.isOpen)
+        if(!chatLogController.GetIsOpen())
         {
             chatLogController.Open();
         }

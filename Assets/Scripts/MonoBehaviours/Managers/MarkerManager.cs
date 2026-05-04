@@ -10,9 +10,9 @@ public class MarkerManager : MonoBehaviour, ISavable
     private GameObject markerFlagPrefab;
     private Transform uiCanvas;
     private List<MarkerData> placedMarkers = new List<MarkerData>();
-    private List<MarkerType> activeMarkerTypeCache = new List<MarkerType>();
     private Dictionary<MarkerType, MarkerFlagController> activeMarkerFlags = new Dictionary<MarkerType, MarkerFlagController>();
     private InputAction markerHoldAction;
+    public List<MarkerType> activeMarkerTypeCache = new List<MarkerType>();
     public MarkerType activeMarkerType;
 
     public static MarkerManager Instance()
@@ -62,13 +62,13 @@ public class MarkerManager : MonoBehaviour, ISavable
             activeMarkerType = null;
         }
 
-        activeMarkerType = activeMarkerTypeCache.Find(mt => mt.keybind == key);
+        activeMarkerType = activeMarkerTypeCache.Find(mt => mt.keycode == key);
 
         if(activeMarkerType != null) activeMarkerFlags[activeMarkerType].SetRaised(true);
     }
     public void OnKeyUp(Key key)
     {
-        if(activeMarkerType != null && activeMarkerType.keybind == key)
+        if(activeMarkerType != null && activeMarkerType.keycode == key)
         {
             activeMarkerFlags[activeMarkerType].SetRaised(false);
             activeMarkerType = null;
@@ -119,7 +119,7 @@ public class MarkerManager : MonoBehaviour, ISavable
 
         foreach(MarkerType markerType in activeMarkerTypeCache)
         {
-            markerHoldAction.AddBinding("<Keyboard>/" + markerType.keybind.ToString());
+            markerHoldAction.AddBinding("<Keyboard>/" + markerType.keycode.ToString());
             MarkerFlagController newMarkerFlag = Instantiate(markerFlagPrefab, uiCanvas).GetComponent<MarkerFlagController>();
             activeMarkerFlags[markerType] = newMarkerFlag;
             float xPos = markerFlagOffset * activeMarkerFlags.Count;
