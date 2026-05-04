@@ -1,12 +1,11 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LogDirectoryEntryController : MonoBehaviour
 {
-    private ChatLog chatLog;
     private GameObject chatLogPrefab;
     private Transform uiCanvas;
-    private PointerHandler entryPointerHandler;
     private ChatLogController chatLogController;
 
     private TMP_Text logNameText;
@@ -17,10 +16,9 @@ public class LogDirectoryEntryController : MonoBehaviour
     public async void Setup(ChatLog chatLog)
     {
         if(isSetUp || !FindElements()) return;
-        this.chatLog = chatLog;
         logNameText.text = chatLog.logName;
         chatLogPrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatLogPrefab);
-        entryPointerHandler.OnPointerClickEvent += (eventData) => OpenLog(chatLog);
+        GetComponent<Button>().onClick.AddListener(() => OpenLog(chatLog));
         isSetUp = true;
     }
 
@@ -28,7 +26,6 @@ public class LogDirectoryEntryController : MonoBehaviour
     {
         uiCanvas = FindFirstObjectByType<Canvas>().transform;
         logNameText = transform.Find(Constants.GameObjectNames.LogName).GetComponent<TMP_Text>();
-        entryPointerHandler = gameObject.AddComponent<PointerHandler>();
         
         if(uiCanvas == null || logNameText == null)
         {
@@ -51,15 +48,6 @@ public class LogDirectoryEntryController : MonoBehaviour
         if(!chatLogController.isOpen)
         {
             chatLogController.Open();
-        }
-
-    }
-
-    private void OnDestroy()
-    {
-        if(entryPointerHandler)
-        {
-            entryPointerHandler.OnPointerClickEvent -= (eventData) => OpenLog(chatLog);
         }
     }
 }
