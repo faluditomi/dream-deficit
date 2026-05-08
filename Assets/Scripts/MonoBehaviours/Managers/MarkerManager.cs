@@ -144,32 +144,3 @@ public class MarkerManager : MonoBehaviour, ISavable
         placedMarkers = (List<MarkerData>)data;
     }
 }
-
-[System.Serializable]
-public class MarkerData
-{
-    public MarkerType markerType;
-    public ChatLog chatLog;
-    public ChatBubble chatBubble;
-    public int startIndex;
-    public int endIndex;
-    public bool isValid;
-
-    public MarkerData
-    (
-        MarkerType markerType, 
-        ChatLog chatLog, 
-        ChatBubble chatBubble, 
-        int startIndex, 
-        int endIndex
-    )
-    {
-        this.markerType = markerType;
-        this.chatLog = chatLog;
-        this.chatBubble = chatBubble;
-        this.startIndex = startIndex;
-        this.endIndex = endIndex;
-        // TODO: this has to be calculated once we are tracking the possible markers for each markable bubble
-        isValid = true;
-    }
-}

@@ -33,12 +33,15 @@ public static class Markers
     );
 }
 
+[System.Serializable]
 public class MarkerType
 {
     public string name;
     public string description;
     public Color colour;
     public Key keycode;
+
+    public MarkerType() { }
 
     public MarkerType(string name, string description, Color colour, Key keycode)
     {

@@ -16,8 +16,16 @@ MonoBehaviour:
   messages:
   - chatUserId: 1
     message: wazzzuuuuup
+    delayLength: 0
+    typingFlagLength: 0
+    markables: []
   - chatUserId: 0
     message: nut much...
+    delayLength: 0
+    typingFlagLength: 0
+    markables: []
   - chatUserId: 1
     message: cooooool
-  isOpen: 1
+    delayLength: 0
+    typingFlagLength: 0
+    markables: []

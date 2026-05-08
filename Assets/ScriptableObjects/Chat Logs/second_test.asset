@@ -15,6 +15,18 @@ MonoBehaviour:
   logName: k23v92mo0j
   messages:
   - chatUserId: 0
-    message: k'a'ut naq tqak'e qach'ool
+    message: k'a'ut naq naq tqak'e ane qach'ool dkmw'dfoop
     delayLength: 0
     typingFlagLength: 4.63
+    markables:
+    - markerType:
+        name: Copy Paste Spam
+        description: The often unsolicited and irritating act of publishing identical
+          or nearly identical content repeatedly with the intent to disrupt, promote,
+          or troll.
+        colour: {r: 0.5450981, g: 0, b: 0.5450981, a: 1}
+        keycode: 17
+      spanText: dkmw'dfoop
+      occurrence: 0
+      startIndex: 35
+      endIndex: 44

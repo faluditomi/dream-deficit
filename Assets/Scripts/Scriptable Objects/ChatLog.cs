@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "ChatLog", menuName = "Scriptable Objects/ChatLog")]
