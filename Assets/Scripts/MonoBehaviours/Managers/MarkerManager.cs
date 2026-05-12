@@ -75,8 +75,37 @@ public class MarkerManager : MonoBehaviour, ISavable
         }
     }
 
-    public void AddMarker(MarkerData markerData)
+    public void AddMarker(ChatLog chatLog, ChatBubble chatBubble, int start, int end)
     {
+        float accuracy = 0f;
+
+        chatBubble.markables.ForEach(markable =>
+        {
+            // TODO: safeguard against multiple markers per markable
+                // -> maybe this should instead be handled during statistical analysis
+            if(markable.startIndex < end && markable.endIndex > start && markable.markerType.name.Equals(activeMarkerType.name))
+            {
+                float markableLength = markable.endIndex - markable.startIndex + 1;
+                float lengthOfOverlap = Mathf.Min(markable.endIndex, end) - Mathf.Max(markable.startIndex, start) + 1;
+                float lengthOfExcess = Mathf.Max((markable.startIndex - start), 0f) + Mathf.Max((end - markable.endIndex), 0f);
+                // Accuracy is a percentage based on the proportion of the markable that is correctly covered by the marker,
+                // penalized by any excess marking outside the markable. The penalty for excess marking is halved.
+                float totalAccuracy = ((lengthOfOverlap / markableLength) - (lengthOfExcess / markableLength / 2f)) * 100f;
+                accuracy = Mathf.Max(accuracy, totalAccuracy);
+                Debug.Log(accuracy);
+            }
+        });
+
+        MarkerData markerData = new MarkerData(
+            activeMarkerType,
+            chatLog,
+            chatBubble,
+            start,
+            end,
+            0, // TODO: Set the current day number
+            accuracy
+        );
+
         placedMarkers.Add(markerData);
     }
 

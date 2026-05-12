@@ -17,11 +17,14 @@ MonoBehaviour:
     message: 984ahf(*$HP@$Fp98@
     delayLength: 1.5
     typingFlagLength: 2
+    markables: []
   - chatUserId: 0
     message: OIJ@#09jf#(j[)
     delayLength: 1
     typingFlagLength: 1.2
+    markables: []
   - chatUserId: 0
     message: yyyyyyyyyyyyyyyyyyyyy
     delayLength: 2
     typingFlagLength: 4
+    markables: []

@@ -116,15 +116,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
             if(start != end)
             {
-                marker = new MarkerData(
-                    activeMarkerType,
-                    chatLog,
-                    chatBubble,
-                    start,
-                    end
-                );
-
-                MarkerManager.Instance().AddMarker(marker);
+                MarkerManager.Instance().AddMarker(chatLog, chatBubble, start, end);
             }
         }
 

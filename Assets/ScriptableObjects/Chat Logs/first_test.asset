@@ -23,9 +23,31 @@ MonoBehaviour:
     message: nut much...
     delayLength: 0
     typingFlagLength: 0
-    markables: []
+    markables:
+    - markerType:
+        name: Narrative Shaping
+        description: The strategic dissemination of information, often through selective
+          sharing or framing, to influence public perception in a way that aligns
+          with a harmful agenda.
+        colour: {r: 1, g: 0.5490196, b: 0, a: 1}
+        keycode: 28
+      spanText: much
+      occurrence: 0
+      startIndex: 4
+      endIndex: 7
   - chatUserId: 1
     message: cooooool
     delayLength: 0
     typingFlagLength: 0
-    markables: []
+    markables:
+    - markerType:
+        name: Copy Paste Spam
+        description: The often unsolicited and irritating act of publishing identical
+          or nearly identical content repeatedly with the intent to disrupt, promote,
+          or troll.
+        colour: {r: 0.5450981, g: 0, b: 0.5450981, a: 1}
+        keycode: 17
+      spanText: coo
+      occurrence: 0
+      startIndex: 0
+      endIndex: 2
