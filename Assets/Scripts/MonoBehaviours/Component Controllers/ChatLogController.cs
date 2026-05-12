@@ -15,7 +15,6 @@ public class ChatLogController : MonoBehaviour, ITopBar
     private Coroutine sequenceCoroutine;
 
     public List<ChatBubble> messages;
-    public string logName;
     private bool isOpen = false;
 
     private bool isSetUp = false;
@@ -51,7 +50,6 @@ public class ChatLogController : MonoBehaviour, ITopBar
 
     private void PopulateChatLogProperties(ChatLog chatLog)
     {
-        logName = chatLog.logName;
         messages = chatLog.messages;
     }
     #endregion
