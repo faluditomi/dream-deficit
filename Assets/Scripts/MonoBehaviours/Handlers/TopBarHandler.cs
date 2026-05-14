@@ -12,7 +12,7 @@ public class TopBarHandler : MonoBehaviour
     {
         myWindow = window;
         myWindowInterface = windowInterface;
-        GameObject topBarPrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.TopBarPrefab);
+        GameObject topBarPrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.TopBarPrefab);
         GameObject topBar = Instantiate(topBarPrefab, myWindow.transform);
         topBar.AddComponent<DragHandler>().Setup(transform);
         topBar.transform.Find(Constants.GameObjectNames.CloseButton).GetComponent<Button>().onClick.AddListener(() => Close());

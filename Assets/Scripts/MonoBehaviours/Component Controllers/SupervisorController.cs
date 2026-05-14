@@ -9,9 +9,9 @@ public class SupervisorController : MonoBehaviour
 
     private async void Start()
     {
-        chatLogPrefab = await AddressableManager.Instance()
+        chatLogPrefab = await AddressableManager.Instance
             .RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatLogPrefab);
-        supervisorChatLog = await AddressableManager.Instance()
+        supervisorChatLog = await AddressableManager.Instance
             .RetrieveAddressable<ChatLog>(Constants.AddressablePaths.ChatLogPrefix + Constants.ChatLogs.Supervisor);
         GetComponent<Button>().onClick.AddListener(() => OpenChatLog());
     }

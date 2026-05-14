@@ -13,10 +13,10 @@ public class MarkerCheatSheetController : MonoBehaviour, ITopBar
     private async void Start()
     {
         markerCheatSheetPrefab = await AddressableManager
-            .Instance()
+            .Instance
             .RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerCheatSheetPrefab);
         markerCheatSheetEntryPrefab = await AddressableManager
-            .Instance()
+            .Instance
             .RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerCheatSheetEntryPrefab);
         GetComponent<Button>().onClick.AddListener(() => OpenCheatSheet());
     }
@@ -46,7 +46,7 @@ public class MarkerCheatSheetController : MonoBehaviour, ITopBar
             Destroy(child.gameObject);
         }
 
-        foreach(MarkerType markerType in MarkerManager.Instance().activeMarkerTypeCache)
+        foreach(MarkerType markerType in MarkerManager.Instance.activeMarkerTypeCache)
         {
             MarkerCheatSheetEntryController markerCheatSheetEntryInstance = Instantiate(markerCheatSheetEntryPrefab, markerEntryContainer)
                 .GetComponent<MarkerCheatSheetEntryController>();

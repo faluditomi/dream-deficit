@@ -40,10 +40,10 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     public void OnMouseHover()
     {
         int hoveredCharIndex = GetCurrentCharIndex();
-        var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
+        var markers = MarkerManager.Instance.GetMarkersForChatBubble(chatBubble);
         List<MarkerData> overlapping = markers.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
 
-        if(overlapping.Count > 0 && MarkerManager.Instance().activeMarkerType == null)
+        if(overlapping.Count > 0 && MarkerManager.Instance.activeMarkerType == null)
         {
             hoveredMarker = overlapping[overlapping.Count - 1];
 
@@ -73,19 +73,19 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     public void OnMouseHeld()
     {
         currentSelectionEnd = GetClosestCharIndex();
-        var activeMarkerType = MarkerManager.Instance().activeMarkerType;
+        var activeMarkerType = MarkerManager.Instance.activeMarkerType;
         Color highlightColour = activeMarkerType != null ? activeMarkerType.colour : activeColour;
         Rebuild(highlightColour);
     }
 
     public void OnMouseUp()
     {
-        MarkerType activeMarkerType = MarkerManager.Instance().activeMarkerType;
+        MarkerType activeMarkerType = MarkerManager.Instance.activeMarkerType;
         currentSelectionEnd = GetClosestCharIndex();
 
         if(hoveredMarker != null && currentSelectionStart == currentSelectionEnd && activeMarkerType == null)
         {
-            MarkerManager.Instance().RemoveMarker(hoveredMarker);
+            MarkerManager.Instance.RemoveMarker(hoveredMarker);
             Rebuild(Color.clear);
             hoveredMarker = previousHoveredMarker = null;
         }
@@ -116,7 +116,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
             if(start != end)
             {
-                MarkerManager.Instance().AddMarker(chatLog, chatBubble, start, end);
+                MarkerManager.Instance.AddMarker(chatLog, chatBubble, start, end);
             }
         }
 
@@ -248,7 +248,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
     public void Rebuild(Color overrideColor)
     {
-        var markers = MarkerManager.Instance().GetMarkersForChatBubble(chatBubble);
+        var markers = MarkerManager.Instance.GetMarkersForChatBubble(chatBubble);
         myText.text = GetMarkedText(overrideColor, markers);
         myText.ForceMeshUpdate();
     }

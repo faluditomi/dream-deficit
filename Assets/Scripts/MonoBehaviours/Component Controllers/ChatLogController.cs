@@ -27,7 +27,7 @@ public class ChatLogController : MonoBehaviour, ITopBar
         myChatLog = chatLog;
         PopulateChatLogProperties(myChatLog);
         bubbleContainer = GetComponentInChildren<ContentSizeFitter>().transform;
-        chatBubblePrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatBubblePrefab);
+        chatBubblePrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatBubblePrefab);
         topBarHandler = gameObject.AddComponent<TopBarHandler>();
         topBarHandler.Setup(gameObject, this);
 
@@ -39,7 +39,7 @@ public class ChatLogController : MonoBehaviour, ITopBar
         
         isSetUp = true;
         // TODO: remove this
-        RunBubbleSequence(await AddressableManager.Instance().RetrieveAddressable<ChatBubbleSequence>(Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.CrypticSequence));
+        RunBubbleSequence(await AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.CrypticSequence));
     }
 
     private bool FindElements()

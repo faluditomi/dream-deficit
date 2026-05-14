@@ -1,33 +1,21 @@
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
-public class HighlightManager : MonoBehaviour
+public class HighlightManager : Singleton<HighlightManager>
 {
-    private static HighlightManager _instance;
     private IHighlightable currentHighlightable;
     private IHighlightable previousHighlightable;
     private List<RaycastResult> results = new List<RaycastResult>();
     private PointerEventData pointerData;
 
-    void Awake()
+    protected override void Awake()
     {
-        if(_instance == null)
-        {
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else if(_instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
+        base.Awake();
         pointerData = new PointerEventData(EventSystem.current);
     }
 
-    void Update()
+    private void Update()
     {
         if(Mouse.current == null) return;
         OnMouseHover();

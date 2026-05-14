@@ -4,9 +4,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
-public class MarkerManager : MonoBehaviour, ISavable
+public class MarkerManager : Singleton<MarkerManager>, ISavable
 {
-    private static MarkerManager _instance;
     private GameObject markerFlagPrefab;
     private Transform uiCanvas;
     private List<MarkerData> placedMarkers = new List<MarkerData>();
@@ -15,33 +14,11 @@ public class MarkerManager : MonoBehaviour, ISavable
     public List<MarkerType> activeMarkerTypeCache = new List<MarkerType>();
     public MarkerType activeMarkerType;
 
-    public static MarkerManager Instance()
+    protected override async void Awake()
     {
-        if(_instance == null)
-        {
-            var obj = new GameObject("MarkerManager");
-            _instance = obj.AddComponent<MarkerManager>();
-            DontDestroyOnLoad(obj);
-        }
-
-        return _instance;
-    }
-
-    private async void Awake()
-    {
-        if(_instance == null)
-        {
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else if(_instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        SaveManager.Instance().LoadGame();
-        markerFlagPrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerFlagPrefab);
+        base.Awake();
+        SaveManager.Instance.LoadGame();
+        markerFlagPrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerFlagPrefab);
         uiCanvas = FindFirstObjectByType<Canvas>().transform;
 
         // TODO: this will have to be done from the GameManager and there needs to be profiles created for game portions

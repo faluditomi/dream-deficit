@@ -4,27 +4,14 @@ using System.Linq;
 using UnityEngine;
 
 // TODO: once we have things to save, make a gamemanager that loads stuf at the start and saves stuff at the end
-public class SaveManager : MonoBehaviour
+public class SaveManager : Singleton<SaveManager>
 {
     private ISavable[] saveables;
     private string savePath;
 
-    private static SaveManager _instance;
-
-    public static SaveManager Instance()
+    protected override void Awake()
     {
-        if(_instance == null)
-        {
-            var obj = new GameObject("SaveManager");
-            _instance = obj.AddComponent<SaveManager>();
-            DontDestroyOnLoad(obj);
-        }
-
-        return _instance;
-    }
-
-    private void Awake()
-    {
+        base.Awake();
         saveables = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).OfType<ISavable>().ToArray();
         savePath = Path.Combine(Application.persistentDataPath, "receipts.json");
     }

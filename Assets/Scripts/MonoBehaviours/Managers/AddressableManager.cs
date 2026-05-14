@@ -1,23 +1,8 @@
 using System.Threading.Tasks;
-using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-public class AddressableManager : MonoBehaviour
+public class AddressableManager : Singleton<AddressableManager>
 {
-    private static AddressableManager _instance;
-
-    public static AddressableManager Instance()
-    {
-        if(_instance == null)
-        {
-            var obj = new GameObject("AddressableController");
-            _instance = obj.AddComponent<AddressableManager>();
-            DontDestroyOnLoad(obj);
-        }
-
-        return _instance;
-    }
-
     public async Task<T> RetrieveAddressable<T>(string address)
     {
         if(string.IsNullOrWhiteSpace(address)) return default;

@@ -15,7 +15,7 @@ public class LogDirectoryEntryController : MonoBehaviour
     {
         if(isSetUp || !FindElements()) return;
         logNameText.text = chatLog.logName;
-        chatLogPrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatLogPrefab);
+        chatLogPrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatLogPrefab);
         GetComponent<Button>().onClick.AddListener(() => OpenChatLog(chatLog));
         isSetUp = true;
     }
