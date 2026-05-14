@@ -16,6 +16,7 @@ public static class Constants
 
     public static class ChatLogs
     {
+        public const string Supervisor = "supervisor";
         public const string TinderLog = "tinder_log_1";
         public const string Nonsense = "k23v92mo0j";
     }
@@ -36,5 +37,6 @@ public static class Constants
         public const string Description = "Description";
         public const string Keycode = "Keycode";
         public const string TypingIndicator = "Typing Indicator";
+        public const string WindowContainer = "Window Container";
     }
 }

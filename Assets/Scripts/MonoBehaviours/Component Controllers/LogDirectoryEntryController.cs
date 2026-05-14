@@ -5,9 +5,7 @@ using UnityEngine.UI;
 public class LogDirectoryEntryController : MonoBehaviour
 {
     private GameObject chatLogPrefab;
-    private Transform uiCanvas;
     private ChatLogController chatLogController;
-
     private TMP_Text logNameText;
 
     private bool isSetUp = false;
@@ -18,16 +16,15 @@ public class LogDirectoryEntryController : MonoBehaviour
         if(isSetUp || !FindElements()) return;
         logNameText.text = chatLog.logName;
         chatLogPrefab = await AddressableManager.Instance().RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatLogPrefab);
-        GetComponent<Button>().onClick.AddListener(() => OpenLog(chatLog));
+        GetComponent<Button>().onClick.AddListener(() => OpenChatLog(chatLog));
         isSetUp = true;
     }
 
     private bool FindElements()
     {
-        uiCanvas = FindFirstObjectByType<Canvas>().transform;
         logNameText = transform.Find(Constants.GameObjectNames.Name).GetComponent<TMP_Text>();
         
-        if(uiCanvas == null || logNameText == null)
+        if(logNameText == null)
         {
             Debug.LogError("Setup of LogDirectoryEntry failed. A necessary component wasn't found during setup.");
             return false;
@@ -37,11 +34,12 @@ public class LogDirectoryEntryController : MonoBehaviour
     }
     #endregion
     
-    public void OpenLog(ChatLog chatLog)
+    public void OpenChatLog(ChatLog chatLog)
     {
         if(chatLogController == null)
         {
-            chatLogController = Instantiate(chatLogPrefab, uiCanvas).GetComponent<ChatLogController>();
+            Transform windowContainer = FindFirstObjectByType<Canvas>().transform.Find(Constants.GameObjectNames.WindowContainer);
+            chatLogController = Instantiate(chatLogPrefab, windowContainer).GetComponent<ChatLogController>();
             chatLogController.Setup(chatLog);
         }
 

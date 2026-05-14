@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,7 +25,8 @@ public class MarkerCheatSheetController : MonoBehaviour, ITopBar
     {
         if(myMarkerCheatSheet == null)
         {
-            myMarkerCheatSheet = Instantiate(markerCheatSheetPrefab, transform.parent);
+            Transform windowContainer = FindFirstObjectByType<Canvas>().transform.Find(Constants.GameObjectNames.WindowContainer);
+            myMarkerCheatSheet = Instantiate(markerCheatSheetPrefab, windowContainer);
             topBarHandler = myMarkerCheatSheet.AddComponent<TopBarHandler>();
             topBarHandler.Setup(myMarkerCheatSheet, this);
             markerEntryContainer = myMarkerCheatSheet.transform.GetComponentInChildren<ContentSizeFitter>().transform;
