@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class ChatBubbleController : MonoBehaviour
 {
     private ChatBubble myChatBubble;
-    private PointerHandler bubblePointerHandler;
     private Image profilePictureImage;
     private TMP_Text usernameText;
     private TMP_Text messageText;
@@ -33,9 +32,6 @@ public class ChatBubbleController : MonoBehaviour
         usernameText.AddComponent<HighlightHandler>().Setup(chatlog, myChatBubble, true);
         messageText.AddComponent<HighlightHandler>().Setup(chatlog, myChatBubble, true);
 
-        bubblePointerHandler.OnPointerUpEvent += ReleaseBubble;
-        bubblePointerHandler.OnPointerDownEvent += PressBubble;
-
         isSetUp = true;
     }
 
@@ -46,7 +42,6 @@ public class ChatBubbleController : MonoBehaviour
         Transform username = transform.Find(Constants.GameObjectNames.Username);
         usernameText = username.GetComponent<TMP_Text>();
         messageText = transform.Find(Constants.GameObjectNames.Message).GetComponent<TMP_Text>();
-        bubblePointerHandler = transform.Find(Constants.GameObjectNames.Bubble).AddComponent<PointerHandler>();
 
         if(!profilePicture || !profilePictureImage || !usernameText || !messageText)
         {
@@ -57,23 +52,4 @@ public class ChatBubbleController : MonoBehaviour
         return true;
     }
     #endregion
-    
-    public void PressBubble(PointerEventData eventData)
-    {
-        Debug.Log("bubble down");
-    }
-
-    public void ReleaseBubble(PointerEventData eventData)
-    {
-        Debug.Log("bubble up");
-    }
-
-    private void OnDestroy()
-    {
-        if(bubblePointerHandler)
-        {
-            bubblePointerHandler.OnPointerUpEvent -= ReleaseBubble;
-            bubblePointerHandler.OnPointerDownEvent -= PressBubble;
-        }
-    }
 }

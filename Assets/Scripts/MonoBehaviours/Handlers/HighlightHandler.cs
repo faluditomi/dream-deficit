@@ -30,11 +30,16 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         myText.richText = true;
     }
 
-    public void Setup(ChatLog chatLog, ChatBubble chatBubble, bool canTag)
+    public void SetupOnlyHighlight()
+    {
+        canMark = false;
+    }
+
+    public void Setup(ChatLog chatLog, ChatBubble chatBubble, bool canMark)
     {
         this.chatLog = chatLog;
         this.chatBubble = chatBubble;
-        this.canMark = canTag;
+        this.canMark = canMark;
     }
 
     public void OnMouseHover()

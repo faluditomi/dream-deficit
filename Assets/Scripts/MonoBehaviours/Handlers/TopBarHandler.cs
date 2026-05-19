@@ -4,14 +4,14 @@ using UnityEngine.UI;
 public class TopBarHandler : MonoBehaviour
 {
     private GameObject myWindow;
-    private ITopBar myWindowInterface;
+    private BaseWindowController myBaseWindowController;
 
     private bool isSetUp = false;
 
-    public async void Setup(GameObject window, ITopBar windowInterface)
+    public async void Setup(GameObject window, BaseWindowController baseWindowController)
     {
         myWindow = window;
-        myWindowInterface = windowInterface;
+        myBaseWindowController = baseWindowController;
         GameObject topBarPrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.TopBarPrefab);
         GameObject topBar = Instantiate(topBarPrefab, myWindow.transform);
         topBar.AddComponent<DragHandler>().Setup(transform);
@@ -26,14 +26,14 @@ public class TopBarHandler : MonoBehaviour
     public void Open()
     {
         if(!isSetUp) return;
-        myWindowInterface.SetIsOpen(true);
+        myBaseWindowController.SetIsOpen(true);
         myWindow.SetActive(true);
     }
 
     public void Close()
     {
         if(!isSetUp) return;
-        myWindowInterface.SetIsOpen(false);
+        myBaseWindowController.SetIsOpen(false);
         myWindow.SetActive(false);
     }
 }

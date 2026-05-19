@@ -1,14 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MarkerCheatSheetController : MonoBehaviour, ITopBar
+public class MarkerCheatSheetController : BaseWindowController
 {
     private GameObject markerCheatSheetPrefab;
     private GameObject markerCheatSheetEntryPrefab;
     private GameObject myMarkerCheatSheet;
-    private TopBarHandler topBarHandler;
     private Transform markerEntryContainer;
-    private bool isOpen = false;
 
     private async void Start()
     {
@@ -27,15 +25,14 @@ public class MarkerCheatSheetController : MonoBehaviour, ITopBar
         {
             Transform windowContainer = FindFirstObjectByType<Canvas>().transform.Find(Constants.GameObjectNames.WindowContainer);
             myMarkerCheatSheet = Instantiate(markerCheatSheetPrefab, windowContainer);
-            topBarHandler = myMarkerCheatSheet.AddComponent<TopBarHandler>();
-            topBarHandler.Setup(myMarkerCheatSheet, this);
+            SetupTopBar(myMarkerCheatSheet);
             markerEntryContainer = myMarkerCheatSheet.transform.GetComponentInChildren<ContentSizeFitter>().transform;
             UpdateMarkers();
         }
 
-        if(!isOpen)
+        if(!GetIsOpen())
         {
-            topBarHandler.Open();
+            Open();
         }
     }
 
@@ -48,26 +45,9 @@ public class MarkerCheatSheetController : MonoBehaviour, ITopBar
 
         foreach(MarkerType markerType in MarkerManager.Instance.activeMarkerTypeCache)
         {
-            MarkerCheatSheetEntryController markerCheatSheetEntryInstance = Instantiate(markerCheatSheetEntryPrefab, markerEntryContainer)
-                .GetComponent<MarkerCheatSheetEntryController>();
+            MarkerCheatSheetEntryController markerCheatSheetEntryInstance = 
+                Instantiate(markerCheatSheetEntryPrefab, markerEntryContainer).GetComponent<MarkerCheatSheetEntryController>();
             markerCheatSheetEntryInstance.Setup(markerType);
         }
     }
-
-    #region ITopBar
-    public bool GetIsOpen()
-    {
-        return isOpen;
-    }
-
-    public void SetIsOpen(bool isOpen)
-    {
-        this.isOpen = isOpen;
-    }
-
-    public void Open()
-    {
-        topBarHandler.Open();
-    }
-    #endregion
 }

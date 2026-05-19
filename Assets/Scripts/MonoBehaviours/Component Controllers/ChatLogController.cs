@@ -5,41 +5,41 @@ using UnityEngine.UI;
 
 // TODO: maybe it would be a good idea to have a central cache for the existing ChatLogControllers in the scene,
 //       so that other scripts can simply query a chat log by logName (or smth more safe) and send sequences to it
-public class ChatLogController : MonoBehaviour, ITopBar
+public class ChatLogController : BaseWindowController
 {
     private ChatLog myChatLog;
-    private TopBarHandler topBarHandler;
     private GameObject chatBubblePrefab;
     private Transform bubbleContainer;
     private GameObject typingIdicator;
     private Coroutine sequenceCoroutine;
 
     public List<ChatBubble> messages;
-    private bool isOpen = false;
 
     private bool isSetUp = false;
 
-    #region Setup
-    // TODO: have a safety check -> return and self-destruct if there is already an instance of ChatLog open
     public async void Setup(ChatLog chatLog)
     {
+        // TODO: have a safety check -> return and self-destruct if there is already an instance of ChatLog open
         if(isSetUp || !FindElements()) return;
         myChatLog = chatLog;
-        PopulateChatLogProperties(myChatLog);
+        messages = chatLog.messages;
         bubbleContainer = GetComponentInChildren<ContentSizeFitter>().transform;
-        chatBubblePrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatBubblePrefab);
-        topBarHandler = gameObject.AddComponent<TopBarHandler>();
-        topBarHandler.Setup(gameObject, this);
+        chatBubblePrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(
+            Constants.AddressablePaths.ChatBubblePrefab);
+        SetupTopBar();
 
         foreach(ChatBubble chatBubble in messages)
         {
-            ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer).GetComponent<ChatBubbleController>();
+            ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer)
+                .GetComponent<ChatBubbleController>();
             chatBubbleInstance.Setup(chatBubble, myChatLog);
         }
         
         isSetUp = true;
         // TODO: remove this
-        RunBubbleSequence(await AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.CrypticSequence));
+        RunBubbleSequence(await AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
+                Constants.AddressablePaths.ChatBubbleSequence
+                + Constants.ChatBubbleSequenceCodes.CrypticSequence));
     }
 
     private bool FindElements()
@@ -48,31 +48,10 @@ public class ChatLogController : MonoBehaviour, ITopBar
         return true;
     }
 
-    private void PopulateChatLogProperties(ChatLog chatLog)
+    private void OnDestroy()
     {
-        messages = chatLog.messages;
+        // NOTE: could call marker aggregator from here
     }
-    #endregion
-
-    #region ITopBar
-    public bool GetIsOpen()
-    {
-        if(!isSetUp) return false;
-        return isOpen;
-    }
-
-    public void SetIsOpen(bool isOpen)
-    {
-        if(!isSetUp) return;
-        this.isOpen = isOpen;
-    }
-
-    public void Open()
-    {
-        if(!isSetUp) return;
-        topBarHandler.Open();
-    }
-    #endregion
 
     public void RunBubbleSequence(ChatBubbleSequence chatBubbleSequence)
     {
@@ -86,11 +65,6 @@ public class ChatLogController : MonoBehaviour, ITopBar
         sequenceCoroutine = StartCoroutine(RunBubbleSequenceBehaviour(chatBubbleSequence));
     }
 
-    private void OnDestroy()
-    {
-        // NOTE: could call marker aggregator from here
-    }
-
     private IEnumerator RunBubbleSequenceBehaviour(ChatBubbleSequence chatBubbleSequence)
     {
         foreach(ChatBubble chatBubble in chatBubbleSequence.messages)
@@ -102,7 +76,8 @@ public class ChatLogController : MonoBehaviour, ITopBar
             yield return new WaitForSeconds(chatBubble.typingFlagLength);
 
             typingIdicator.SetActive(false);
-            ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer).GetComponent<ChatBubbleController>();
+            ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer)
+                .GetComponent<ChatBubbleController>();
             chatBubbleInstance.Setup(chatBubble, myChatLog);
         }
     }
