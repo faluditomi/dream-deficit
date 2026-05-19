@@ -33,6 +33,8 @@ public class MarkerManager : Singleton<MarkerManager>, ISavable
 
     public void OnKeyDown(Key key)
     {
+        if(!GameManager.Instance.isDayPassing) return;
+
         if(activeMarkerType != null)
         {
             activeMarkerFlags[activeMarkerType].SetRaised(false);
@@ -54,6 +56,7 @@ public class MarkerManager : Singleton<MarkerManager>, ISavable
 
     public void AddMarker(ChatLog chatLog, ChatBubble chatBubble, int start, int end)
     {
+        if(!GameManager.Instance.isDayPassing) return;
         float accuracy = 0f;
 
         chatBubble.markables.ForEach(markable =>
@@ -88,6 +91,7 @@ public class MarkerManager : Singleton<MarkerManager>, ISavable
 
     public void RemoveMarker(MarkerData markerData)
     {
+        if(!GameManager.Instance.isDayPassing) return;
         placedMarkers.Remove(markerData);
     }
 

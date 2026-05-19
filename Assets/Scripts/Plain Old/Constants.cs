@@ -38,5 +38,7 @@ public static class Constants
         public const string Keycode = "Keycode";
         public const string TypingIndicator = "Typing Indicator";
         public const string WindowContainer = "Window Container";
+        public const string Clock = "Clock";
+        public const string Time = "Time";
     }
 }
