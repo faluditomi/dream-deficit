@@ -17,9 +17,9 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     private MarkerData hoveredMarker;
 
     public bool canMark;
-    private bool hasPersistentHighlight = false;
-    private int persistentSelectionStart = -1;
-    private int persistentSelectionEnd = -1;
+    private bool hasTemporaryHighlight = false;
+    private int persistentTemporaryStart = -1;
+    private int persistentTemporaryEnd = -1;
     private int currentSelectionStart = -1;
     private int currentSelectionEnd = -1;
 
@@ -150,6 +150,13 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     {
         currentSelectionEnd = GetClosestCharIndex();
         var activeMarkerType = MarkerManager.Instance.activeMarkerType;
+
+        if(hoveredMarker != null && currentSelectionStart == currentSelectionEnd && activeMarkerType == null)
+        {
+            Rebuild(hoverColour);
+            return;
+        }
+
         Color highlightColour = activeMarkerType != null ? activeMarkerType.colour : activeColour;
         Rebuild(highlightColour);
     }
@@ -159,7 +166,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         MarkerType activeMarkerType = MarkerManager.Instance.activeMarkerType;
         currentSelectionEnd = GetClosestCharIndex();
 
-        if(hoveredMarker != null && currentSelectionStart == currentSelectionEnd && activeMarkerType == null)
+        if(currentSelectionStart == currentSelectionEnd && activeMarkerType == null)
         {
             MarkerManager.Instance.RemoveMarker(hoveredMarker);
             Rebuild(Color.clear);
@@ -175,8 +182,8 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     
     public void ClearPersistentSelection()
     {
-        hasPersistentHighlight = false;
-        persistentSelectionStart = persistentSelectionEnd = -1;
+        hasTemporaryHighlight = false;
+        persistentTemporaryStart = persistentTemporaryEnd = -1;
         Rebuild(Color.clear);
     }
 
@@ -209,9 +216,9 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
         if(start != end)
         {
-            hasPersistentHighlight = true;
-            persistentSelectionStart = start;
-            persistentSelectionEnd = end;
+            hasTemporaryHighlight = true;
+            persistentTemporaryStart = start;
+            persistentTemporaryEnd = end;
             Rebuild(activeColour);
         }
 
@@ -263,10 +270,21 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
                 markColor[i] = overrideColor;
             }
         }
-        else if(hasPersistentHighlight)
+        else if(hoveredMarker != null && overrideColor == hoverColour)
         {
-            int start = Mathf.Max(0, persistentSelectionStart);
-            int end = Mathf.Min(length - 1, persistentSelectionEnd);
+            int start = Mathf.Max(0, hoveredMarker.startIndex);
+            int end = Mathf.Min(length - 1, hoveredMarker.endIndex);
+
+            for(int i = start; i <= end; i++)
+            {
+                hasMark[i] = true;
+                markColor[i] = overrideColor;
+            }
+        }
+        else if(hasTemporaryHighlight)
+        {
+            int start = Mathf.Max(0, persistentTemporaryStart);
+            int end = Mathf.Min(length - 1, persistentTemporaryEnd);
 
             for(int i = start; i <= end; i++)
             {
