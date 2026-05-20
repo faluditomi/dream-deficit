@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 02c76d27afc00834ebfbc67d77f75660
+    m_Address: chat_user/supervisor
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 12ae7b45e3323c9458ff7133c82f7d9b
     m_Address: prefabs/marker_cheat_sheet_entry
     m_ReadOnly: 0
@@ -32,6 +37,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 198d4527fb3dff84ca7294c19b4abadc
     m_Address: prefabs/chat_log
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2922a653e3fb9e64bb6c03ab86ff0b93
+    m_Address: chat_bubble_sequence/day_signal_test
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 392bcdd9f402d3744bae74dde90171fb
+    m_Address: prefabs/day_signal_button
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

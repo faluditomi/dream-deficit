@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,11 +9,11 @@ public class TopBarHandler : MonoBehaviour
 
     private bool isSetUp = false;
 
-    public async void Setup(GameObject window, BaseWindowController baseWindowController)
+    public void Setup(GameObject window, BaseWindowController baseWindowController)
     {
         myWindow = window;
         myBaseWindowController = baseWindowController;
-        GameObject topBarPrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.TopBarPrefab);
+        GameObject topBarPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.TopBarPrefab);
         GameObject topBar = Instantiate(topBarPrefab, myWindow.transform);
         topBar.AddComponent<DragHandler>().Setup(transform);
         topBar.transform.Find(Constants.GameObjectNames.CloseButton).GetComponent<Button>().onClick.AddListener(() => Close());
@@ -27,13 +28,24 @@ public class TopBarHandler : MonoBehaviour
     {
         if(!isSetUp) return;
         myBaseWindowController.SetIsOpen(true);
-        myWindow.SetActive(true);
+        
+        // TODO: there has to be a better way
+        foreach(Transform transform in transform)
+        {
+            if(transform.gameObject.name == Constants.GameObjectNames.TypingIndicator) continue;
+            transform.gameObject.SetActive(true);
+        }
     }
 
     public void Close()
     {
         if(!isSetUp) return;
         myBaseWindowController.SetIsOpen(false);
-        myWindow.SetActive(false);
+
+        // TODO: there has to be a better way
+        foreach(Transform transform in transform)
+        {
+            transform.gameObject.SetActive(false);
+        }
     }
 }

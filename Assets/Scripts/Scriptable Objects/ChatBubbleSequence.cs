@@ -6,3 +6,5 @@ public class ChatBubbleSequence : ScriptableObject
 {
     public List<ChatBubble> messages;
 }
+
+

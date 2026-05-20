@@ -1,8 +1,11 @@
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
 {
+    private SupervisorController supervisorController;
+
     private TMP_Text timeText;
     
     [Range(0, 24)]
@@ -20,25 +23,32 @@ public class GameManager : Singleton<GameManager>
         timeText = GameObject.Find(Constants.GameObjectNames.Clock)
             .transform.Find(Constants.GameObjectNames.Time)
             .GetComponent<TMP_Text>();
-        // TODO: these will have to be removed once the supervisor is properly hooked up
+    }
+
+    private void Start()
+    {
+        // TODO: this will have to be called from somewhere else
         StartDay();
-        TriggerDayTimePassing();
     }
 
     // TODO: called from the dream scene based on an end state
     private void StartDay()
     {
         dayNumber++;
+        currentDayTime = dayLengthInSeconds;
         UpdateTimeText();
         // TODO: reset user interface
-        // TODO: depending on the day number, we establish the active chat log cache and trigger the supervisor
-        // TODO: trigger supervisor
+        // TODO: depending on the day number, we establish the active chat log cache
+        ChatBubbleSequence nextSupervisorDayStartSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
+            // TODO: these sequences will have to change dynamically based on day number and performance
+            Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.DaySignalTest);
+        GetSupervisorController().chatLogController
+            .RunBubbleSequence(nextSupervisorDayStartSequence, ChatBubbleSequenceType.SupervisorDayStart);
     }
 
     // TODO: called from the supervisor button signaling the player's readiness for the day
     public void TriggerDayTimePassing()
     {
-        currentDayTime = dayLengthInSeconds;
         isDayPassing = true;
         // TODO: turn on marking and other interactive elements of the user interface
     }
@@ -57,17 +67,21 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    public void TriggerEndOfDayTimePassing()
+    private void TriggerEndOfDayTimePassing()
     {
         isDayPassing = false;
         currentDayTime = dayLengthInSeconds;
         timeText.text = FormatTime(dayEndTime);
         // TODO: turn off marking and other interactive elements of the user interface
-        // TODO: trigger the supervisor
+        ChatBubbleSequence nextSupervisorDayEndSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
+            // TODO: these sequences will have to change dynamically based on day number and performance
+            Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.DaySignalTest);
+        GetSupervisorController().chatLogController
+            .RunBubbleSequence(nextSupervisorDayEndSequence, ChatBubbleSequenceType.SupervisorDayEnd);
     }
 
     // TODO: called from the supervisor button signaling the player's readiness for the dream
-    private void EndDay()
+    public void EndDay()
     {
         // TODO: depending on the day number, trigger the appropriate dream scene
     }
@@ -90,4 +104,41 @@ public class GameManager : Singleton<GameManager>
 
         return $"{hours:D2} : {minutes:D2}";
     }
+
+    private SupervisorController GetSupervisorController()
+    {
+        if(supervisorController == null)
+        {
+            supervisorController = FindFirstObjectByType<SupervisorController>();
+        }
+
+        return supervisorController;
+    }
+
+    #region Chat Bubble Sequence Activator Logic
+    public void TriggerChatBubbleSequence(ChatBubbleSequenceType chatBubbleSequenceType)
+    {
+        switch(chatBubbleSequenceType)
+        {
+            case ChatBubbleSequenceType.Simple:
+                break;
+            case ChatBubbleSequenceType.SupervisorDayStart:
+                SupervisorDayStartSequence();  
+                break; 
+            case ChatBubbleSequenceType.SupervisorDayEnd:
+                SupervisorDayEndSequence();
+                break;
+        }
+    }
+
+    private void SupervisorDayStartSequence()
+    {
+        GetSupervisorController().DayStartSignal();
+    }
+
+    private void SupervisorDayEndSequence()
+    {
+        GetSupervisorController().DayEndSignal();
+    }
+    #endregion
 }

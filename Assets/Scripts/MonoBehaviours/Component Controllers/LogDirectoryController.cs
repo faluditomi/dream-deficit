@@ -15,13 +15,13 @@ public class LogDirectoryController : MonoBehaviour
         Setup();
     }
 
-    private async void Setup()
+    private void Setup()
     {
         if(isSetUp || !FindElements()) return;
 
         Transform content = GetComponentInChildren<ContentSizeFitter>().transform;
-        activeLogs = await LogDirectoryCacheManager.RetrieveCurrentCache();
-        logDirectoryEntryPrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.LogDirectoryEntryPrefab);
+        activeLogs = LogDirectoryCacheManager.RetrieveCurrentCache();
+        logDirectoryEntryPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.LogDirectoryEntryPrefab);
 
         foreach(ChatLog chatLog in activeLogs)
         {

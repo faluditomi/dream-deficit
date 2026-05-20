@@ -9,6 +9,7 @@ public static class Constants
         public const string TopBarPrefab = "prefabs/top_bar";
         public const string MarkerCheatSheetPrefab = "prefabs/marker_cheat_sheet";
         public const string MarkerCheatSheetEntryPrefab = "prefabs/marker_cheat_sheet_entry";
+        public const string DaySignalButtonPrefab = "prefabs/day_signal_button";
         public const string ChatUserPrefix = "chat_user/";
         public const string ChatLogPrefix = "chat_log/";
         public const string ChatBubbleSequence = "chat_bubble_sequence/";
@@ -24,6 +25,7 @@ public static class Constants
     public static class ChatBubbleSequenceCodes
     {
         public const string CrypticSequence = "cryptic_sequence";
+        public const string DaySignalTest = "day_signal_test";
     }
 
     public static class GameObjectNames
@@ -40,5 +42,7 @@ public static class Constants
         public const string WindowContainer = "Window Container";
         public const string Clock = "Clock";
         public const string Time = "Time";
+        public const string Viewport = "Viewport";
+        public const string Content = "Content";
     }
 }

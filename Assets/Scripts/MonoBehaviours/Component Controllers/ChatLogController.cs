@@ -17,14 +17,14 @@ public class ChatLogController : BaseWindowController
 
     private bool isSetUp = false;
 
-    public async void Setup(ChatLog chatLog)
+    public void Setup(ChatLog chatLog)
     {
         // TODO: have a safety check -> return and self-destruct if there is already an instance of ChatLog open
         if(isSetUp || !FindElements()) return;
         myChatLog = chatLog;
         messages = chatLog.messages;
         bubbleContainer = GetComponentInChildren<ContentSizeFitter>().transform;
-        chatBubblePrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(
+        chatBubblePrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(
             Constants.AddressablePaths.ChatBubblePrefab);
         SetupTopBar();
 
@@ -36,10 +36,6 @@ public class ChatLogController : BaseWindowController
         }
         
         isSetUp = true;
-        // TODO: remove this
-        RunBubbleSequence(await AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
-                Constants.AddressablePaths.ChatBubbleSequence
-                + Constants.ChatBubbleSequenceCodes.CrypticSequence));
     }
 
     private bool FindElements()
@@ -53,7 +49,7 @@ public class ChatLogController : BaseWindowController
         // NOTE: could call marker aggregator from here
     }
 
-    public void RunBubbleSequence(ChatBubbleSequence chatBubbleSequence)
+    public void RunBubbleSequence(ChatBubbleSequence chatBubbleSequence, ChatBubbleSequenceType bubbleSequenceType)
     {
         // NOTE: right now, if a new sequence comes in while another is being processed, the previous gets cut short
         if(sequenceCoroutine != null)
@@ -62,16 +58,16 @@ public class ChatLogController : BaseWindowController
             sequenceCoroutine = null;
         }
 
-        sequenceCoroutine = StartCoroutine(RunBubbleSequenceBehaviour(chatBubbleSequence));
+        sequenceCoroutine = StartCoroutine(RunBubbleSequenceBehaviour(chatBubbleSequence, bubbleSequenceType));
     }
 
-    private IEnumerator RunBubbleSequenceBehaviour(ChatBubbleSequence chatBubbleSequence)
+    private IEnumerator RunBubbleSequenceBehaviour(ChatBubbleSequence chatBubbleSequence, ChatBubbleSequenceType bubbleSequenceType)
     {
         foreach(ChatBubble chatBubble in chatBubbleSequence.messages)
         {
             yield return new WaitForSeconds(chatBubble.delayLength);
 
-            typingIdicator.SetActive(true);
+            if(isOpen) typingIdicator.SetActive(true);
 
             yield return new WaitForSeconds(chatBubble.typingFlagLength);
 
@@ -80,5 +76,7 @@ public class ChatLogController : BaseWindowController
                 .GetComponent<ChatBubbleController>();
             chatBubbleInstance.Setup(chatBubble, myChatLog);
         }
+
+        GameManager.Instance.TriggerChatBubbleSequence(bubbleSequenceType);
     }
 }

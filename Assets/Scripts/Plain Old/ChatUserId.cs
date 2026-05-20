@@ -1,5 +1,6 @@
 public enum ChatUserId
 {
     Delilah,
-    Dave
+    Dave,
+    Supervisor
 }

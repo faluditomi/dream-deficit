@@ -14,11 +14,11 @@ public class MarkerManager : Singleton<MarkerManager>, ISavable
     public List<MarkerType> activeMarkerTypeCache = new List<MarkerType>();
     public MarkerType activeMarkerType;
 
-    protected override async void Awake()
+    protected override void Awake()
     {
         base.Awake();
         SaveManager.Instance.LoadGame();
-        markerFlagPrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerFlagPrefab);
+        markerFlagPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerFlagPrefab);
         uiCanvas = FindFirstObjectByType<Canvas>().transform;
 
         // TODO: this will have to be done from the GameManager and there needs to be profiles created for game portions

@@ -5,7 +5,7 @@ public abstract class BaseWindowController : MonoBehaviour
     private TopBarHandler topBarHandler;
     private PointerHandler pointerHandler;
     protected GameObject windowGameObject;
-    private bool isOpen = false;
+    protected bool isOpen = false;
     private bool isTopBarSetup = false;
 
     protected void SetupTopBar()

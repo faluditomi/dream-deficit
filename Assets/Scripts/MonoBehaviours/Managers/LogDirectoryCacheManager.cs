@@ -5,12 +5,12 @@ public class LogDirectoryCacheManager : Singleton<LogDirectoryCacheManager>
 {
     public static List<ChatLog> activeLogs = new List<ChatLog>();
 
-    public static async Task<List<ChatLog>> RetrieveCurrentCache()
+    public static List<ChatLog> RetrieveCurrentCache()
     {
-        ChatLog testLog = await AddressableManager.Instance
+        ChatLog testLog = AddressableManager.Instance
             .RetrieveAddressable<ChatLog>(Constants.AddressablePaths.ChatLogPrefix + Constants.ChatLogs.TinderLog);
         activeLogs.Add(testLog);
-        ChatLog testLogAlso = await AddressableManager.Instance
+        ChatLog testLogAlso = AddressableManager.Instance
             .RetrieveAddressable<ChatLog>(Constants.AddressablePaths.ChatLogPrefix + Constants.ChatLogs.Nonsense);
         activeLogs.Add(testLogAlso);
         return activeLogs;

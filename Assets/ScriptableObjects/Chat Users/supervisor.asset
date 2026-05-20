@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c5d426f8524d8a48aa42a127c8fa020, type: 3}
+  m_Name: supervisor
+  m_EditorClassIdentifier: Assembly-CSharp::ChatUser
+  chatUserId: 2
+  username: supervisor
+  profilePicture: {fileID: 21300000, guid: c54ffb75ee19cce4b819a7dd994a5333, type: 3}

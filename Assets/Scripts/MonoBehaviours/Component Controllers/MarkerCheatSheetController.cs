@@ -8,12 +8,12 @@ public class MarkerCheatSheetController : BaseWindowController
     private GameObject myMarkerCheatSheet;
     private Transform markerEntryContainer;
 
-    private async void Start()
+    private void Start()
     {
-        markerCheatSheetPrefab = await AddressableManager
+        markerCheatSheetPrefab = AddressableManager
             .Instance
             .RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerCheatSheetPrefab);
-        markerCheatSheetEntryPrefab = await AddressableManager
+        markerCheatSheetEntryPrefab = AddressableManager
             .Instance
             .RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerCheatSheetEntryPrefab);
         GetComponent<Button>().onClick.AddListener(() => OpenCheatSheet());

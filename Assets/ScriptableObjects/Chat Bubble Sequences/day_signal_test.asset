@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbff2057e5baa1e49869a37abcfe0807, type: 3}
+  m_Name: day_signal_test
+  m_EditorClassIdentifier: Assembly-CSharp::ChatBubbleSequence
+  messages:
+  - chatUserId: 2
+    message: This is a day signal.
+    delayLength: 0
+    typingFlagLength: 0.7
+    markables: []
+  - chatUserId: 2
+    message: Whether it's the start or the end... I do not know.
+    delayLength: 1
+    typingFlagLength: 1.5
+    markables: []

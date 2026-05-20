@@ -11,11 +11,11 @@ public class LogDirectoryEntryController : MonoBehaviour
     private bool isSetUp = false;
 
     #region Setup
-    public async void Setup(ChatLog chatLog)
+    public void Setup(ChatLog chatLog)
     {
         if(isSetUp || !FindElements()) return;
         logNameText.text = chatLog.logName;
-        chatLogPrefab = await AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatLogPrefab);
+        chatLogPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatLogPrefab);
         GetComponent<Button>().onClick.AddListener(() => OpenChatLog(chatLog));
         isSetUp = true;
     }
