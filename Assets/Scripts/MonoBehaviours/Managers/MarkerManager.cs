@@ -72,7 +72,6 @@ public class MarkerManager : Singleton<MarkerManager>, ISavable
                 // penalized by any excess marking outside the markable. The penalty for excess marking is halved.
                 float totalAccuracy = ((lengthOfOverlap / markableLength) - (lengthOfExcess / markableLength / 2f)) * 100f;
                 accuracy = Mathf.Max(accuracy, totalAccuracy);
-                Debug.Log(accuracy);
             }
         });
 

@@ -48,6 +48,11 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         var markers = MarkerManager.Instance.GetMarkersForChatBubble(chatBubble);
         List<MarkerData> overlapping = markers.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
 
+        if(overlapping.Count == 0 && MarkerManager.Instance.activeMarkerType == null)
+        {
+            overlapping = FindMarkerInBoundsArea(markers);
+        }
+
         if(overlapping.Count > 0 && MarkerManager.Instance.activeMarkerType == null)
         {
             hoveredMarker = overlapping[overlapping.Count - 1];
@@ -68,6 +73,72 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
             Rebuild(previousHoveredMarker.markerType.colour);
             previousHoveredMarker = hoveredMarker = null;
         }
+    }
+
+    private List<MarkerData> FindMarkerInBoundsArea(List<MarkerData> markers)
+    {
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        List<MarkerData> markersContainingPoint = new List<MarkerData>();
+
+        foreach(var marker in markers)
+        {
+            if(IsPointInMarkerBounds(marker, mousePos))
+            {
+                markersContainingPoint.Add(marker);
+            }
+        }
+
+        return markersContainingPoint;
+    }
+
+    private bool IsPointInMarkerBounds(MarkerData marker, Vector2 point)
+    {
+        myText.ForceMeshUpdate();
+        TMP_TextInfo textInfo = myText.textInfo;
+        if(textInfo == null || textInfo.characterCount == 0) return false;
+        int start = Mathf.Max(0, marker.startIndex);
+        int end = Mathf.Min(textInfo.characterCount - 1, marker.endIndex);
+        if(start >= textInfo.characterCount || end < 0) return false;
+        RectTransform rectTransform = myText.GetComponent<RectTransform>();
+        Matrix4x4 localToWorld = rectTransform.localToWorldMatrix;
+        Camera cam = null;
+        Canvas canvas = myText.canvas;
+        if(canvas.renderMode != RenderMode.ScreenSpaceOverlay) cam = canvas.worldCamera;
+        Vector2 minPos = Vector2.positiveInfinity;
+        Vector2 maxPos = Vector2.negativeInfinity;
+
+        for(int i = start; i <= end; i++)
+        {
+            if(i < 0 || i >= textInfo.characterCount) continue;
+            TMP_CharacterInfo charInfo = textInfo.characterInfo[i];
+            int lineIndex = charInfo.lineNumber;
+            TMP_LineInfo lineInfo = textInfo.lineInfo[lineIndex];
+
+            float lineAscender = lineInfo.ascender;
+            float lineDescender = lineInfo.descender;
+            float charLeft = charInfo.origin;
+            float charRight = charInfo.xAdvance;
+
+            Vector2[] localCorners = new Vector2[4]
+            {
+                new Vector2(charLeft, lineAscender),
+                new Vector2(charLeft, lineDescender),
+                new Vector2(charRight, lineAscender),
+                new Vector2(charRight, lineDescender)
+            };
+
+            foreach(var localCorner in localCorners)
+            {
+                Vector3 worldCorner = localToWorld.MultiplyPoint(localCorner);
+                Vector2 screenCorner = RectTransformUtility.WorldToScreenPoint(cam, worldCorner);
+                minPos = Vector2.Min(minPos, screenCorner);
+                maxPos = Vector2.Max(maxPos, screenCorner);
+            }
+        }
+
+        if(minPos == Vector2.positiveInfinity || maxPos == Vector2.negativeInfinity) return false;
+
+        return point.x >= minPos.x && point.x <= maxPos.x && point.y >= minPos.y && point.y <= maxPos.y;
     }
 
     public void OnMouseDown()
