@@ -2,39 +2,33 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LogDirectoryController : MonoBehaviour
+public class LogDirectoryController : MonoBehaviour, ILoadable
 {
     private List<ChatLog> activeLogs;
     private GameObject logDirectoryEntryPrefab;
-
-    private bool isSetUp = false;
+    private Transform content;
 
     #region Setup
-    private void Start()
+    private void Awake()
     {
-        Setup();
+        logDirectoryEntryPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.LogDirectoryEntryPrefab);
+        content = GetComponentInChildren<ContentSizeFitter>().transform;
     }
 
-    private void Setup()
+    public void LoadFromDayData(DayData dayData)
     {
-        if(isSetUp || !FindElements()) return;
+        activeLogs = SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber).GetActiveChatLogs();
 
-        Transform content = GetComponentInChildren<ContentSizeFitter>().transform;
-        activeLogs = LogDirectoryCacheManager.RetrieveCurrentCache();
-        logDirectoryEntryPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.LogDirectoryEntryPrefab);
+        foreach(Transform child in content)
+        {
+            Destroy(child.gameObject);
+        }
 
         foreach(ChatLog chatLog in activeLogs)
         {
             LogDirectoryEntryController logDirectoryEntryInstance = Instantiate(logDirectoryEntryPrefab, content).GetComponent<LogDirectoryEntryController>();
             logDirectoryEntryInstance.Setup(chatLog);
         }
-
-        isSetUp = true;
-    }
-
-    private bool FindElements()
-    {
-        return true;
     }
     #endregion
 }

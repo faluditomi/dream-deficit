@@ -1,21 +1,31 @@
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
 {
     private SupervisorController supervisorController;
-
     private TMP_Text timeText;
-    
     [Range(0, 24)]
-    public float dayStartTime = 8f; // 8 AM
+    public float dayStartTime = 8f;
     [Range(0, 24)]
-    public float dayEndTime = 17f; // 5 PM
+    public float dayEndTime = 17f;
     public float dayLengthInSeconds = 60f;
     private float currentDayTime = 0f;
-    private int dayNumber = 0;
     public bool isDayPassing = false;
+
+    public int CurrentDayNumber
+    {
+        get => SaveManager.Instance != null && SaveManager.Instance.activeSlot != null
+            ? SaveManager.Instance.activeSlot.currentDayNumber
+            : 1;
+        set
+        {
+            if(SaveManager.Instance != null && SaveManager.Instance.activeSlot != null)
+            {
+                SaveManager.Instance.activeSlot.currentDayNumber = value;
+            }
+        }
+    }
 
     protected override void Awake()
     {
@@ -27,30 +37,26 @@ public class GameManager : Singleton<GameManager>
 
     private void Start()
     {
-        // TODO: this will have to be called from somewhere else
+        // TODO: this will have to be called when we select a save slot in the menu
+        SaveManager.Instance.LoadGame();
         StartDay();
     }
 
-    // TODO: called from the dream scene based on an end state
     private void StartDay()
     {
-        dayNumber++;
         currentDayTime = dayLengthInSeconds;
         UpdateTimeText();
-        // TODO: reset user interface
-        // TODO: depending on the day number, we establish the active chat log cache
+        SaveManager.Instance.LoadDay(CurrentDayNumber);
+        // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayStartSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
-            // TODO: these sequences will have to change dynamically based on day number and performance
             Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.DaySignalTest);
         GetSupervisorController().chatLogController
             .RunBubbleSequence(nextSupervisorDayStartSequence, ChatBubbleSequenceType.SupervisorDayStart);
     }
 
-    // TODO: called from the supervisor button signaling the player's readiness for the day
     public void TriggerDayTimePassing()
     {
         isDayPassing = true;
-        // TODO: turn on marking and other interactive elements of the user interface
     }
 
     private void Update() 
@@ -72,18 +78,17 @@ public class GameManager : Singleton<GameManager>
         isDayPassing = false;
         currentDayTime = dayLengthInSeconds;
         timeText.text = FormatTime(dayEndTime);
-        // TODO: turn off marking and other interactive elements of the user interface
+        // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayEndSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
-            // TODO: these sequences will have to change dynamically based on day number and performance
             Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.DaySignalTest);
         GetSupervisorController().chatLogController
             .RunBubbleSequence(nextSupervisorDayEndSequence, ChatBubbleSequenceType.SupervisorDayEnd);
     }
 
-    // TODO: called from the supervisor button signaling the player's readiness for the dream
     public void EndDay()
     {
-        // TODO: depending on the day number, trigger the appropriate dream scene
+        SaveManager.Instance.SaveDay(CurrentDayNumber);
+        CurrentDayNumber++;
     }
 
     private void UpdateTimeText()

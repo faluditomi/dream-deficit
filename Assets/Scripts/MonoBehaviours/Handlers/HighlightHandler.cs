@@ -70,7 +70,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
             if(previousHoveredMarker == null) return;
             currentSelectionStart = previousHoveredMarker.startIndex;
             currentSelectionEnd = previousHoveredMarker.endIndex;
-            Rebuild(previousHoveredMarker.markerType.colour);
+            Rebuild(previousHoveredMarker.ResolvedMarkerType.colour);
             previousHoveredMarker = hoveredMarker = null;
         }
     }
@@ -204,7 +204,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         }
 
         currentSelectionStart = currentSelectionEnd = -1;
-        Color newMarkerColour = marker != null ? marker.markerType.colour : Color.clear;
+        Color newMarkerColour = marker != null ? marker.ResolvedMarkerType.colour : Color.clear;
         Rebuild(newMarkerColour);
     }
 
@@ -301,7 +301,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
             for(int i = start; i <= end; i++)
             {
                 if(hasMark[i]) continue;
-                markColor[i] += marker.markerType.colour;
+                markColor[i] += marker.ResolvedMarkerType.colour;
                 hasMark[i] = true;
             }
         }

@@ -15,12 +15,10 @@ public class ChatLogController : BaseWindowController
 
     public List<ChatBubble> messages;
 
-    private bool isSetUp = false;
-
     public void Setup(ChatLog chatLog)
     {
         // TODO: have a safety check -> return and self-destruct if there is already an instance of ChatLog open
-        if(isSetUp || !FindElements()) return;
+        typingIdicator = transform.Find(Constants.GameObjectNames.TypingIndicator).gameObject;
         myChatLog = chatLog;
         messages = chatLog.messages;
         bubbleContainer = GetComponentInChildren<ContentSizeFitter>().transform;
@@ -34,19 +32,21 @@ public class ChatLogController : BaseWindowController
                 .GetComponent<ChatBubbleController>();
             chatBubbleInstance.Setup(chatBubble, myChatLog);
         }
-        
-        isSetUp = true;
-    }
 
-    private bool FindElements()
-    {
-        typingIdicator = transform.Find(Constants.GameObjectNames.TypingIndicator).gameObject;
-        return true;
-    }
+        foreach(ChatBubble chatBubble in SaveManager.Instance.GetSequencedChatBubblesForChatLog(myChatLog))
+        {
+            ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer)
+                .GetComponent<ChatBubbleController>();
+            chatBubbleInstance.Setup(chatBubble, myChatLog);
+        }
 
-    private void OnDestroy()
-    {
-        // NOTE: could call marker aggregator from here
+        List<MarkerData> savedMarkers = SaveManager.Instance.GetSavedMarkersForChatLog(myChatLog);
+        if(savedMarkers.Count > 0) MarkerManager.Instance.AddMarkersInstantly(savedMarkers);
+
+        foreach(HighlightHandler highlightHandler in GetComponentsInChildren<HighlightHandler>())
+        {
+            highlightHandler.Rebuild(Color.clear);
+        }
     }
 
     public void RunBubbleSequence(ChatBubbleSequence chatBubbleSequence, ChatBubbleSequenceType bubbleSequenceType)

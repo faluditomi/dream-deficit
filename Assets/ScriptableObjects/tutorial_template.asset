@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20e07978a310a134ab91d394bfae7851, type: 3}
+  m_Name: tutorial_template
+  m_EditorClassIdentifier: Assembly-CSharp::GameTemplate
+  dayEntries:
+  - dayNumber: 1
+    dayData:
+      dayNumber: 1
+      activeChatLogNames:
+      - first_test
+      supervisorBubbleSequenceNames: []
+      markerTypeNames:
+      - Copy Paste Spam
+      markerData:
+      - markerTypeName: Copy Paste Spam
+        chatLogPath: first_test
+        chatBubbleIndex: 0
+        startIndex: 0
+        endIndex: 5
+        dayNumber: 0
+        accuracy: 0
+  - dayNumber: 2
+    dayData:
+      dayNumber: 2
+      activeChatLogNames:
+      - second_test
+      supervisorBubbleSequenceNames: []
+      markerTypeNames:
+      - Copy Paste Spam
+      - Synchronised Activity Spike
+      markerData: []
+  - dayNumber: 3
+    dayData:
+      dayNumber: 3
+      activeChatLogNames:
+      - first_test
+      - second_test
+      supervisorBubbleSequenceNames: []
+      markerTypeNames:
+      - Copy Paste Spam
+      - Synchronised Activity Spike
+      - Persuasion Pattern
+      - Narrative Shaping
+      markerData: []
+  sequencedChatLogEntries:
+  - chatLog: {fileID: 11400000, guid: 63f3b356ee1fc094fac403e05bdd4aa4, type: 2}
+    sequences:
+    - {fileID: 11400000, guid: 2922a653e3fb9e64bb6c03ab86ff0b93, type: 2}

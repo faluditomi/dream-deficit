@@ -1,5 +1,4 @@
 public interface ISavable
 {
-    public object Save();
-    public void Load(object data);
+    public void SaveToDayData(DayData dayData);
 }

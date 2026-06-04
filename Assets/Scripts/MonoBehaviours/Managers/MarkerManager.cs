@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
-public class MarkerManager : Singleton<MarkerManager>, ISavable
+public class MarkerManager : Singleton<MarkerManager>, ILoadable
 {
     private GameObject markerFlagPrefab;
     private Transform uiCanvas;
@@ -12,23 +12,14 @@ public class MarkerManager : Singleton<MarkerManager>, ISavable
     private Dictionary<MarkerType, MarkerFlagController> activeMarkerFlags = new Dictionary<MarkerType, MarkerFlagController>();
     private InputAction markerHoldAction;
     public List<MarkerType> activeMarkerTypeCache = new List<MarkerType>();
-    public MarkerType activeMarkerType;
+    // non-serialized is needed, because otherwise activeMarkerType wouldn't be null on startup, which messes up multiple systems
+    [System.NonSerialized] public MarkerType activeMarkerType;
 
     protected override void Awake()
     {
         base.Awake();
-        SaveManager.Instance.LoadGame();
         markerFlagPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerFlagPrefab);
         uiCanvas = FindFirstObjectByType<Canvas>().transform;
-
-        // TODO: this will have to be done from the GameManager and there needs to be profiles created for game portions
-        SetActiveMarkerTypes(new List<MarkerType> 
-        { 
-            Markers.CopyPasteSpam, 
-            Markers.SynchronisedActivitySpike, 
-            Markers.PersuasionPattern, 
-            Markers.NarrativeShaping 
-            });
     }
 
     public void OnKeyDown(Key key)
@@ -54,9 +45,34 @@ public class MarkerManager : Singleton<MarkerManager>, ISavable
         }
     }
 
+    public void AddMarkersInstantly(List<MarkerData> markerDataList)
+    {
+        foreach(MarkerData markerData in markerDataList)
+        {
+            markerData.accuracy = CalculateMarkerAccuracy(markerData.ResolvedChatBubble, markerData.startIndex, markerData.endIndex);
+            placedMarkers.Add(markerData);
+        }
+    }
+
     public void AddMarker(ChatLog chatLog, ChatBubble chatBubble, int start, int end)
     {
         if(!GameManager.Instance.isDayPassing) return;
+
+        MarkerData markerData = new MarkerData(
+            activeMarkerType,
+            chatLog,
+            chatBubble,
+            start,
+            end,
+            GameManager.Instance.CurrentDayNumber,
+            CalculateMarkerAccuracy(chatBubble, start, end)
+        );
+
+        placedMarkers.Add(markerData);
+    }
+
+    private float CalculateMarkerAccuracy(ChatBubble chatBubble, int start, int end)
+    {
         float accuracy = 0f;
 
         chatBubble.markables.ForEach(markable =>
@@ -68,24 +84,14 @@ public class MarkerManager : Singleton<MarkerManager>, ISavable
                 float markableLength = markable.endIndex - markable.startIndex + 1;
                 float lengthOfOverlap = Mathf.Min(markable.endIndex, end) - Mathf.Max(markable.startIndex, start) + 1;
                 float lengthOfExcess = Mathf.Max((markable.startIndex - start), 0f) + Mathf.Max((end - markable.endIndex), 0f);
-                // Accuracy is a percentage based on the proportion of the markable that is correctly covered by the marker,
+                // accuracy is a percentage based on the proportion of the markable that is correctly covered by the marker,
                 // penalized by any excess marking outside the markable. The penalty for excess marking is halved.
                 float totalAccuracy = ((lengthOfOverlap / markableLength) - (lengthOfExcess / markableLength / 2f)) * 100f;
                 accuracy = Mathf.Max(accuracy, totalAccuracy);
             }
         });
 
-        MarkerData markerData = new MarkerData(
-            activeMarkerType,
-            chatLog,
-            chatBubble,
-            start,
-            end,
-            0, // TODO: Set the current day number
-            accuracy
-        );
-
-        placedMarkers.Add(markerData);
+        return accuracy;
     }
 
     public void RemoveMarker(MarkerData markerData)
@@ -111,7 +117,6 @@ public class MarkerManager : Singleton<MarkerManager>, ISavable
         markerHoldAction.performed += ctx =>
         {
             if(ctx.control is not KeyControl keyControl) return;
-
             float value = ctx.ReadValue<float>();
 
             if(value > 0)
@@ -140,16 +145,49 @@ public class MarkerManager : Singleton<MarkerManager>, ISavable
 
     public List<MarkerData> GetMarkersForChatBubble(ChatBubble chatBubble)
     {
-        return placedMarkers.Where(m => m.chatBubble == chatBubble).ToList();
+        string chatLogPath = GetChatLogPathFromBubble(chatBubble);
+        int bubbleIndex = GetBubbleIndexInLog(chatBubble);
+        return placedMarkers.Where(m =>
+            m.chatLogPath == chatLogPath &&
+            m.chatBubbleIndex == bubbleIndex &&
+            bubbleIndex >= 0).ToList();
     }
 
-    public object Save()
+    private static string GetChatLogPathFromBubble(ChatBubble chatBubble)
     {
-        return placedMarkers;
+        if(chatBubble == null) return string.Empty;
+
+        foreach(var log in SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber).GetActiveChatLogs())
+        {
+            if(log != null && log.messages != null && log.messages.Contains(chatBubble))
+            {
+                return log.logName;
+            }
+        }
+
+        return string.Empty;
     }
 
-    public void Load(object data)
+    private static int GetBubbleIndexInLog(ChatBubble chatBubble)
     {
-        placedMarkers = (List<MarkerData>)data;
+        if(chatBubble == null) return -1;
+
+        foreach(var log in SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber).GetActiveChatLogs())
+        {
+            if(log != null && log.messages != null)
+            {
+                int index = log.messages.IndexOf(chatBubble);
+                if(index >= 0) return index;
+            }
+        }
+
+        return -1;
+    }
+
+    public void LoadFromDayData(DayData dayData)
+    {
+        List<MarkerType> markerTypes = dayData.GetMarkerTypes();
+        SetActiveMarkerTypes(markerTypes);
+        placedMarkers = dayData.GetMarkerData();
     }
 }

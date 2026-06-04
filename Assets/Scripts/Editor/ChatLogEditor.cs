@@ -22,9 +22,6 @@ public class ChatLogEditor : EditorWindow
     private int currentSelectionEnd = -1;
     private static MarkerType[] markerTypesCache;
 
-    private GUIStyle sectionHeaderStyle;
-    private GUIStyle moduleBoxStyle;
-
     private static MarkerType[] MarkerTypes
     {
         get
@@ -43,7 +40,7 @@ public class ChatLogEditor : EditorWindow
         }
     }
 
-    [MenuItem("Window/Dream Deficit/Chat Log Editor")]
+    [MenuItem("Custom Tools/Chat Log Editor")]
     public static void OpenWindow()
     {
         GetWindow<ChatLogEditor>("Chat Log Editor");
@@ -75,37 +72,11 @@ public class ChatLogEditor : EditorWindow
         SetupBubbleReorderableList();
     }
 
-    private void EnsureStyles()
-    {
-        if (sectionHeaderStyle == null)
-        {
-            sectionHeaderStyle = new GUIStyle(EditorStyles.boldLabel)
-            {
-                fontSize = 13,
-                fixedHeight = 22,
-                alignment = TextAnchor.MiddleLeft,
-                margin = new RectOffset(0, 0, 4, 8)
-            };
-            sectionHeaderStyle.normal.textColor = EditorGUIUtility.isProSkin ? Color.white : Color.black;
-        }
-
-        if (moduleBoxStyle == null)
-        {
-            moduleBoxStyle = new GUIStyle("box")
-            {
-                padding = new RectOffset(10, 10, 10, 10),
-                margin = new RectOffset(0, 0, 8, 8)
-            };
-        }
-    }
-
     private void DrawSection(string title, Action content)
     {
-        EditorGUILayout.BeginVertical(moduleBoxStyle);
-        EditorGUILayout.LabelField(title, sectionHeaderStyle);
-        EditorGUILayout.Space();
+        EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
         content?.Invoke();
-        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space();
     }
 
     private void LoadBubbles()
@@ -183,9 +154,9 @@ public class ChatLogEditor : EditorWindow
 
     private void OnGUI()
     {
-        EnsureStyles();
-
-        EditorGUILayout.HelpBox("Select a ChatLog or ChatBubbleSequence asset, then edit a bubble message and create markables from text selection.", MessageType.Info);
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Chat Log Editor", EditorStyles.boldLabel);
+        EditorGUILayout.Space();
 
         EditorGUI.BeginChangeCheck();
         selectedAsset = EditorGUILayout.ObjectField("Target Asset", selectedAsset, typeof(UnityEngine.Object), false);
@@ -198,7 +169,7 @@ public class ChatLogEditor : EditorWindow
 
         if (chatLog == null && chatBubbleSequence == null)
         {
-            EditorGUILayout.HelpBox("Please select a ChatLog or ChatBubbleSequence asset in the Project window.", MessageType.Warning);
+            EditorGUILayout.HelpBox("Please select a ChatLog or ChatBubbleSequence asset to begin editing.", MessageType.Warning);
             EditorGUILayout.EndScrollView();
             return;
         }
@@ -224,11 +195,9 @@ public class ChatLogEditor : EditorWindow
         }
         else
         {
-            EditorGUILayout.BeginVertical(moduleBoxStyle);
-            EditorGUILayout.LabelField("Bubble Editor", sectionHeaderStyle);
-            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Bubble Editor", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("No bubble selected. Use the list above to add or select a bubble.", MessageType.Info);
-            EditorGUILayout.EndVertical();
+            EditorGUILayout.Space();
         }
 
         EditorGUILayout.EndScrollView();
@@ -556,9 +525,10 @@ public class ChatLogEditor : EditorWindow
         if (selectedAsset != null)
         {
             EditorUtility.SetDirty(selectedAsset);
-            if (selectedAsset is ScriptableObject)
+
+            if(selectedAsset is ScriptableObject)
             {
-                AssetDatabase.SaveAssets();
+                AssetDatabase.SaveAssetIfDirty(selectedAsset);
             }
         }
     }
