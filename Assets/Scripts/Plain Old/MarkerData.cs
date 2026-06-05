@@ -66,7 +66,7 @@ public class MarkerData
     private ChatLog ResolveChatLog()
     {
         if(string.IsNullOrEmpty(chatLogPath)) return null;
-        return AddressableManager.Instance.RetrieveAddressable<ChatLog>(Constants.AddressablePaths.ChatLogPrefix + chatLogPath);
+        return AddressableManager.Instance.RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + chatLogPath);
     }
 
     private ChatBubble ResolveChatBubble()

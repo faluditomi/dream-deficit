@@ -22,11 +22,11 @@ public class SupervisorController : MonoBehaviour, ISavable, ILoadable
     private void Awake()
     {
         chatLogPrefab = AddressableManager.Instance
-            .RetrieveAddressable<GameObject>(Constants.AddressablePaths.ChatLogPrefab);
+            .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.ChatLog);
         daySignalButtonPrefab = AddressableManager.Instance
-            .RetrieveAddressable<GameObject>(Constants.AddressablePaths.DaySignalButtonPrefab);
+            .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.DaySignalButton);
         supervisorChatLog = AddressableManager.Instance
-            .RetrieveAddressable<ChatLog>(Constants.AddressablePaths.ChatLogPrefix + Constants.ChatLogs.Supervisor);
+            .RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + Constants.ChatLogs.Supervisor);
         GetComponent<Button>().onClick.AddListener(() => OpenChatLog());
 
         Transform windowContainer = FindFirstObjectByType<Canvas>().transform.Find(Constants.GameObjectNames.WindowContainer);

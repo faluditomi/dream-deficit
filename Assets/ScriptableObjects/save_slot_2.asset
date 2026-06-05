@@ -30,7 +30,7 @@ MonoBehaviour:
         chatBubbleIndex: 0
         startIndex: 0
         endIndex: 5
-        dayNumber: 1
+        dayNumber: 0
         accuracy: 0
   - dayNumber: 2
     dayData:

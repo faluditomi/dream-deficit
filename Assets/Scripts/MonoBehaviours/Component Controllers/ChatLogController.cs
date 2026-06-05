@@ -23,7 +23,7 @@ public class ChatLogController : BaseWindowController
         messages = chatLog.messages;
         bubbleContainer = GetComponentInChildren<ContentSizeFitter>().transform;
         chatBubblePrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(
-            Constants.AddressablePaths.ChatBubblePrefab);
+            Constants.AddressablePrefabs.ChatBubble);
         SetupTopBar();
 
         foreach(ChatBubble chatBubble in messages)

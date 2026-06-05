@@ -10,14 +10,13 @@ public class DayData
     public List<string> supervisorBubbleSequenceNames = new List<string>();
     public List<string> markerTypeNames = new List<string>();
     public List<MarkerData> markerData = new List<MarkerData>();
-    // TODO: add dream scene reference once we have that set up
 
     public List<ChatLog> GetActiveChatLogs()
     {
         return activeChatLogNames
             .Where(path => !string.IsNullOrEmpty(path))
             .Select(path => AddressableManager.Instance.RetrieveAddressable<ChatLog>(
-                Constants.AddressablePaths.ChatLogPrefix + path))
+                Constants.AddressablePrefixes.ChatLog + path))
             .Where(log => log != null)
             .ToList();
     }
@@ -27,7 +26,7 @@ public class DayData
         return supervisorBubbleSequenceNames
             .Where(path => !string.IsNullOrEmpty(path))
             .Select(path => AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
-                Constants.AddressablePaths.ChatBubbleSequence + path))
+                Constants.AddressablePrefixes.ChatBubbleSequence + path))
             .Where(seq => seq != null)
             .ToList();
     }

@@ -38,7 +38,16 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         if(_instance != null && _instance != this)
         {
             Debug.LogWarning($"Duplicate singleton of type {typeof(T).Name} detected on {gameObject.name}. Destroying duplicate component.");
-            Destroy(this);
+
+            if(gameObject.GetComponents<MonoBehaviour>().Length == 1)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                Destroy(this);
+            }
+            
             return;
         }
 
@@ -77,9 +86,9 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         if(systemsObject == null)
         {
             systemsObject = new GameObject("Systems");
-            DontDestroyOnLoad(systemsObject);
         }
 
+        DontDestroyOnLoad(systemsObject);
         _systemsRoot = systemsObject.transform;
     }
 }

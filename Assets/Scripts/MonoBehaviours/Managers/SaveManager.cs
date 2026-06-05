@@ -20,8 +20,6 @@ public class SaveManager : Singleton<SaveManager>
         if(activeSlot == null) return;
 
         savePath = Path.Combine(Application.persistentDataPath, $"save_{activeSlot.slotName}.json");
-        RegisterSavables();
-        RegisterLoadables();
 
         if(!LoadGame())
         {
@@ -74,6 +72,8 @@ public class SaveManager : Singleton<SaveManager>
 
     public void LoadDay(int dayNumber)
     {
+        RegisterSavables();
+        RegisterLoadables();
         DayData dayData = GetDayData(dayNumber);
 
         if(dayData == null)

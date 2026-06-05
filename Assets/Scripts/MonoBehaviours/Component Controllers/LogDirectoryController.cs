@@ -11,7 +11,7 @@ public class LogDirectoryController : MonoBehaviour, ILoadable
     #region Setup
     private void Awake()
     {
-        logDirectoryEntryPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.LogDirectoryEntryPrefab);
+        logDirectoryEntryPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.LogDirectoryEntry);
         content = GetComponentInChildren<ContentSizeFitter>().transform;
     }
 

@@ -1,5 +1,7 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -39,17 +41,18 @@ public class GameManager : Singleton<GameManager>
     {
         // TODO: this will have to be called when we select a save slot in the menu
         SaveManager.Instance.LoadGame();
+        // TODO: this will also have to be called from elsewhere
         StartDay();
     }
 
-    private void StartDay()
+    public void StartDay()
     {
         currentDayTime = dayLengthInSeconds;
         UpdateTimeText();
         SaveManager.Instance.LoadDay(CurrentDayNumber);
         // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayStartSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
-            Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.DaySignalTest);
+            Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.DaySignalTest);
         GetSupervisorController().chatLogController
             .RunBubbleSequence(nextSupervisorDayStartSequence, ChatBubbleSequenceType.SupervisorDayStart);
     }
@@ -80,15 +83,14 @@ public class GameManager : Singleton<GameManager>
         timeText.text = FormatTime(dayEndTime);
         // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayEndSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
-            Constants.AddressablePaths.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.DaySignalTest);
+            Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.DaySignalTest);
         GetSupervisorController().chatLogController
             .RunBubbleSequence(nextSupervisorDayEndSequence, ChatBubbleSequenceType.SupervisorDayEnd);
     }
 
-    public void EndDay()
+    public async void EndDay()
     {
-        SaveManager.Instance.SaveDay(CurrentDayNumber);
-        CurrentDayNumber++;
+        StartCoroutine(EndOfDaybehaviour());
     }
 
     private void UpdateTimeText()
@@ -144,6 +146,26 @@ public class GameManager : Singleton<GameManager>
     private void SupervisorDayEndSequence()
     {
         GetSupervisorController().DayEndSignal();
+    }
+    #endregion
+
+    #region Coroutines
+    private IEnumerator EndOfDaybehaviour()
+    {
+        SaveManager.Instance.SaveDay(CurrentDayNumber);
+        Scene oldScene = SceneManager.GetActiveScene();
+        string dreamSceneName = Constants.SceneNames.DreamPrefix + CurrentDayNumber;
+        CurrentDayNumber++;
+        AsyncOperation sceneLoadOperation = SceneManager.LoadSceneAsync(dreamSceneName, LoadSceneMode.Additive);
+        sceneLoadOperation.allowSceneActivation = false;
+        // TODO: do stuff like screen turning off animation and stuff
+
+        yield return new WaitUntil(() => sceneLoadOperation.progress >= 0.9f);
+
+        sceneLoadOperation.allowSceneActivation = true;
+        yield return new WaitUntil(() => sceneLoadOperation.isDone);
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(dreamSceneName));
+        SceneManager.UnloadSceneAsync(oldScene);
     }
     #endregion
 }

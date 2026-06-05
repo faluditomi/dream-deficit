@@ -12,10 +12,10 @@ public class MarkerCheatSheetController : BaseWindowController
     {
         markerCheatSheetPrefab = AddressableManager
             .Instance
-            .RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerCheatSheetPrefab);
+            .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.MarkerCheatSheet);
         markerCheatSheetEntryPrefab = AddressableManager
             .Instance
-            .RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerCheatSheetEntryPrefab);
+            .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.MarkerCheatSheetEntry);
         GetComponent<Button>().onClick.AddListener(() => OpenCheatSheet());
     }
 

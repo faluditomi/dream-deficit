@@ -20,7 +20,7 @@ public class ChatBubbleController : MonoBehaviour
 
         myChatBubble = chatBubble;
         // NOTE: Depending on how large and numerous our chat logs will be, these per bubble addressable calls might get expensive
-        string address = Constants.AddressablePaths.ChatUserPrefix + myChatBubble.chatUserId.ToString().ToLower();
+        string address = Constants.AddressablePrefixes.ChatUser + myChatBubble.chatUserId.ToString().ToLower();
         ChatUser chatUser = AddressableManager.Instance.RetrieveAddressable<ChatUser>(address);
 
         if(chatUser == null) Debug.LogError($"ChatUser Addressable wasn't found for ChatUser: {myChatBubble.chatUserId}. Setup of ChatBubble failed.");

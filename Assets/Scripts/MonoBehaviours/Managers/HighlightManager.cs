@@ -17,7 +17,7 @@ public class HighlightManager : Singleton<HighlightManager>
 
     private void Update()
     {
-        if(Mouse.current == null) return;
+        if(Mouse.current == null || EventSystem.current == null) return;
         OnMouseHover();
         OnMouseDown();
         OnMouseHeld();

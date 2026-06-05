@@ -18,7 +18,7 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
     protected override void Awake()
     {
         base.Awake();
-        markerFlagPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePaths.MarkerFlagPrefab);
+        markerFlagPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.MarkerFlag);
         uiCanvas = FindFirstObjectByType<Canvas>().transform;
     }
 
@@ -104,8 +104,11 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
     {
         activeMarkerTypeCache = markerTypes;
 
-        activeMarkerFlags.Values.ToList().ForEach(mf => Destroy(mf.gameObject));
-        activeMarkerFlags.Clear();
+        if(activeMarkerType != null && activeMarkerTypeCache.Count > 0)
+        {
+            activeMarkerFlags.Values.ToList().ForEach(mf => Destroy(mf.gameObject));
+            activeMarkerFlags.Clear();
+        }
 
         if(markerHoldAction != null) 
         {
