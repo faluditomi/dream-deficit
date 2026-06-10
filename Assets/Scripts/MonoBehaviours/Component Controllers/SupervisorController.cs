@@ -12,7 +12,7 @@ public class SupervisorController : MonoBehaviour, ISavable, ILoadable
     private ChatLog supervisorChatLog;
     // TODO: instead of making this public, the GameManager should be able to call the chat log controller directly
     //       by this class being derived from ChatLogController or smth
-    public ChatLogController chatLogController;
+    [HideInInspector] public ChatLogController chatLogController;
 
     //TODO: these are sequences like 'supervisor_day_1_start_sequence'
     //      they are named based on a structure/framework such that they can be called from code

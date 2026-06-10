@@ -14,6 +14,7 @@ public class GameManager : Singleton<GameManager>
     public float dayLengthInSeconds = 60f;
     private float currentDayTime = 0f;
     public bool isDayPassing = false;
+    public Transform focusedWindow;
 
     public int CurrentDayNumber
     {
@@ -88,7 +89,7 @@ public class GameManager : Singleton<GameManager>
             .RunBubbleSequence(nextSupervisorDayEndSequence, ChatBubbleSequenceType.SupervisorDayEnd);
     }
 
-    public async void EndDay()
+    public void EndDay()
     {
         StartCoroutine(EndOfDaybehaviour());
     }
@@ -112,7 +113,7 @@ public class GameManager : Singleton<GameManager>
         return $"{hours:D2} : {minutes:D2}";
     }
 
-    private SupervisorController GetSupervisorController()
+    public SupervisorController GetSupervisorController()
     {
         if(supervisorController == null)
         {

@@ -1,10 +1,12 @@
+using System;
 using UnityEngine;
 
 public abstract class BaseWindowController : MonoBehaviour
 {
     private TopBarHandler topBarHandler;
-    private PointerHandler pointerHandler;
     protected GameObject windowGameObject;
+    public event Action<GameObject> OnGainedFocusEvent;
+    public event Action<GameObject> OnLostFocusEvent;
     protected bool isOpen = false;
     private bool isTopBarSetup = false;
 
@@ -18,8 +20,6 @@ public abstract class BaseWindowController : MonoBehaviour
         windowGameObject = targetWindow;
         topBarHandler = windowGameObject.AddComponent<TopBarHandler>();
         topBarHandler.Setup(windowGameObject, this);
-        pointerHandler = windowGameObject.AddComponent<PointerHandler>();
-        pointerHandler.OnPointerDownEvent += (pointerData) => windowGameObject.transform.SetAsLastSibling();
         isTopBarSetup = true;
     }
 
@@ -40,11 +40,13 @@ public abstract class BaseWindowController : MonoBehaviour
         topBarHandler.Open();
     }
 
-    private void OnDestroy()
+    public void OnGainedFocus()
     {
-        if(pointerHandler)
-        {
-            pointerHandler.OnPointerDownEvent -= (pointerData) => windowGameObject.transform.SetAsLastSibling();
-        }
+        OnGainedFocusEvent?.Invoke(windowGameObject);
+    }
+
+    public void OnLostFocus()
+    {
+        OnLostFocusEvent?.Invoke(windowGameObject);
     }
 }

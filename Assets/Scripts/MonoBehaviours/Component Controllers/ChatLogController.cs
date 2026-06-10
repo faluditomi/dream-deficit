@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,6 +13,7 @@ public class ChatLogController : BaseWindowController
     private Transform bubbleContainer;
     private GameObject typingIdicator;
     private Coroutine sequenceCoroutine;
+    public event Action<string> OnNewMessage;
 
     public List<ChatBubble> messages;
 
@@ -22,8 +24,7 @@ public class ChatLogController : BaseWindowController
         myChatLog = chatLog;
         messages = chatLog.messages;
         bubbleContainer = GetComponentInChildren<ContentSizeFitter>().transform;
-        chatBubblePrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(
-            Constants.AddressablePrefabs.ChatBubble);
+        chatBubblePrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.ChatBubble);
         SetupTopBar();
 
         foreach(ChatBubble chatBubble in messages)
@@ -75,6 +76,7 @@ public class ChatLogController : BaseWindowController
             ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer)
                 .GetComponent<ChatBubbleController>();
             chatBubbleInstance.Setup(chatBubble, myChatLog);
+            OnNewMessage?.Invoke(chatBubble.message);
         }
 
         GameManager.Instance.TriggerChatBubbleSequence(bubbleSequenceType);
