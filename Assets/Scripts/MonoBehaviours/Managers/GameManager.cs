@@ -54,7 +54,7 @@ public class GameManager : Singleton<GameManager>
         // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayStartSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
             Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequences.DaySignalTest);
-        GetSupervisorController().chatLogController
+        GetSupervisorController().myChatLogController
             .RunBubbleSequence(nextSupervisorDayStartSequence, Constants.ChatBubbleSequenceType.SupervisorDayStart);
     }
 
@@ -85,7 +85,7 @@ public class GameManager : Singleton<GameManager>
         // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayEndSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
             Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequences.DaySignalTest);
-        GetSupervisorController().chatLogController
+        GetSupervisorController().myChatLogController
             .RunBubbleSequence(nextSupervisorDayEndSequence, Constants.ChatBubbleSequenceType.SupervisorDayEnd);
     }
 

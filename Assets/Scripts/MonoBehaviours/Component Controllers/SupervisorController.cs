@@ -4,15 +4,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SupervisorController : MonoBehaviour, ISavable, ILoadable
+public class SupervisorController : BaseChatLogInitialiser, ISavable, ILoadable
 {
-    private GameObject chatLogPrefab;
     private GameObject daySignalButtonPrefab;
     private Transform chatBubbleHolder;
     private ChatLog supervisorChatLog;
     // TODO: instead of making this public, the GameManager should be able to call the chat log controller directly
     //       by this class being derived from ChatLogController or smth
-    [HideInInspector] public ChatLogController chatLogController;
 
     //TODO: these are sequences like 'supervisor_day_1_start_sequence'
     //      they are named based on a structure/framework such that they can be called from code
@@ -21,27 +19,12 @@ public class SupervisorController : MonoBehaviour, ISavable, ILoadable
 
     private void Awake()
     {
-        chatLogPrefab = AddressableManager.Instance
-            .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.ChatLog);
-        daySignalButtonPrefab = AddressableManager.Instance
-            .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.DaySignalButton);
         supervisorChatLog = AddressableManager.Instance
             .RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + Constants.ChatLogs.Supervisor);
-        GetComponent<Button>().onClick.AddListener(() => OpenChatLog());
-
-        Transform windowContainer = FindFirstObjectByType<Canvas>().transform.Find(Constants.GameObjectNames.WindowContainer);
-        chatLogController = Instantiate(chatLogPrefab, windowContainer).GetComponent<ChatLogController>();
-        chatLogController.Setup(supervisorChatLog);
-        chatLogController.GetComponent<TopBarHandler>().Close();
-        chatBubbleHolder = chatLogController.transform.Find(Constants.GameObjectNames.Viewport).Find(Constants.GameObjectNames.Content);
-    }
-
-    private void OpenChatLog()
-    {
-        if(!chatLogController.GetIsOpen())
-        {
-            chatLogController.Open();
-        }
+        base.Setup(supervisorChatLog);
+        daySignalButtonPrefab = AddressableManager.Instance
+            .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.DaySignalButton);
+        chatBubbleHolder = myChatLogController.transform.Find(Constants.GameObjectNames.Viewport).Find(Constants.GameObjectNames.Content);
     }
 
     public void DayStartSignal()

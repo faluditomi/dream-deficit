@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+// for guidance on how to hook up notifications to a chat log, see the SupervisorButton -> MessageNotificaiton objects
 public class MessageNotificationController : MonoBehaviour
 {
     private ChatLogController myChatLogController;
@@ -11,10 +12,7 @@ public class MessageNotificationController : MonoBehaviour
 
     private void Start()
     {
-        // TODO: once we need to add message notificaitons to more than just the supervisor, we'll have to get this in a more generic way
-            // TODO: generalise the chat log creation/handling part of scripts like SupervisorController and LogDirectoryEntryController into an abstract class
-            //       that those types of scripts can inherit from and this script can reference as .GetComponentInParent<BaseChatLogInitialiser>().myChatLogController
-        myChatLogController = GameManager.Instance.GetSupervisorController().chatLogController;
+        myChatLogController = GetComponentInParent<BaseChatLogInitialiser>().myChatLogController;
         newMessageCounter = GetComponentInChildren<TextMeshProUGUI>();
         notificationBackground = GetComponentInChildren<Image>();
 
