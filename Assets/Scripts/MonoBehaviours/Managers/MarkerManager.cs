@@ -22,7 +22,7 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
         markerFlagPrefab = AddressableManager.Instance
             .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.MarkerFlag);
         markerOverloadSequenceEventChannel = AddressableManager.Instance
-            .RetrieveAddressable<SequenceEventChannel>(Constants.AddressablePrefixes.SequenceEventChannel + Constants.SequenceEventChannels.MarkerOverload);
+            .RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.MarkerOverload);
         uiCanvas = FindFirstObjectByType<Canvas>().transform;
     }
 
@@ -74,10 +74,10 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
 
         placedMarkers.Add(markerData);
 
+        // TODO: only raise this when appropriate
         markerOverloadSequenceEventChannel.Raise
         (
             Constants.ChatUser.Supervisor, 
-            GameManager.Instance.CurrentDayNumber, 
             ChatLogManager.Instance.GetChatLogController(chatLog)
         );
     }

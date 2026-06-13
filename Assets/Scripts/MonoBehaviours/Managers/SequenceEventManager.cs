@@ -51,8 +51,16 @@ public class SequenceEventManager : Singleton<SequenceEventManager>
 
     private void OnSequenceEvent(SequenceEventData data)
     {
-        // TODO: handle the event here
-
+        // TODO: check when this type of sequence was played last (sam protection)
+        // TODO: also... everyone is Delilah...
+        List<SequenceCacheEntry> sequenceCacheEntries = sequenceCache.FindAll(entry =>
+            entry.eventType == data.eventType &&
+            entry.chatUser == data.chatUser &&
+            (entry.dayNumberTillRelevant == 0 || entry.dayNumberTillRelevant >= GameManager.Instance.CurrentDayNumber)
+        );
+        if(sequenceCacheEntries.Count <= 1) return;
+        ChatBubbleSequence sequence = sequenceCacheEntries[UnityEngine.Random.Range(0, sequenceCacheEntries.Count)].sequence;
+        data.chatLogController.RunBubbleSequence(sequence, Constants.ChatBubbleSequenceType.Simple);
     }
     
     private class SequenceCacheEntry
