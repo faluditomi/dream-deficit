@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: b3a6bee0cba48254b937915e3ed8ac2d
   m_currentHash:
     serializedVersion: 2
-    Hash: 00000000000000000000000000000000
+    Hash: a2cd42ae0917e2a65936e632d8c1bafc
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_CatalogRequestsTimeout: 0
@@ -100,6 +100,12 @@ MonoBehaviour:
   m_LabelTable:
     m_LabelNames:
     - default
+    - Prefab
+    - ChatUser
+    - ChatLog
+    - ChatBubbleSequence
+    - Scene
+    - EventChatBubbleSequence
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: e229290bc2330d24c894e25654996f96, type: 2}

@@ -1,11 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-// TODO: maybe it would be a good idea to have a central cache for the existing ChatLogControllers in the scene,
-//       so that other scripts can simply query a chat log by logName (or smth more safe) and send sequences to it
 public class ChatLogController : BaseWindowController
 {
     private ChatLog myChatLog;
@@ -13,13 +10,11 @@ public class ChatLogController : BaseWindowController
     private Transform bubbleContainer;
     private GameObject typingIdicator;
     private Coroutine sequenceCoroutine;
-    public event Action<string> OnNewMessage;
-
-    public List<ChatBubble> messages;
+    [HideInInspector] public List<ChatBubble> messages;
+    public event System.Action<string> OnNewMessage;
 
     public void Setup(ChatLog chatLog)
     {
-        // TODO: have a safety check -> return and self-destruct if there is already an instance of ChatLog open
         typingIdicator = transform.Find(Constants.GameObjectNames.TypingIndicator).gameObject;
         myChatLog = chatLog;
         messages = chatLog.messages;
@@ -50,7 +45,7 @@ public class ChatLogController : BaseWindowController
         }
     }
 
-    public void RunBubbleSequence(ChatBubbleSequence chatBubbleSequence, ChatBubbleSequenceType bubbleSequenceType)
+    public void RunBubbleSequence(ChatBubbleSequence chatBubbleSequence, Constants.ChatBubbleSequenceType bubbleSequenceType)
     {
         // NOTE: right now, if a new sequence comes in while another is being processed, the previous gets cut short
         if(sequenceCoroutine != null)
@@ -62,7 +57,7 @@ public class ChatLogController : BaseWindowController
         sequenceCoroutine = StartCoroutine(RunBubbleSequenceBehaviour(chatBubbleSequence, bubbleSequenceType));
     }
 
-    private IEnumerator RunBubbleSequenceBehaviour(ChatBubbleSequence chatBubbleSequence, ChatBubbleSequenceType bubbleSequenceType)
+    private IEnumerator RunBubbleSequenceBehaviour(ChatBubbleSequence chatBubbleSequence, Constants.ChatBubbleSequenceType bubbleSequenceType)
     {
         foreach(ChatBubble chatBubble in chatBubbleSequence.messages)
         {
@@ -73,8 +68,7 @@ public class ChatLogController : BaseWindowController
             yield return new WaitForSeconds(chatBubble.typingFlagLength);
 
             typingIdicator.SetActive(false);
-            ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer)
-                .GetComponent<ChatBubbleController>();
+            ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer).GetComponent<ChatBubbleController>();
             chatBubbleInstance.Setup(chatBubble, myChatLog);
             OnNewMessage?.Invoke(chatBubble.message);
         }

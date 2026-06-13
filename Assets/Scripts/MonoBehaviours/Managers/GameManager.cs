@@ -53,9 +53,9 @@ public class GameManager : Singleton<GameManager>
         SaveManager.Instance.LoadDay(CurrentDayNumber);
         // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayStartSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
-            Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.DaySignalTest);
+            Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequences.DaySignalTest);
         GetSupervisorController().chatLogController
-            .RunBubbleSequence(nextSupervisorDayStartSequence, ChatBubbleSequenceType.SupervisorDayStart);
+            .RunBubbleSequence(nextSupervisorDayStartSequence, Constants.ChatBubbleSequenceType.SupervisorDayStart);
     }
 
     public void TriggerDayTimePassing()
@@ -84,9 +84,9 @@ public class GameManager : Singleton<GameManager>
         timeText.text = FormatTime(dayEndTime);
         // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayEndSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
-            Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequenceCodes.DaySignalTest);
+            Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequences.DaySignalTest);
         GetSupervisorController().chatLogController
-            .RunBubbleSequence(nextSupervisorDayEndSequence, ChatBubbleSequenceType.SupervisorDayEnd);
+            .RunBubbleSequence(nextSupervisorDayEndSequence, Constants.ChatBubbleSequenceType.SupervisorDayEnd);
     }
 
     public void EndDay()
@@ -124,16 +124,16 @@ public class GameManager : Singleton<GameManager>
     }
 
     #region Chat Bubble Sequence Activator Logic
-    public void TriggerChatBubbleSequence(ChatBubbleSequenceType chatBubbleSequenceType)
+    public void TriggerChatBubbleSequence(Constants.ChatBubbleSequenceType chatBubbleSequenceType)
     {
         switch(chatBubbleSequenceType)
         {
-            case ChatBubbleSequenceType.Simple:
+            case Constants.ChatBubbleSequenceType.Simple:
                 break;
-            case ChatBubbleSequenceType.SupervisorDayStart:
+            case Constants.ChatBubbleSequenceType.SupervisorDayStart:
                 SupervisorDayStartSequence();  
                 break; 
-            case ChatBubbleSequenceType.SupervisorDayEnd:
+            case Constants.ChatBubbleSequenceType.SupervisorDayEnd:
                 SupervisorDayEndSequence();
                 break;
         }

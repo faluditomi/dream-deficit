@@ -296,14 +296,14 @@ public class ChatLogEditor : EditorWindow
         EditorGUILayout.LabelField("Bubble Data", EditorStyles.boldLabel);
         EditorGUI.BeginChangeCheck();
 
-        var newUserId = (ChatUserId)EditorGUILayout.EnumPopup("Chat User", bubble.chatUserId);
+        var newUserId = (Constants.ChatUser)EditorGUILayout.EnumPopup("Chat User", bubble.chatUser);
         var newDelay = EditorGUILayout.Slider("Delay Length", bubble.delayLength, 0f, 10f);
         var newTyping = EditorGUILayout.Slider("Typing Flag Length", bubble.typingFlagLength, 0f, 10f);
 
         if (EditorGUI.EndChangeCheck())
         {
             Undo.RecordObject(selectedAsset, "Edit bubble metadata");
-            bubble.chatUserId = newUserId;
+            bubble.chatUser = newUserId;
             bubble.delayLength = newDelay;
             bubble.typingFlagLength = newTyping;
             MarkDirty();

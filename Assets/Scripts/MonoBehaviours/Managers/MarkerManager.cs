@@ -14,11 +14,15 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
     public List<MarkerType> activeMarkerTypeCache = new List<MarkerType>();
     // non-serialized is needed, because otherwise activeMarkerType wouldn't be null on startup, which messes up multiple systems
     [System.NonSerialized] public MarkerType activeMarkerType;
+    private SequenceEventChannel markerOverloadSequenceEventChannel;
 
     protected override void Awake()
     {
         base.Awake();
-        markerFlagPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.MarkerFlag);
+        markerFlagPrefab = AddressableManager.Instance
+            .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.MarkerFlag);
+        markerOverloadSequenceEventChannel = AddressableManager.Instance
+            .RetrieveAddressable<SequenceEventChannel>(Constants.AddressablePrefixes.SequenceEventChannel + Constants.SequenceEventChannels.MarkerOverload);
         uiCanvas = FindFirstObjectByType<Canvas>().transform;
     }
 
@@ -69,6 +73,13 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
         );
 
         placedMarkers.Add(markerData);
+
+        // TODO: event channel logic
+        markerOverloadSequenceEventChannel.Raise();
+        // TODO: before the stuff below, do the T O D O on MessageNotificationController:14 so you have to wire less later
+        // TODO: implement a ChatLogManager that keeps track of a ChatLogController cache Dictionary<ChatLog, ChatLogController>
+        // TODO: wire all chat log creation thru here and don't allow duplicates
+        // TODO: look thru implementation once done -> can remove a bunch of ChatLogController references, like the supervisor one in GameManager
     }
 
     private float CalculateMarkerAccuracy(ChatBubble chatBubble, int start, int end)

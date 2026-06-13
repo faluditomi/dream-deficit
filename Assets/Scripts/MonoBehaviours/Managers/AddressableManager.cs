@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class AddressableManager : Singleton<AddressableManager>
 {
@@ -10,5 +13,27 @@ public class AddressableManager : Singleton<AddressableManager>
         if(string.IsNullOrWhiteSpace(address)) return default;
         var handle = Addressables.LoadAssetAsync<T>(address);
         return handle.WaitForCompletion();
+    }
+
+    public List<T> RetrieveAddressablesByLabel<T>(string label)
+    {
+        if(string.IsNullOrWhiteSpace(label)) return default;
+        var handle = Addressables.LoadAssetsAsync<T>(label);
+        IList<T> loadedAddressables = handle.WaitForCompletion();
+        List<T> retrievedAssets = new List<T>();
+
+        if(handle.Status == AsyncOperationStatus.Succeeded)
+        {
+            foreach(var addressable in loadedAddressables)
+            {
+                if(addressable != null) retrievedAssets.Add(addressable);
+            }
+        }
+        else
+        {
+            Debug.LogError($"EventSequenceManager: Failed to load addressables with label: {label}. {handle.OperationException}");
+        }
+
+        return retrievedAssets;
     }
 }

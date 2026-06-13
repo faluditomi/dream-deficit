@@ -18,87 +18,110 @@ MonoBehaviour:
   - m_GUID: 0075dc355a32daf4b8b90c94ebe239f1
     m_Address: prefabs/chat_bubble
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Prefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 02c76d27afc00834ebfbc67d77f75660
     m_Address: chat_user/supervisor
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ChatUser
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 12ae7b45e3323c9458ff7133c82f7d9b
     m_Address: prefabs/marker_cheat_sheet_entry
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Prefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 170fea88bfc2bc54ab46d2c0f7b395da
     m_Address: prefabs/marker_flag
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Prefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 198d4527fb3dff84ca7294c19b4abadc
     m_Address: prefabs/chat_log
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Prefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2922a653e3fb9e64bb6c03ab86ff0b93
     m_Address: chat_bubble_sequence/day_signal_test
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ChatBubbleSequence
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 392bcdd9f402d3744bae74dde90171fb
     m_Address: prefabs/day_signal_button
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Prefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5760b8ed986290e44ade89436f434c29
     m_Address: prefabs/top_bar
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Prefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 61a7b4814a2b1024dbd7be1d12cd4a61
     m_Address: chat_bubble_sequence/cryptic_sequence
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ChatBubbleSequence
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 63f3b356ee1fc094fac403e05bdd4aa4
     m_Address: chat_log/first_test
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ChatLog
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8c9cfa26abfee488c85f1582747f6a02
     m_Address: scenes/desktop
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Scene
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 959302463fe86db418fe1c0ccdc4c5f6
     m_Address: chat_log/supervisor
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ChatLog
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: afc6da96988f5c6438db68558a763d5c
     m_Address: prefabs/log_directory_entry
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Prefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d71676cbaf8fa2b4db5b34f9e322061f
     m_Address: chat_log/second_test
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ChatLog
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dbeb48b57c84ee441a0d266ead5ad19e
+    m_Address: sequence_event_channel/marker_overload
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - EventChatBubbleSequence
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dc5b763af3024d046b17891968d255be
     m_Address: chat_user/delilah
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ChatUser
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f1d8d4cfffaa32a4db7e49890214b9ba
     m_Address: chat_user/dave
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ChatUser
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fab6b5c7881a411478bbbd1f873684ff
     m_Address: prefabs/marker_cheat_sheet
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Prefab
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 82f5949a9467544429bdb439791fe7c5, type: 2}
