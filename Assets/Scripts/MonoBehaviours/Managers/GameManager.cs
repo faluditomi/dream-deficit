@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public class GameManager : Singleton<GameManager>
 {
     private SupervisorController supervisorController;
+    private ChatLogController supervisorChatLogController;
     private TMP_Text timeText;
     [Range(0, 24)]
     public float dayStartTime = 8f;
@@ -54,8 +55,7 @@ public class GameManager : Singleton<GameManager>
         // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayStartSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
             Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequences.DaySignalTest);
-        GetSupervisorController().myChatLogController
-            .RunBubbleSequence(nextSupervisorDayStartSequence, Constants.ChatBubbleSequenceType.SupervisorDayStart);
+        GetSupervisorChatLogController().RunBubbleSequence(nextSupervisorDayStartSequence, Constants.ChatBubbleSequenceType.SupervisorDayStart);
     }
 
     public void TriggerDayTimePassing()
@@ -85,8 +85,7 @@ public class GameManager : Singleton<GameManager>
         // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayEndSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
             Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequences.DaySignalTest);
-        GetSupervisorController().myChatLogController
-            .RunBubbleSequence(nextSupervisorDayEndSequence, Constants.ChatBubbleSequenceType.SupervisorDayEnd);
+        GetSupervisorChatLogController().RunBubbleSequence(nextSupervisorDayEndSequence, Constants.ChatBubbleSequenceType.SupervisorDayEnd);
     }
 
     public void EndDay()
@@ -113,7 +112,7 @@ public class GameManager : Singleton<GameManager>
         return $"{hours:D2} : {minutes:D2}";
     }
 
-    public SupervisorController GetSupervisorController()
+    private SupervisorController GetSupervisorController()
     {
         if(supervisorController == null)
         {
@@ -121,6 +120,18 @@ public class GameManager : Singleton<GameManager>
         }
 
         return supervisorController;
+    }
+
+    private ChatLogController GetSupervisorChatLogController()
+    {
+        if(supervisorChatLogController == null)
+        {
+            ChatLog supervisorChatLog = AddressableManager.Instance
+                .RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + Constants.ChatLogs.Supervisor);
+            supervisorChatLogController = ChatLogManager.Instance.GetChatLogController(supervisorChatLog);
+        }
+
+        return supervisorChatLogController;
     }
 
     #region Chat Bubble Sequence Activator Logic

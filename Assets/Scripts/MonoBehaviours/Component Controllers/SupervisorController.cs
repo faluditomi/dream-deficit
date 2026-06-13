@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SupervisorController : BaseChatLogInitialiser, ISavable, ILoadable
+public class SupervisorController : MonoBehaviour, ISavable, ILoadable
 {
     private GameObject daySignalButtonPrefab;
     private Transform chatBubbleHolder;
@@ -21,9 +21,9 @@ public class SupervisorController : BaseChatLogInitialiser, ISavable, ILoadable
     {
         supervisorChatLog = AddressableManager.Instance
             .RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + Constants.ChatLogs.Supervisor);
-        base.Setup(supervisorChatLog);
         daySignalButtonPrefab = AddressableManager.Instance
             .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.DaySignalButton);
+        ChatLogController myChatLogController = ChatLogManager.Instance.InstantiateChatLog(supervisorChatLog, GetComponent<Button>());
         chatBubbleHolder = myChatLogController.transform.Find(Constants.GameObjectNames.Viewport).Find(Constants.GameObjectNames.Content);
     }
 

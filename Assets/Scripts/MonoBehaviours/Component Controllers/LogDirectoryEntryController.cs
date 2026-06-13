@@ -1,12 +1,14 @@
 using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
-public class LogDirectoryEntryController : BaseChatLogInitialiser
+public class LogDirectoryEntryController : MonoBehaviour
 {
     private TMP_Text logNameText;
 
-    public override void Setup(ChatLog chatLog)
+    public void Setup(ChatLog chatLog)
     {
-        base.Setup(chatLog);
+        ChatLogManager.Instance.InstantiateChatLog(chatLog, GetComponent<Button>());
         logNameText = transform.Find(Constants.GameObjectNames.Name).GetComponent<TMP_Text>();
         logNameText.text = chatLog.logName;
     }

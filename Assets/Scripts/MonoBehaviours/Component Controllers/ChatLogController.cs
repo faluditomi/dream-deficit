@@ -11,7 +11,8 @@ public class ChatLogController : BaseWindowController
     private GameObject typingIdicator;
     private Coroutine sequenceCoroutine;
     [HideInInspector] public List<ChatBubble> messages;
-    public event System.Action<string> OnNewMessage;
+    public event System.Action OnNewMessageEvent;
+    public event System.Action OnDestroyEvent;
 
     public void Setup(ChatLog chatLog)
     {
@@ -70,9 +71,14 @@ public class ChatLogController : BaseWindowController
             typingIdicator.SetActive(false);
             ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer).GetComponent<ChatBubbleController>();
             chatBubbleInstance.Setup(chatBubble, myChatLog);
-            OnNewMessage?.Invoke(chatBubble.message);
+            OnNewMessageEvent?.Invoke();
         }
 
         GameManager.Instance.TriggerChatBubbleSequence(bubbleSequenceType);
+    }
+
+    private void OnDestroy()
+    {
+        OnDestroyEvent?.Invoke();
     }
 }

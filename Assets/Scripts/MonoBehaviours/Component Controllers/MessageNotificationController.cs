@@ -18,7 +18,7 @@ public class MessageNotificationController : MonoBehaviour
 
         if(myChatLogController != null)
         {
-            myChatLogController.OnNewMessage += UpdateNotification;
+            myChatLogController.OnNewMessageEvent += UpdateNotification;
             myChatLogController.OnGainedFocusEvent += ResetNotification;
         }
 
@@ -30,10 +30,10 @@ public class MessageNotificationController : MonoBehaviour
 
     private void OnDestroy()
     {
-        if(myChatLogController != null) myChatLogController.OnNewMessage -= UpdateNotification;
+        if(myChatLogController != null) myChatLogController.OnNewMessageEvent -= UpdateNotification;
     }
 
-    private void UpdateNotification(string newMessage)
+    private void UpdateNotification()
     {
         if(UIFocusManager.Instance.FocusedWindow != myChatLogController)
         {
