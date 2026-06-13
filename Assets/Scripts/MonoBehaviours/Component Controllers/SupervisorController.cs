@@ -9,9 +9,6 @@ public class SupervisorController : MonoBehaviour, ISavable, ILoadable
     private GameObject daySignalButtonPrefab;
     private Transform chatBubbleHolder;
     private ChatLog supervisorChatLog;
-    // TODO: instead of making this public, the GameManager should be able to call the chat log controller directly
-    //       by this class being derived from ChatLogController or smth
-
     //TODO: these are sequences like 'supervisor_day_1_start_sequence'
     //      they are named based on a structure/framework such that they can be called from code
     //      (but also, they shouldn't be stored here, since they are already in part of the save system)
@@ -23,7 +20,7 @@ public class SupervisorController : MonoBehaviour, ISavable, ILoadable
             .RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + Constants.ChatLogs.Supervisor);
         daySignalButtonPrefab = AddressableManager.Instance
             .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.DaySignalButton);
-        ChatLogController myChatLogController = ChatLogManager.Instance.InstantiateChatLog(supervisorChatLog, GetComponent<Button>());
+        ChatLogController myChatLogController = ChatLogManager.Instance.InstantiateChatLog(supervisorChatLog, transform);
         chatBubbleHolder = myChatLogController.transform.Find(Constants.GameObjectNames.Viewport).Find(Constants.GameObjectNames.Content);
     }
 

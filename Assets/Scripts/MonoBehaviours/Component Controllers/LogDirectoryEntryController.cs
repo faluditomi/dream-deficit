@@ -8,7 +8,7 @@ public class LogDirectoryEntryController : MonoBehaviour
 
     public void Setup(ChatLog chatLog)
     {
-        ChatLogManager.Instance.InstantiateChatLog(chatLog, GetComponent<Button>());
+        ChatLogManager.Instance.InstantiateChatLog(chatLog, transform);
         logNameText = transform.Find(Constants.GameObjectNames.Name).GetComponent<TMP_Text>();
         logNameText.text = chatLog.logName;
     }

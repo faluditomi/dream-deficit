@@ -15,7 +15,7 @@ public class ChatLogManager : Singleton<ChatLogManager>
         windowContainer = FindFirstObjectByType<Canvas>().transform.Find(Constants.GameObjectNames.WindowContainer);
     }
 
-    public ChatLogController InstantiateChatLog(ChatLog chatLog, Button openButton)
+    public ChatLogController InstantiateChatLog(ChatLog chatLog, Transform initialiser)
     {
         if(chatLogControllerCache.ContainsKey(chatLog))
         {
@@ -26,14 +26,22 @@ public class ChatLogManager : Singleton<ChatLogManager>
             ChatLogController chatLogController = Instantiate(chatLogPrefab, windowContainer).GetComponent<ChatLogController>();
             chatLogController.Setup(chatLog);
             chatLogController.GetComponent<TopBarHandler>().Close();
-            openButton.onClick.AddListener(() => {
+            
+            initialiser.GetComponent<Button>().onClick.AddListener(() => {
                 if(!chatLogController.GetIsOpen())
                 {
                     chatLogController.Open();
                 }
             });
+
             chatLogControllerCache.Add(chatLog, chatLogController);
             chatLogController.OnDestroyEvent += () => chatLogControllerCache.Remove(chatLog);
+
+            if(initialiser.GetComponent<MessageNotificationController>() != null)
+            {
+                initialiser.GetComponent<MessageNotificationController>().myChatLogController = chatLogController;
+            }
+
             return chatLogController;
         }
     }

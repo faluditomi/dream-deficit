@@ -74,12 +74,12 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
 
         placedMarkers.Add(markerData);
 
-        // TODO: event channel logic
-        markerOverloadSequenceEventChannel.Raise();
-        // TODO: before the stuff below, do the T O D O on MessageNotificationController:14 so you have to wire less later
-        // TODO: implement a ChatLogManager that keeps track of a ChatLogController cache Dictionary<ChatLog, ChatLogController>
-        // TODO: wire all chat log creation thru here and don't allow duplicates
-        // TODO: look thru implementation once done -> can remove a bunch of ChatLogController references, like the supervisor one in GameManager
+        markerOverloadSequenceEventChannel.Raise
+        (
+            Constants.ChatUser.Supervisor, 
+            GameManager.Instance.CurrentDayNumber, 
+            ChatLogManager.Instance.GetChatLogController(chatLog)
+        );
     }
 
     private float CalculateMarkerAccuracy(ChatBubble chatBubble, int start, int end)

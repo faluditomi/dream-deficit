@@ -112,6 +112,7 @@ public class GameManager : Singleton<GameManager>
         return $"{hours:D2} : {minutes:D2}";
     }
 
+    #region Internal Getters
     private SupervisorController GetSupervisorController()
     {
         if(supervisorController == null)
@@ -133,6 +134,7 @@ public class GameManager : Singleton<GameManager>
 
         return supervisorChatLogController;
     }
+    #endregion
 
     #region Chat Bubble Sequence Activator Logic
     public void TriggerChatBubbleSequence(Constants.ChatBubbleSequenceType chatBubbleSequenceType)
