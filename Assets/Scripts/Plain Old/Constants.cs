@@ -6,19 +6,20 @@ public static class Constants
         public const string ChatUser = "chat_user/";
         public const string ChatLog = "chat_log/";
         public const string ChatBubbleSequence = "chat_bubble_sequence/";
-        public const string SequenceEventChannel = "sequence_event_channel/";
+        public const string EventChannel = "sequence_event_channel/";
+        public const string EventChannelBubbleSeuquence = "event_chat_bubble_sequence/";
         public const string Prefab = "prefabs/";
     }
 
     public static class AddressableLabels
     {
-        public const string EventChannel = "EventChannel";
+        public const string EventChannel = "SequenceEventChannel";
         public const string EventChatBubbleSequence = "EventChatBubbleSequence";
     }
 
     public static class SequenceEventChannels
     {
-        public const string MarkerOverload = AddressablePrefixes.SequenceEventChannel + "marker_overload";
+        public const string MarkerOverload = AddressablePrefixes.EventChannel + "marker_overload";
     }
 
     // TODO: maybe we could rework all the other Constants, so we don't have to have 
@@ -86,7 +87,8 @@ public static class Constants
 
     public enum SequenceEventType
     {
-        MarkerOverload
+        MarkerOverload,
+        Default
     }
     #endregion
 }

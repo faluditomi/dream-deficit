@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChatLog
   logName: tinder_log_1
   messages:
-  - chatUserId: 1
+  - chatUser: 1
     message: wazzzuuuuup
     delayLength: 0
     typingFlagLength: 0
     markables: []
-  - chatUserId: 0
+  - chatUser: 0
     message: nut much...
     delayLength: 0
     typingFlagLength: 0
@@ -35,7 +35,7 @@ MonoBehaviour:
       occurrence: 0
       startIndex: 4
       endIndex: 7
-  - chatUserId: 1
+  - chatUser: 1
     message: cooooool
     delayLength: 0
     typingFlagLength: 0

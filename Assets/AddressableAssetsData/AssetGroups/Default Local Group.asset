@@ -27,6 +27,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - ChatUser
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1170494b05961144faa592af83c3d89f
+    m_Address: event_chat_bubble_sequence/event_sequence_markeroverload_supervisor_till_day_0_var_1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - EventChatBubbleSequence
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 12ae7b45e3323c9458ff7133c82f7d9b
     m_Address: prefabs/marker_cheat_sheet_entry
     m_ReadOnly: 0
@@ -62,6 +68,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - Prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 58c84da70d2ec854db2f7b86496b8471
+    m_Address: event_chat_bubble_sequence/event_sequence_markeroverload_supervisor_till_day_0_var_2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - EventChatBubbleSequence
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 61a7b4814a2b1024dbd7be1d12cd4a61
     m_Address: chat_bubble_sequence/cryptic_sequence
@@ -103,7 +115,7 @@ MonoBehaviour:
     m_Address: sequence_event_channel/marker_overload
     m_ReadOnly: 0
     m_SerializedLabels:
-    - EventChatBubbleSequence
+    - SequenceEventChannel
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dc5b763af3024d046b17891968d255be
     m_Address: chat_user/delilah

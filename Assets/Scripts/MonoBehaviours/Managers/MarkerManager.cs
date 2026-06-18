@@ -15,6 +15,8 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
     // non-serialized is needed, because otherwise activeMarkerType wouldn't be null on startup, which messes up multiple systems
     [System.NonSerialized] public MarkerType activeMarkerType;
     private SequenceEventChannel markerOverloadSequenceEventChannel;
+    private static float _markerOverloadWordCountModifier = 0.8f;
+    private static int _markerOverloadMinimumThreshold = 4;
 
     protected override void Awake()
     {
@@ -73,13 +75,7 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
         );
 
         placedMarkers.Add(markerData);
-
-        // TODO: only raise this when appropriate
-        markerOverloadSequenceEventChannel.Raise
-        (
-            Constants.ChatUser.Supervisor, 
-            ChatLogManager.Instance.GetChatLogController(chatLog)
-        );
+        MarkerOverloadEventCheck(chatBubble);
     }
 
     private float CalculateMarkerAccuracy(ChatBubble chatBubble, int start, int end)
@@ -88,13 +84,11 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
 
         chatBubble.markables.ForEach(markable =>
         {
-            // TODO: safeguard against multiple markers per markable
-                // -> maybe this should instead be handled during statistical analysis
             if(markable.startIndex < end && markable.endIndex > start && markable.markerType.name.Equals(activeMarkerType.name))
             {
                 float markableLength = markable.endIndex - markable.startIndex + 1;
                 float lengthOfOverlap = Mathf.Min(markable.endIndex, end) - Mathf.Max(markable.startIndex, start) + 1;
-                float lengthOfExcess = Mathf.Max((markable.startIndex - start), 0f) + Mathf.Max((end - markable.endIndex), 0f);
+                float lengthOfExcess = Mathf.Max(markable.startIndex - start, 0f) + Mathf.Max(end - markable.endIndex, 0f);
                 // accuracy is a percentage based on the proportion of the markable that is correctly covered by the marker,
                 // penalized by any excess marking outside the markable. The penalty for excess marking is halved.
                 float totalAccuracy = ((lengthOfOverlap / markableLength) - (lengthOfExcess / markableLength / 2f)) * 100f;
@@ -103,6 +97,21 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
         });
 
         return accuracy;
+    }
+
+    private void MarkerOverloadEventCheck(ChatBubble chatBubble)
+    {
+        int wordCount = chatBubble.message.Split(new char[] { ' ', '\t', '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries).Length;
+        int overloadThreshold = Mathf.Max(Mathf.CeilToInt(wordCount * _markerOverloadWordCountModifier), _markerOverloadMinimumThreshold);
+        
+        if(overloadThreshold <= GetMarkersForChatBubble(chatBubble).Count)
+        {
+            markerOverloadSequenceEventChannel.Raise
+            (
+                Constants.ChatUser.Supervisor, 
+                ChatLogManager.Instance.GetSupervisorChatLogController()
+            );    
+        }
     }
 
     public void RemoveMarker(MarkerData markerData)
@@ -165,6 +174,23 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
             m.chatLogPath == chatLogPath &&
             m.chatBubbleIndex == bubbleIndex &&
             bubbleIndex >= 0).ToList();
+    }
+
+    /// <summary>
+    /// Accrues and returns the accuracy of the total markers placed on the chat log.
+    /// Returns 0 if no markers are present.
+    /// </summary>
+    public float EvaluateChatLogAccuracy(ChatLog chatLog)
+    {
+        List<MarkerData> markers = placedMarkers.Where(m => m.chatLogPath == chatLog.logName).ToList();
+        if(markers.Count == 0) return 0;
+        float totalAccuracy = 0;
+        // NOTE: for now, duplicate markers for a single markable are not removed, since if i'm correct,
+        //       the potential advantage gained by putting more markers on a single markable is negated
+        //       by the fact that we divide the total accuracy with the total marker count.
+        markers.ForEach(m => totalAccuracy += m.accuracy);
+
+        return totalAccuracy / markers.Count;
     }
 
     private static string GetChatLogPathFromBubble(ChatBubble chatBubble)

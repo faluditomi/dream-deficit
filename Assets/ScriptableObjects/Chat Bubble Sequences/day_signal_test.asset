@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: day_signal_test
   m_EditorClassIdentifier: Assembly-CSharp::ChatBubbleSequence
   messages:
-  - chatUserId: 2
+  - chatUser: 2
     message: This is a day signal.
     delayLength: 0
     typingFlagLength: 0.7
     markables: []
-  - chatUserId: 2
+  - chatUser: 2
     message: Whether it's the start or the end... I do not know.
     delayLength: 1
     typingFlagLength: 1.5

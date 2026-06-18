@@ -6,6 +6,7 @@ public class ChatLogManager : Singleton<ChatLogManager>
 {
     private GameObject chatLogPrefab;
     private Transform windowContainer;
+    private ChatLogController supervisorChatLogController;
     private Dictionary<ChatLog, ChatLogController> chatLogControllerCache = new Dictionary<ChatLog, ChatLogController>();
 
     protected override void Awake()
@@ -37,9 +38,9 @@ public class ChatLogManager : Singleton<ChatLogManager>
             chatLogControllerCache.Add(chatLog, chatLogController);
             chatLogController.OnDestroyEvent += () => chatLogControllerCache.Remove(chatLog);
 
-            if(initialiser.GetComponent<MessageNotificationController>() != null)
+            if(initialiser.GetComponentInChildren<MessageNotificationController>() != null)
             {
-                initialiser.GetComponent<MessageNotificationController>().myChatLogController = chatLogController;
+                initialiser.GetComponentInChildren<MessageNotificationController>().Setup(chatLogController);
             }
 
             return chatLogController;
@@ -49,5 +50,17 @@ public class ChatLogManager : Singleton<ChatLogManager>
     public ChatLogController GetChatLogController(ChatLog chatLog)
     {
         return chatLogControllerCache.ContainsKey(chatLog) ? chatLogControllerCache[chatLog] : null;
+    }
+
+    public ChatLogController GetSupervisorChatLogController()
+    {
+        if(supervisorChatLogController == null)
+        {
+            ChatLog supervisorChatLog = AddressableManager.Instance
+                .RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + Constants.ChatLogs.Supervisor);
+            supervisorChatLogController = GetChatLogController(supervisorChatLog);
+        }
+
+        return supervisorChatLogController;
     }
 }

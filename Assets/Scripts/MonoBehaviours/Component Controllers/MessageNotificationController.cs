@@ -11,17 +11,13 @@ public class MessageNotificationController : MonoBehaviour
     private Image notificationBackground;
     private int newMessageCount;
 
-    private void Start()
+    public void Setup(ChatLogController chatLogController)
     {
         newMessageCounter = GetComponentInChildren<TextMeshProUGUI>();
         notificationBackground = GetComponentInChildren<Image>();
-
-        if(myChatLogController != null)
-        {
-            myChatLogController.OnNewMessageEvent += UpdateNotification;
-            myChatLogController.OnGainedFocusEvent += ResetNotification;
-        }
-
+        myChatLogController = chatLogController;
+        myChatLogController.OnNewMessageEvent += UpdateNotification;
+        myChatLogController.OnGainedFocusEvent += ResetNotification;
         notificationBackground.enabled = false;
         newMessageCounter.gameObject.SetActive(false);
         newMessageCount = 0;

@@ -6,16 +6,13 @@ using UnityEngine.SceneManagement;
 public class GameManager : Singleton<GameManager>
 {
     private SupervisorController supervisorController;
-    private ChatLogController supervisorChatLogController;
     private TMP_Text timeText;
-    [Range(0, 24)]
-    public float dayStartTime = 8f;
-    [Range(0, 24)]
-    public float dayEndTime = 17f;
+    [Range(0, 24)] public float dayStartTime = 8f;
+    [Range(0, 24)] public float dayEndTime = 17f;
     public float dayLengthInSeconds = 60f;
     private float currentDayTime = 0f;
     public bool isDayPassing = false;
-    public Transform focusedWindow;
+    [HideInInspector] public Transform focusedWindow;
 
     public int CurrentDayNumber
     {
@@ -55,7 +52,8 @@ public class GameManager : Singleton<GameManager>
         // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayStartSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
             Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequences.DaySignalTest);
-        GetSupervisorChatLogController().RunBubbleSequence(nextSupervisorDayStartSequence, Constants.ChatBubbleSequenceType.SupervisorDayStart);
+        ChatLogManager.Instance.GetSupervisorChatLogController()
+            .RunBubbleSequence(nextSupervisorDayStartSequence, Constants.ChatBubbleSequenceType.SupervisorDayStart);
     }
 
     public void TriggerDayTimePassing()
@@ -85,7 +83,8 @@ public class GameManager : Singleton<GameManager>
         // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
         ChatBubbleSequence nextSupervisorDayEndSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
             Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequences.DaySignalTest);
-        GetSupervisorChatLogController().RunBubbleSequence(nextSupervisorDayEndSequence, Constants.ChatBubbleSequenceType.SupervisorDayEnd);
+        ChatLogManager.Instance.GetSupervisorChatLogController()
+            .RunBubbleSequence(nextSupervisorDayEndSequence, Constants.ChatBubbleSequenceType.SupervisorDayEnd);
     }
 
     public void EndDay()
@@ -121,18 +120,6 @@ public class GameManager : Singleton<GameManager>
         }
 
         return supervisorController;
-    }
-
-    private ChatLogController GetSupervisorChatLogController()
-    {
-        if(supervisorChatLogController == null)
-        {
-            ChatLog supervisorChatLog = AddressableManager.Instance
-                .RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + Constants.ChatLogs.Supervisor);
-            supervisorChatLogController = ChatLogManager.Instance.GetChatLogController(supervisorChatLog);
-        }
-
-        return supervisorChatLogController;
     }
     #endregion
 
