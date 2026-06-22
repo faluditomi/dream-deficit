@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 
 public static class Markers
 {
+    // NOTE: watch out not to have two active marker types with the same keycode
     public static readonly MarkerType CopyPasteSpam = new
     (
         "Copy Paste Spam",

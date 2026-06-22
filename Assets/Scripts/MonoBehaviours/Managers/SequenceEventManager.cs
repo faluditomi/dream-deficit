@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Burst.CompilerServices;
 using UnityEngine;
 
 // when creating a ChatBubbleSequence that we want SequenceEventManager to pick up automatically, we have to name it like:
@@ -76,7 +75,6 @@ public class SequenceEventManager : Singleton<SequenceEventManager>
 
         if(sequenceCacheEntries.Count <= 0) return;
         ChatBubbleSequence sequence = sequenceCacheEntries[UnityEngine.Random.Range(0, sequenceCacheEntries.Count)].sequence;
-        // TODO: this runs in the overloaded chatlog, not the supervisor
         data.chatLogController.RunBubbleSequence(sequence, Constants.ChatBubbleSequenceType.Simple);
     }
 
