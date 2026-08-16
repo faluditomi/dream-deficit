@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +9,7 @@ public class TopBarHandler : MonoBehaviour
 
     private bool isSetUp = false;
 
-    public void Setup(GameObject window, BaseWindowController baseWindowController)
+    public void Setup(GameObject window, string windowName, BaseWindowController baseWindowController)
     {
         myWindow = window;
         myBaseWindowController = baseWindowController;
@@ -21,6 +21,8 @@ public class TopBarHandler : MonoBehaviour
         myRectTransform.anchoredPosition = new Vector2(0, myRectTransform.rect.height);
         myRectTransform.offsetMin = new Vector2(0, myRectTransform.offsetMin.y);
         myRectTransform.offsetMax = new Vector2(0, myRectTransform.offsetMax.y);
+        TMP_Text myWindowNameText = topBar.transform.Find(Constants.GameObjectNames.WindowName).GetComponent<TMP_Text>();
+        myWindowNameText.text = windowName;
         isSetUp = true;
     }
 

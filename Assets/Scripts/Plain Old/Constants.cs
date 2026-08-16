@@ -61,12 +61,18 @@ public static class Constants
         public const string Time = "Time";
         public const string Viewport = "Viewport";
         public const string Content = "Content";
+        public const string WindowName = "Window Name";
     }
 
     public static class SceneNames
     {
         public const string DreamPrefix = "dream_scene_day_";
         public const string Desktop = "v1 prototye";
+    }
+
+    public static class WindowAndFileNames
+    {
+        public const string FlagCheatSheet = "Flag Cheat Sheet";
     }
     #endregion
 

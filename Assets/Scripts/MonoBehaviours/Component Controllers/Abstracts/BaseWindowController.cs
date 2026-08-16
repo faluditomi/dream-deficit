@@ -10,16 +10,16 @@ public abstract class BaseWindowController : MonoBehaviour
     protected bool isOpen = false;
     private bool isTopBarSetup = false;
 
-    protected void SetupTopBar()
+    protected void SetupTopBar(string windowName)
     {
-        SetupTopBar(gameObject);
+        SetupTopBar(gameObject, windowName);
     }
 
-    protected void SetupTopBar(GameObject targetWindow)
+    protected void SetupTopBar(GameObject targetWindow, string windowName)
     {
         windowGameObject = targetWindow;
         topBarHandler = windowGameObject.AddComponent<TopBarHandler>();
-        topBarHandler.Setup(windowGameObject, this);
+        topBarHandler.Setup(windowGameObject, windowName, this);
         isTopBarSetup = true;
     }
 
