@@ -69,6 +69,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - Prefab
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 577b67ff4a5012443bfb97c8cce9ac7e
+    m_Address: scenes/desktop
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 58c84da70d2ec854db2f7b86496b8471
     m_Address: event_chat_bubble_sequence/event_sequence_markeroverload_supervisor_till_day_0_var_2
     m_ReadOnly: 0
@@ -86,12 +91,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - ChatLog
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 8c9cfa26abfee488c85f1582747f6a02
-    m_Address: scenes/desktop
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - Scene
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 959302463fe86db418fe1c0ccdc4c5f6
     m_Address: chat_log/supervisor

@@ -29,10 +29,7 @@ public class ChatLogManager : Singleton<ChatLogManager>
             chatLogController.GetComponent<TopBarHandler>().Close();
             
             initialiser.GetComponent<Button>().onClick.AddListener(() => {
-                if(!chatLogController.GetIsOpen())
-                {
-                    chatLogController.Open();
-                }
+                chatLogController.Open();
             });
 
             chatLogControllerCache.Add(chatLog, chatLogController);
