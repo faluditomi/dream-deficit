@@ -1,0 +1,36 @@
+schema: spec-driven
+
+# Project context shown to AI when creating artifacts.
+context: |
+  Dream Deficit — 2D Unity game (chat-log analysis / marker placement gameplay).
+  Unity 6000.3.8f1 (Unity 6), URP 17.3.0, uGUI + TextMeshPro, New Input System,
+  Addressables 2.8.1. Single scene: "v1 prototye.unity".
+
+  Architecture:
+  - Managers (Singleton pattern): GameManager, SaveManager, MarkerManager,
+    AddressableManager, HighlightManager under Assets/Scripts/MonoBehaviours/Managers/
+  - Data classes (POCOs) under Assets/Scripts/Plain Old/: DayData, MarkerData,
+    ChatBubble, MarkerType, Constants
+  - ScriptableObjects under Assets/ScriptableObjects/: ChatLog, ChatBubbleSequence,
+    ChatUser, GameTemplate, SaveSlot
+  - Day progression: GameManager.TriggerDayTimePassing() / EndDay()
+  - Markers: MarkerManager places keyboard-driven markers on chat text, scored by
+    overlap accuracy against Markable targets
+  - Save: SaveManager persists JSON via JsonUtility; SaveSlot + GameTemplate init
+    new saves; ISavable/ILoadable register components
+
+  Guardrails for any implementation work:
+  - NEVER edit .asset/.prefab/.unity/.csproj/.sln files (binary/YAML, corrupts)
+  - All prefabs/data load via AddressableManager.Instance.RetrieveAddressable<T>(address)
+  - Managers accessed via Instance singletons; save fields must stay JsonUtility-serializable
+  - Known TODOs: save slot picker menu, async Addressables, DayData-driven
+    supervisor sequences, multi-marker safeguard, menu-triggered game loading
+
+# Per-artifact rules (optional)
+rules:
+  proposal:
+    - Keep proposals concise; one change = one coherent unit of work
+    - Always state what is out of scope (non-goals)
+  tasks:
+    - Group tasks by script boundary (Managers / Controllers / Handlers / Plain Old)
+    - Mark serialization-safe constraints on any save-related task

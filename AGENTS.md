@@ -3,6 +3,14 @@
 ## Project Overview
 **Dream Deficit** is a 2D Unity game where players monitor and analyze chat logs across a day-based progression system. The core gameplay involves reading messages, identifying key content, and placing timed markers on text passages to score accuracy.
 
+## Spec-Driven Development (OpenSpec)
+This project uses OpenSpec (spec-driven development). Planning artifacts live in `openspec/`; the `openspec` CLI (installed globally via npm as `@fission-ai/openspec`) is the source of truth.
+- **Workflow cycle:** `/opsx-propose` (plan) → `/opsx-apply` (implement, ticking `tasks.md`) → `/opsx-archive` (merge deltas into `openspec/specs/`)
+- Supporting commands: `/opsx-explore`, `/opsx-update`, `/opsx-sync`
+- Never edit `openspec/specs/` directly — sync/archive merge delta specs
+- Validate after every artifact: `openspec validate <change> --json`; keep changes small and focused
+- Project context for artifact generation is in `openspec/config.yaml`
+
 ## Tech Stack
 - **Unity Version:** 6000.3.8f1 (Unity 6)
 - **Render Pipeline:** URP (Universal Render Pipeline) 17.3.0
