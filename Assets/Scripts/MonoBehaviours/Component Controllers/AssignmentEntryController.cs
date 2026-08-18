@@ -1,7 +1,8 @@
 using TMPro;
 using UnityEngine;
 
-public class LogDirectoryEntryController : MonoBehaviour
+// TODO: maybe this could be revamped to handle files and folders too (since those will probably only have a name too in code)
+public class AssignmentEntryController : MonoBehaviour
 {
     private TMP_Text logNameText;
 

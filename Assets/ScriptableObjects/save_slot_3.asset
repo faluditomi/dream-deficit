@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9abddb55571a57c44baeffcffff1ebfb, type: 3}
-  m_Name: save_slot_2
+  m_Name: save_slot_3
   m_EditorClassIdentifier: Assembly-CSharp::SaveSlot
-  slotName: 
+  slotName: Slot 3
   template: {fileID: 11400000, guid: 3196e0e5350f75f4fa48370e40655a13, type: 2}
   currentDayNumber: 1
   dayEntries:
@@ -21,9 +21,12 @@ MonoBehaviour:
       dayNumber: 1
       activeChatLogNames:
       - first_test
+      - second_test
+      - third_test
       supervisorBubbleSequenceNames: []
       markerTypeNames:
       - Copy Paste Spam
+      - Synchronised Activity Spike
       markerData:
       - markerTypeName: Copy Paste Spam
         chatLogPath: first_test
@@ -41,6 +44,7 @@ MonoBehaviour:
       markerTypeNames:
       - Copy Paste Spam
       - Synchronised Activity Spike
+      - Persuasion Pattern
       markerData: []
   - dayNumber: 3
     dayData:

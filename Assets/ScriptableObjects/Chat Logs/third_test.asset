@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ce07874a0e1d7d4d93f5cd5a5632d3c, type: 3}
+  m_Name: third_test
+  m_EditorClassIdentifier: Assembly-CSharp::ChatLog
+  logName: polite_request
+  messages:
+  - chatUser: 1
+    message: 'Dear Sir or Madam,
+
+      May I ask for your daughter''s hand in marriage?'
+    delayLength: 0
+    typingFlagLength: 0
+    markables:
+    - markerType:
+        name: Persuasion Pattern
+        description: The exercise of emotional pressure, guilt-tripping, or other
+          manipulative tactics to coerce others into sharing content or engaging
+          in specific behaviors.
+        colour: {r: 0.5607843, g: 0.7372549, b: 0.5607843, a: 1}
+        keycode: 30
+      spanText: May I ask for your daughter's hand in marriage?
+      occurrence: 0
+      startIndex: 19
+      endIndex: 65
+  - chatUser: 2
+    message: nah
+    delayLength: 0
+    typingFlagLength: 0
+    markables: []
+  - chatUser: 2
+    message: don even think about it
+    delayLength: 0
+    typingFlagLength: 0
+    markables: []

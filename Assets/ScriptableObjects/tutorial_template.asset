@@ -18,9 +18,12 @@ MonoBehaviour:
       dayNumber: 1
       activeChatLogNames:
       - first_test
+      - second_test
+      - third_test
       supervisorBubbleSequenceNames: []
       markerTypeNames:
       - Copy Paste Spam
+      - Synchronised Activity Spike
       markerData:
       - markerTypeName: Copy Paste Spam
         chatLogPath: first_test
@@ -38,6 +41,7 @@ MonoBehaviour:
       markerTypeNames:
       - Copy Paste Spam
       - Synchronised Activity Spike
+      - Persuasion Pattern
       markerData: []
   - dayNumber: 3
     dayData:

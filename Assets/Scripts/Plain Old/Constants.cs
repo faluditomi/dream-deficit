@@ -26,7 +26,7 @@ public static class Constants
     //       multiple Constants calls in one line in other scripts
     public static class AddressablePrefabs
     {
-        public const string LogDirectoryEntry = AddressablePrefixes.Prefab + "log_directory_entry";
+        public const string AssignmentEntry = AddressablePrefixes.Prefab + "assignment_entry";
         public const string ChatLog = AddressablePrefixes.Prefab + "chat_log";
         public const string ChatBubble = AddressablePrefixes.Prefab + "chat_bubble";
         public const string MarkerFlag = AddressablePrefixes.Prefab + "marker_flag";

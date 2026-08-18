@@ -99,7 +99,7 @@ MonoBehaviour:
     - ChatLog
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: afc6da96988f5c6438db68558a763d5c
-    m_Address: prefabs/log_directory_entry
+    m_Address: prefabs/assignment_entry
     m_ReadOnly: 0
     m_SerializedLabels:
     - Prefab
@@ -121,6 +121,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - ChatUser
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f0971d2c8cdcee64194e628b4f449ca3
+    m_Address: chat_log/third_test
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f1d8d4cfffaa32a4db7e49890214b9ba
     m_Address: chat_user/dave

@@ -2,17 +2,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LogDirectoryController : MonoBehaviour, ILoadable
+public class AssignmentDocketController : BaseWindowController, ILoadable
 {
     private List<ChatLog> activeLogs;
-    private GameObject logDirectoryEntryPrefab;
+    private GameObject assignmentEntryPrefab;
     private Transform content;
 
     #region Setup
     private void Awake()
     {
-        logDirectoryEntryPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.LogDirectoryEntry);
+        assignmentEntryPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.AssignmentEntry);
         content = GetComponentInChildren<ContentSizeFitter>().transform;
+        SetupTopBar(Constants.WindowAndFileNames.FlagCheatSheet.ToString());
+        GetComponent<TopBarHandler>().Close();
     }
 
     public void LoadFromDayData(DayData dayData)
@@ -26,7 +28,7 @@ public class LogDirectoryController : MonoBehaviour, ILoadable
 
         foreach(ChatLog chatLog in activeLogs)
         {
-            LogDirectoryEntryController logDirectoryEntryInstance = Instantiate(logDirectoryEntryPrefab, content).GetComponent<LogDirectoryEntryController>();
+            AssignmentEntryController logDirectoryEntryInstance = Instantiate(assignmentEntryPrefab, content).GetComponent<AssignmentEntryController>();
             logDirectoryEntryInstance.Setup(chatLog);
         }
     }
