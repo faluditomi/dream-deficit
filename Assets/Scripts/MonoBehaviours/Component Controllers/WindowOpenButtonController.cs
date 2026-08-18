@@ -1,6 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// A centralised controller for buttons with which we want to open windows. It can be configured in the editor by 
+/// placing it on a button and assigning the prefab we want to instantiate along with a transform to parent it to.
+/// It can also be assigned from code. windowPrefab is required, but windowContainer is optional. If the windowContainer
+/// is not assigned, it will default to the first Canvas found in the scene and its child named "WindowContainer".
+/// Only thing we have to watch out for is that windowPrefab should have a script that is, or derives from, BaseWindowController.
+/// This script is not suitable for opening ChatLogs.
+/// </summary>
 public class WindowOpenButtonController : MonoBehaviour
 {
     public GameObject windowPrefab;
