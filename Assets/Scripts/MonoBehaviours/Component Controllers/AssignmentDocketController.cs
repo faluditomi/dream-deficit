@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 public class AssignmentDocketController : BaseWindowController, ILoadable
 {
-    private List<ChatLog> activeLogs;
     private GameObject assignmentEntryPrefab;
     private Transform content;
 
@@ -13,23 +12,23 @@ public class AssignmentDocketController : BaseWindowController, ILoadable
     {
         assignmentEntryPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.AssignmentEntry);
         content = GetComponentInChildren<ContentSizeFitter>().transform;
-        SetupTopBar(Constants.WindowAndFileNames.FlagCheatSheet.ToString());
+        SetupTopBar(Constants.WindowAndFileNames.AssignmentDocket.ToString());
         GetComponent<TopBarHandler>().Close();
     }
 
     public void LoadFromDayData(DayData dayData)
     {
-        activeLogs = SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber).GetActiveChatLogs();
+        List<ResolvedChatLogEntry> activeEntries = SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber).GetActiveChatLogEntries();
 
         foreach(Transform child in content)
         {
             Destroy(child.gameObject);
         }
-
-        foreach(ChatLog chatLog in activeLogs)
+        
+        foreach(ResolvedChatLogEntry entry in activeEntries)
         {
             AssignmentEntryController logDirectoryEntryInstance = Instantiate(assignmentEntryPrefab, content).GetComponent<AssignmentEntryController>();
-            logDirectoryEntryInstance.Setup(chatLog);
+            logDirectoryEntryInstance.Setup(entry.chatLog, entry.isBonus, entry.isUnlocked);
         }
     }
     #endregion

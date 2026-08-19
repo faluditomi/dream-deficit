@@ -48,6 +48,12 @@ public class ChatLogController : BaseWindowController
 
     public void RunBubbleSequence(ChatBubbleSequence chatBubbleSequence, Constants.ChatBubbleSequenceType bubbleSequenceType)
     {
+        DayData currentDayData = SaveManager.Instance != null
+            ? SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber)
+            : null;
+        // NOTE: locked logs receive nothing — the sequence is dropped
+        if(currentDayData != null && currentDayData.IsLogLocked(myChatLog.logName)) return;
+
         // NOTE: right now, if a new sequence comes in while another is being processed, the previous gets cut short
         if(sequenceCoroutine != null)
         {

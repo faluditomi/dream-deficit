@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class ChatLogManager : Singleton<ChatLogManager>
 {
@@ -27,11 +26,6 @@ public class ChatLogManager : Singleton<ChatLogManager>
             ChatLogController chatLogController = Instantiate(chatLogPrefab, windowContainer).GetComponent<ChatLogController>();
             chatLogController.Setup(chatLog);
             chatLogController.GetComponent<TopBarHandler>().Close();
-            
-            initialiser.GetComponent<Button>().onClick.AddListener(() => {
-                chatLogController.Open();
-            });
-
             chatLogControllerCache.Add(chatLog, chatLogController);
             chatLogController.OnDestroyEvent += () => chatLogControllerCache.Remove(chatLog);
 

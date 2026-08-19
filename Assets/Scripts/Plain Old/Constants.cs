@@ -57,6 +57,7 @@ public static class Constants
         public const string Keycode = "Keycode";
         public const string TypingIndicator = "Typing Indicator";
         public const string WindowContainer = "Window Container";
+        public const string Lock = "Lock";
         public const string Clock = "Clock";
         public const string Time = "Time";
         public const string Viewport = "Viewport";
@@ -73,6 +74,12 @@ public static class Constants
     public static class WindowAndFileNames
     {
         public const string FlagCheatSheet = "Flag Cheat Sheet";
+        public const string AssignmentDocket = "Assignment Docket";
+    }
+
+    public static class AnimationTriggers
+    {
+        public const string UnlockAssignmentEntry = "Unlock";
     }
     #endregion
 

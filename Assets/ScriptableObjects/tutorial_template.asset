@@ -16,10 +16,15 @@ MonoBehaviour:
   - dayNumber: 1
     dayData:
       dayNumber: 1
-      activeChatLogNames:
-      - first_test
-      - second_test
-      - third_test
+      activeChatLogs:
+      - logName: first_test
+        isBonus: 0
+      - logName: second_test
+        isBonus: 1
+      - logName: third_test
+        isBonus: 1
+      unlockedChatLogNames: []
+      activeChatLogNames: []
       supervisorBubbleSequenceNames: []
       markerTypeNames:
       - Copy Paste Spam
@@ -35,8 +40,11 @@ MonoBehaviour:
   - dayNumber: 2
     dayData:
       dayNumber: 2
-      activeChatLogNames:
-      - second_test
+      activeChatLogs:
+      - logName: second_test
+        isBonus: 0
+      unlockedChatLogNames: []
+      activeChatLogNames: []
       supervisorBubbleSequenceNames: []
       markerTypeNames:
       - Copy Paste Spam
@@ -46,9 +54,13 @@ MonoBehaviour:
   - dayNumber: 3
     dayData:
       dayNumber: 3
-      activeChatLogNames:
-      - first_test
-      - second_test
+      activeChatLogs:
+      - logName: first_test
+        isBonus: 0
+      - logName: second_test
+        isBonus: 1
+      unlockedChatLogNames: []
+      activeChatLogNames: []
       supervisorBubbleSequenceNames: []
       markerTypeNames:
       - Copy Paste Spam

@@ -163,7 +163,7 @@ public class GameTemplateEditor : EditorWindow
         if(entry.dayData != null)
         {
             int markerCount = entry.dayData.markerData != null ? entry.dayData.markerData.Count : 0;
-            int chatLogCount = entry.dayData.activeChatLogNames != null ? entry.dayData.activeChatLogNames.Count : 0;
+            int chatLogCount = entry.dayData.activeChatLogs != null ? entry.dayData.activeChatLogs.Count : 0;
             text += " - " + chatLogCount + " logs, " + markerCount + " markers";
         }
         else
@@ -233,23 +233,33 @@ public class GameTemplateEditor : EditorWindow
     {
         EditorGUILayout.LabelField("Active Chat Logs", EditorStyles.label);
 
-        if(dayData.activeChatLogNames == null)
+        if(dayData.activeChatLogs == null)
         {
-            dayData.activeChatLogNames = new List<string>();
+            dayData.activeChatLogs = new List<ChatLogEntry>();
         }
 
         int chatLogToRemove = -1;
 
-        for(int i = 0; i < dayData.activeChatLogNames.Count; i++)
+        for(int i = 0; i < dayData.activeChatLogs.Count; i++)
         {
+            ChatLogEntry entry = dayData.activeChatLogs[i];
             EditorGUILayout.BeginHorizontal();
-            ChatLog currentLog = FindAssetByName<ChatLog>(dayData.activeChatLogNames[i]);
+            ChatLog currentLog = FindAssetByName<ChatLog>(entry.logName);
             EditorGUI.BeginChangeCheck();
             ChatLog newLog = (ChatLog)EditorGUILayout.ObjectField(currentLog, typeof(ChatLog), false);
            
             if(EditorGUI.EndChangeCheck())
             {
-                dayData.activeChatLogNames[i] = newLog != null ? newLog.name : string.Empty;
+                entry.logName = newLog != null ? newLog.name : string.Empty;
+                AutoSave();
+            }
+
+            EditorGUI.BeginChangeCheck();
+            bool newIsBonus = EditorGUILayout.ToggleLeft("Bonus", entry.isBonus, GUILayout.Width(110));
+            
+            if(EditorGUI.EndChangeCheck())
+            {
+                entry.isBonus = newIsBonus;
                 AutoSave();
             }
 
@@ -263,13 +273,13 @@ public class GameTemplateEditor : EditorWindow
 
         if(chatLogToRemove >= 0)
         {
-            dayData.activeChatLogNames.RemoveAt(chatLogToRemove);
+            dayData.activeChatLogs.RemoveAt(chatLogToRemove);
             AutoSave();
         }
 
         if(GUILayout.Button("+ Add Chat Log", GUILayout.Width(120)))
         {
-            dayData.activeChatLogNames.Add(string.Empty);
+            dayData.activeChatLogs.Add(new ChatLogEntry { logName = string.Empty, isBonus = false });
             AutoSave();
         }
     }

@@ -169,8 +169,11 @@ public class SaveManager : Singleton<SaveManager>
 
         foreach(var entry in template.dayEntries)
         {
-            activeSlot.dayEntries.Add(entry);
-            runtimeSaveData[entry.dayNumber] = entry.dayData;
+            // deep-copy so runtime mutations (e.g. unlock state) don't leak back into the
+            // template asset, and so the slot/runtime don't share one DayData instance
+            DayData cloned = JsonUtility.FromJson<DayData>(JsonUtility.ToJson(entry.dayData));
+            activeSlot.dayEntries.Add(new GameTemplate.DayDataEntry { dayNumber = entry.dayNumber, dayData = cloned });
+            runtimeSaveData[entry.dayNumber] = cloned;
         }
 
         // copy template sequenced entries into slot's own entries
@@ -210,6 +213,10 @@ public class SaveManager : Singleton<SaveManager>
 
     public List<ChatBubble> GetSequencedChatBubblesForChatLog(ChatLog chatLog)
     {
+        DayData currentDayData = GetDayData(GameManager.Instance.CurrentDayNumber);
+        // NOTE: locked logs receive nothing — sequenced content is dropped
+        if(currentDayData != null && currentDayData.IsLogLocked(chatLog.logName)) return new List<ChatBubble>();
+
         GameTemplate.SequencedChatLogEntry entry = runtimeSequencedChatLogEntries.FirstOrDefault(e => e.chatLog == chatLog);
         if(entry.chatLog == null) return new List<ChatBubble>();
         return entry.sequences.SelectMany(s => s.messages).ToList();

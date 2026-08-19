@@ -21,6 +21,7 @@ public class SupervisorController : MonoBehaviour, ISavable, ILoadable
         daySignalButtonPrefab = AddressableManager.Instance
             .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.DaySignalButton);
         ChatLogController myChatLogController = ChatLogManager.Instance.InstantiateChatLog(supervisorChatLog, transform);
+        GetComponent<Button>().onClick.AddListener(() => myChatLogController.Open());
         chatBubbleHolder = myChatLogController.transform.Find(Constants.GameObjectNames.Viewport).Find(Constants.GameObjectNames.Content);
     }
 
