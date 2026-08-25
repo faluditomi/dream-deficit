@@ -14,14 +14,24 @@ public class ChatLogController : BaseWindowController
     public event System.Action OnNewMessageEvent;
     public event System.Action OnDestroyEvent;
 
-    public void Setup(ChatLog chatLog)
+    // The chat log window can be initialised without a chat log and a top bar. This is useful for the ChatClientController. 
+    public void Setup(ChatLog chatLog, bool needsTopBar = true)
     {
         typingIdicator = transform.Find(Constants.GameObjectNames.TypingIndicator).gameObject;
-        myChatLog = chatLog;
-        messages = chatLog.messages;
         bubbleContainer = GetComponentInChildren<ContentSizeFitter>().transform;
         chatBubblePrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.ChatBubble);
-        SetupTopBar(chatLog.logName);
+        myChatLog = chatLog;
+        messages = chatLog.messages;
+        PopulateChatLog();
+        if(needsTopBar) SetupTopBar(chatLog.logName);
+    }
+
+    private void PopulateChatLog()
+    {
+        foreach(Transform child in bubbleContainer)
+        {
+            Destroy(child.gameObject);
+        }
 
         foreach(ChatBubble chatBubble in messages)
         {

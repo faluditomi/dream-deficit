@@ -27,8 +27,8 @@ public class AssignmentDocketController : BaseWindowController, ILoadable
         
         foreach(ResolvedChatLogEntry entry in activeEntries)
         {
-            AssignmentEntryController logDirectoryEntryInstance = Instantiate(assignmentEntryPrefab, content).GetComponent<AssignmentEntryController>();
-            logDirectoryEntryInstance.Setup(entry.chatLog, entry.isBonus, entry.isUnlocked);
+            AssignmentEntryController assignmentEntryInstance = Instantiate(assignmentEntryPrefab, content).GetComponent<AssignmentEntryController>();
+            assignmentEntryInstance.Setup(entry.chatLog, entry.isBonus, entry.isUnlocked);
         }
     }
     #endregion

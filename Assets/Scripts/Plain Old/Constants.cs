@@ -34,8 +34,10 @@ public static class Constants
         public const string MarkerCheatSheet = AddressablePrefixes.Prefab + "marker_cheat_sheet";
         public const string MarkerCheatSheetEntry = AddressablePrefixes.Prefab + "marker_cheat_sheet_entry";
         public const string DaySignalButton = AddressablePrefixes.Prefab + "day_signal_button";
+        public const string ChatClientUserEntry = AddressablePrefixes.Prefab + "chat_client_user_entry";
     }
 
+    // NOTE: chat client log names have to match (case-insensitive) the corresponding chat user's name
     public static class ChatLogs
     {
         public const string Supervisor = "supervisor";
@@ -63,6 +65,9 @@ public static class Constants
         public const string Viewport = "Viewport";
         public const string Content = "Content";
         public const string WindowName = "Window Name";
+        public const string LastMessage = "Last Message";
+        public const string UserListWindow = "User List Window";
+        public const string ChatWindowHolder = "Chat Window Holder";
     }
 
     public static class SceneNames
@@ -75,6 +80,7 @@ public static class Constants
     {
         public const string FlagCheatSheet = "Flag Cheat Sheet";
         public const string AssignmentDocket = "Assignment Docket";
+        public const string ChatClient = "Chat Client";
     }
 
     public static class AnimationTriggers

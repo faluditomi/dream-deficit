@@ -15,17 +15,24 @@ public class ChatLogManager : Singleton<ChatLogManager>
         windowContainer = FindFirstObjectByType<Canvas>().transform.Find(Constants.GameObjectNames.WindowContainer);
     }
 
-    public ChatLogController InstantiateChatLog(ChatLog chatLog, Transform initialiser)
+    public ChatLogController InstantiateChatLog(ChatLog chatLog, Transform initialiser, bool needsTopBar = true, Transform parent = null)
     {
+        if(chatLog == null)
+        {
+            Debug.LogError("ChatLogManager: Cannot instantiate a chat log without a valid ChatLog.");
+            return null;
+        }
+
         if(chatLogControllerCache.ContainsKey(chatLog))
         {
             return chatLogControllerCache[chatLog];    
         }
         else
         {
-            ChatLogController chatLogController = Instantiate(chatLogPrefab, windowContainer).GetComponent<ChatLogController>();
-            chatLogController.Setup(chatLog);
-            chatLogController.GetComponent<TopBarHandler>().Close();
+            Transform container = parent != null ? parent : windowContainer;
+            ChatLogController chatLogController = Instantiate(chatLogPrefab, container).GetComponent<ChatLogController>();
+            chatLogController.Setup(chatLog, needsTopBar);
+            if(needsTopBar) chatLogController.GetComponent<TopBarHandler>().Close();
             chatLogControllerCache.Add(chatLog, chatLogController);
             chatLogController.OnDestroyEvent += () => chatLogControllerCache.Remove(chatLog);
 

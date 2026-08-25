@@ -6,11 +6,10 @@ using UnityEngine.UI;
 public class AssignmentEntryController : MonoBehaviour
 {
     private ChatLog myChatLog;
-    private ChatLogController chatLogController;
+    private ChatLogController myChatLogController;
     private TMP_Text logNameText;
     private GameObject lockPanel;
     private Animator animator;
-    private Button button;
     private bool isLocked;
 
     public void Setup(ChatLog chatLog, bool isBonus, bool isUnlocked)
@@ -21,19 +20,18 @@ public class AssignmentEntryController : MonoBehaviour
         logNameText.text = chatLog.logName;
         lockPanel = transform.Find(Constants.GameObjectNames.Lock).gameObject;
         animator = GetComponent<Animator>();
-        button = GetComponent<Button>();
         // the chat window is always instantiated (and starts closed). locked logs keep it
         // closed until the player unlocks them; content stays suppressed by the locked-log
         // guards in ChatLogController.RunBubbleSequence and SaveManager.GetSequencedChatBubblesForChatLog
-        chatLogController = ChatLogManager.Instance.InstantiateChatLog(chatLog, transform);
+        myChatLogController = ChatLogManager.Instance.InstantiateChatLog(chatLog, transform);
         lockPanel.SetActive(isLocked);
-        button.onClick.AddListener(OnEntryClicked);
+        GetComponent<Button>().onClick.AddListener(OnEntryClicked);
     }
 
     private void OnEntryClicked()
     {
         if(isLocked) UnlockAndOpen();
-        else if(chatLogController != null) chatLogController.Open();
+        else if(myChatLogController != null) myChatLogController.Open();
     }
 
     private void UnlockAndOpen()
@@ -46,7 +44,7 @@ public class AssignmentEntryController : MonoBehaviour
         DayData dayData = SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber);
         dayData?.UnlockLog(myChatLog.logName);
         isLocked = false;
-        chatLogController.Open();
+        myChatLogController.Open();
     }
 
     private bool HasUnlockTrigger()

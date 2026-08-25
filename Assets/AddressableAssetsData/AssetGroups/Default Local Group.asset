@@ -92,6 +92,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - ChatLog
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 64c6597e16e80714c8968ce798a79b47
+    m_Address: Assets/Prefabs/ChatClientUserEntry.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 959302463fe86db418fe1c0ccdc4c5f6
     m_Address: chat_log/supervisor
     m_ReadOnly: 0
