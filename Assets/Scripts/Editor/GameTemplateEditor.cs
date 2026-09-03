@@ -224,7 +224,9 @@ public class GameTemplateEditor : EditorWindow
         EditorGUILayout.Space(10);
         DrawMarkerTypeSection(dayData);
         EditorGUILayout.Space(10);
-        DrawSupervisorSequenceSection(dayData);
+        DrawChatClientUsersSection(dayData);
+        EditorGUILayout.Space(10);
+        DrawSequenceSection(dayData);
         EditorGUILayout.Space(10);
         DrawMarkerDataSection(dayData);
     }
@@ -329,6 +331,50 @@ public class GameTemplateEditor : EditorWindow
         }
     }
 
+    private void DrawChatClientUsersSection(DayData dayData)
+    {
+        EditorGUILayout.LabelField("Active Chat Client Users", EditorStyles.label);
+
+        if(dayData.activeChatClientUsers == null)
+        {
+            dayData.activeChatClientUsers = new List<string>();
+        }
+
+        int userToRemove = -1;
+
+        for(int i = 0; i < dayData.activeChatClientUsers.Count; i++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            ChatUser currentChatUser = FindAssetByName<ChatUser>(dayData.activeChatClientUsers[i]);
+            EditorGUI.BeginChangeCheck();
+            ChatUser newChatUser = (ChatUser)EditorGUILayout.ObjectField(currentChatUser, typeof(ChatUser), false, GUILayout.Width(250));
+            
+            if(EditorGUI.EndChangeCheck())
+            {
+                dayData.activeChatClientUsers[i] = newChatUser != null ? newChatUser.name : string.Empty;
+                AutoSave();
+            }
+
+            if(GUILayout.Button("-", GUILayout.Width(25)))
+            {
+                userToRemove = i;
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+        if(userToRemove >= 0)
+        {
+            dayData.activeChatClientUsers.RemoveAt(userToRemove);
+            AutoSave();
+        }
+
+        if(GUILayout.Button("+ Add Chat User", GUILayout.Width(140)))
+        {
+            dayData.activeChatClientUsers.Add(string.Empty);
+            AutoSave();
+        }
+    }
+
     private void DrawMarkerDataSection(DayData dayData)
     {
         showMarkerDataFoldout = EditorGUILayout.Foldout(showMarkerDataFoldout, "Marker Data", true);
@@ -407,27 +453,27 @@ public class GameTemplateEditor : EditorWindow
         }
     }
 
-    private void DrawSupervisorSequenceSection(DayData dayData)
+    private void DrawSequenceSection(DayData dayData)
     {
-        EditorGUILayout.LabelField("Supervisor Bubble Sequences", EditorStyles.label);
+        EditorGUILayout.LabelField("Bubble Sequences", EditorStyles.label);
 
-        if(dayData.supervisorBubbleSequenceNames == null)
+        if(dayData.bubbleSequenceNames == null)
         {
-            dayData.supervisorBubbleSequenceNames = new List<string>();
+            dayData.bubbleSequenceNames = new List<string>();
         }
 
         int sequenceToRemove = -1;
         
-        for(int i = 0; i < dayData.supervisorBubbleSequenceNames.Count; i++)
+        for(int i = 0; i < dayData.bubbleSequenceNames.Count; i++)
         {
             EditorGUILayout.BeginHorizontal();
-            ChatBubbleSequence currentSeq = FindAssetByName<ChatBubbleSequence>(dayData.supervisorBubbleSequenceNames[i]);
+            ChatBubbleSequence currentSeq = FindAssetByName<ChatBubbleSequence>(dayData.bubbleSequenceNames[i]);
             EditorGUI.BeginChangeCheck();
             ChatBubbleSequence newSeq = (ChatBubbleSequence)EditorGUILayout.ObjectField(currentSeq, typeof(ChatBubbleSequence), false);
             
             if(EditorGUI.EndChangeCheck())
             {
-                dayData.supervisorBubbleSequenceNames[i] = newSeq != null ? newSeq.name : string.Empty;
+                dayData.bubbleSequenceNames[i] = newSeq != null ? newSeq.name : string.Empty;
                 AutoSave();
             }
 
@@ -440,13 +486,13 @@ public class GameTemplateEditor : EditorWindow
         }
         if(sequenceToRemove >= 0)
         {
-            dayData.supervisorBubbleSequenceNames.RemoveAt(sequenceToRemove);
+            dayData.bubbleSequenceNames.RemoveAt(sequenceToRemove);
             AutoSave();
         }
 
         if(GUILayout.Button("+ Add Sequence", GUILayout.Width(120)))
         {
-            dayData.supervisorBubbleSequenceNames.Add(string.Empty);
+            dayData.bubbleSequenceNames.Add(string.Empty);
             AutoSave();
         }
     }

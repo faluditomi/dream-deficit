@@ -13,7 +13,7 @@ public class MarkerCheatSheetController : BaseWindowController, ILoadable
             .Instance
             .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.MarkerCheatSheetEntry);
         markerEntryContainer = transform.GetComponentInChildren<ContentSizeFitter>().transform;
-        SetupTopBar(Constants.WindowAndFileNames.FlagCheatSheet.ToString());
+        SetupBaseWindow(Constants.WindowAndFileNames.FlagCheatSheet.ToString());
         GetComponent<TopBarHandler>().Close();
     }
     

@@ -5,7 +5,6 @@ public class ChatLogManager : Singleton<ChatLogManager>
 {
     private GameObject chatLogPrefab;
     private Transform windowContainer;
-    private ChatLogController supervisorChatLogController;
     private Dictionary<ChatLog, ChatLogController> chatLogControllerCache = new Dictionary<ChatLog, ChatLogController>();
 
     protected override void Awake()
@@ -45,20 +44,15 @@ public class ChatLogManager : Singleton<ChatLogManager>
         }
     }
 
+    public ChatLogController GetChatLogControllerByLogName(string chatLogName)
+    {
+        ChatLog chatLog = AddressableManager.Instance.RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + chatLogName);
+        if(chatLog == null) return null;
+        return GetChatLogController(chatLog);
+    }
+
     public ChatLogController GetChatLogController(ChatLog chatLog)
     {
         return chatLogControllerCache.ContainsKey(chatLog) ? chatLogControllerCache[chatLog] : null;
-    }
-
-    public ChatLogController GetSupervisorChatLogController()
-    {
-        if(supervisorChatLogController == null)
-        {
-            ChatLog supervisorChatLog = AddressableManager.Instance
-                .RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + Constants.ChatLogs.Supervisor);
-            supervisorChatLogController = GetChatLogController(supervisorChatLog);
-        }
-
-        return supervisorChatLogController;
     }
 }

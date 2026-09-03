@@ -11,7 +11,7 @@ public class ChatLogController : BaseWindowController
     private GameObject typingIdicator;
     private Coroutine sequenceCoroutine;
     [HideInInspector] public List<ChatBubble> messages;
-    public event System.Action OnNewMessageEvent;
+    public event System.Action<string> OnNewMessageEvent;
     public event System.Action OnDestroyEvent;
 
     // The chat log window can be initialised without a chat log and a top bar. This is useful for the ChatClientController. 
@@ -23,7 +23,7 @@ public class ChatLogController : BaseWindowController
         myChatLog = chatLog;
         messages = chatLog.messages;
         PopulateChatLog();
-        if(needsTopBar) SetupTopBar(chatLog.logName);
+        SetupBaseWindow(chatLog.logName, needsTopBar);
     }
 
     private void PopulateChatLog()
@@ -71,7 +71,7 @@ public class ChatLogController : BaseWindowController
             sequenceCoroutine = null;
         }
 
-        sequenceCoroutine = StartCoroutine(RunBubbleSequenceBehaviour(chatBubbleSequence, bubbleSequenceType));
+        sequenceCoroutine = ChatLogManager.Instance.StartCoroutine(RunBubbleSequenceBehaviour(chatBubbleSequence, bubbleSequenceType));
     }
 
     private IEnumerator RunBubbleSequenceBehaviour(ChatBubbleSequence chatBubbleSequence, Constants.ChatBubbleSequenceType bubbleSequenceType)
@@ -87,7 +87,7 @@ public class ChatLogController : BaseWindowController
             typingIdicator.SetActive(false);
             ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer).GetComponent<ChatBubbleController>();
             chatBubbleInstance.Setup(chatBubble, myChatLog);
-            OnNewMessageEvent?.Invoke();
+            OnNewMessageEvent?.Invoke(chatBubble.message);
         }
 
         GameManager.Instance.TriggerChatBubbleSequence(bubbleSequenceType);

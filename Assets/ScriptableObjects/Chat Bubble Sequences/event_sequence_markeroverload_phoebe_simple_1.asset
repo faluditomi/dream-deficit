@@ -10,16 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cbff2057e5baa1e49869a37abcfe0807, type: 3}
-  m_Name: day_signal_test
+  m_Name: event_sequence_markeroverload_phoebe_simple_1
   m_EditorClassIdentifier: Assembly-CSharp::ChatBubbleSequence
   messages:
   - chatUser: 2
-    message: This is a day signal.
+    message: I see you are taking your job seriously, but perhaps that is a bit much
     delayLength: 0
-    typingFlagLength: 0.7
-    markables: []
-  - chatUser: 2
-    message: Whether it's the start or the end... I do not know.
-    delayLength: 1
     typingFlagLength: 1.5
     markables: []

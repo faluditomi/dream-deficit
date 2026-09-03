@@ -342,7 +342,8 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
     public void Rebuild(Color overrideColor)
     {
-        var markers = MarkerManager.Instance.GetMarkersForChatBubble(chatBubble);
+        List<MarkerData> markers = MarkerManager.Instance.GetMarkersForChatBubble(chatBubble);
+        if(markers == null || myText == null ||myText.text == null) return;
         myText.text = GetMarkedText(overrideColor, markers);
         myText.ForceMeshUpdate();
     }

@@ -106,11 +106,7 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
         
         if(overloadThreshold <= GetMarkersForChatBubble(chatBubble).Count)
         {
-            markerOverloadSequenceEventChannel.Raise
-            (
-                Constants.ChatUser.Supervisor, 
-                ChatLogManager.Instance.GetSupervisorChatLogController()
-            );    
+            markerOverloadSequenceEventChannel.Raise();
         }
     }
 

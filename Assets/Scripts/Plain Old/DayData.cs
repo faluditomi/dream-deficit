@@ -9,8 +9,9 @@ public class DayData
     public List<ChatLogEntry> activeChatLogs = new List<ChatLogEntry>();
     // runtime-only unlock state — never seeded from the template
     public List<string> unlockedChatLogNames = new List<string>();
-    public List<string> supervisorBubbleSequenceNames = new List<string>();
+    public List<string> bubbleSequenceNames = new List<string>();
     public List<string> markerTypeNames = new List<string>();
+    public List<string> activeChatClientUsers = new List<string>();
     public List<MarkerData> markerData = new List<MarkerData>();
 
     public List<ResolvedChatLogEntry> GetActiveChatLogEntries()
@@ -60,14 +61,29 @@ public class DayData
         if(!unlockedChatLogNames.Contains(logName)) unlockedChatLogNames.Add(logName);
     }
 
-    public List<ChatBubbleSequence> GetSupervisorSequences()
+    public List<ChatBubbleSequence> GetSequences()
     {
-        return supervisorBubbleSequenceNames
+        return bubbleSequenceNames
             .Where(path => !string.IsNullOrEmpty(path))
             .Select(path => AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
                 Constants.AddressablePrefixes.ChatBubbleSequence + path))
             .Where(seq => seq != null)
             .ToList();
+    }
+
+    public List<ChatUser> GetActiveChatClientUsers()
+    {
+        if(activeChatClientUsers == null) activeChatClientUsers = new List<string>();
+        List<ChatUser> chatUsers = new List<ChatUser>();
+
+        foreach(string chatUserName in activeChatClientUsers)
+        {
+            if(string.IsNullOrEmpty(chatUserName)) continue;
+            ChatUser chatUser = AddressableManager.Instance.RetrieveAddressable<ChatUser>(Constants.AddressablePrefixes.ChatUser + chatUserName.ToLower());
+            if(chatUser != null) chatUsers.Add(chatUser);
+        }
+
+        return chatUsers;
     }
 
     public List<MarkerType> GetMarkerTypes()
@@ -78,14 +94,15 @@ public class DayData
 
         List<MarkerType> markerTypes = new List<MarkerType>();
 
-        foreach (var typeName in markerTypeNames)
+        foreach(var typeName in markerTypeNames)
         {
-            foreach (var field in markerTypeFields)
+            foreach(var field in markerTypeFields)
             {
-                if (field.FieldType == typeof(MarkerType))
+                if(field.FieldType == typeof(MarkerType))
                 {
                     MarkerType markerType = (MarkerType)field.GetValue(null);
-                    if (markerType != null && markerType.name == typeName)
+                    
+                    if(markerType != null && markerType.name == typeName)
                     {
                         markerTypes.Add(markerType);
                         break;

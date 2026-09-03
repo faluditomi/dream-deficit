@@ -22,13 +22,13 @@ MonoBehaviour:
     - Prefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 02c76d27afc00834ebfbc67d77f75660
-    m_Address: chat_user/supervisor
+    m_Address: chat_user/phoebe
     m_ReadOnly: 0
     m_SerializedLabels:
     - ChatUser
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1170494b05961144faa592af83c3d89f
-    m_Address: event_chat_bubble_sequence/event_sequence_markeroverload_supervisor_till_day_0_var_1
+    m_Address: chat_bubble_sequence/event_sequence_markeroverload_phoebe_simple_1
     m_ReadOnly: 0
     m_SerializedLabels:
     - EventChatBubbleSequence
@@ -52,7 +52,7 @@ MonoBehaviour:
     - Prefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2922a653e3fb9e64bb6c03ab86ff0b93
-    m_Address: chat_bubble_sequence/day_signal_test
+    m_Address: chat_bubble_sequence/event_sequence_daystart_phoebe_supervisordaystart
     m_ReadOnly: 0
     m_SerializedLabels:
     - ChatBubbleSequence
@@ -75,16 +75,10 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 58c84da70d2ec854db2f7b86496b8471
-    m_Address: event_chat_bubble_sequence/event_sequence_markeroverload_supervisor_till_day_0_var_2
+    m_Address: chat_bubble_sequence/event_sequence_markeroverload_phoebe_simple_2
     m_ReadOnly: 0
     m_SerializedLabels:
     - EventChatBubbleSequence
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 61a7b4814a2b1024dbd7be1d12cd4a61
-    m_Address: chat_bubble_sequence/cryptic_sequence
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - ChatBubbleSequence
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 63f3b356ee1fc094fac403e05bdd4aa4
     m_Address: chat_log/first_test
@@ -93,15 +87,26 @@ MonoBehaviour:
     - ChatLog
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 64c6597e16e80714c8968ce798a79b47
-    m_Address: Assets/Prefabs/ChatClientUserEntry.prefab
+    m_Address: prefabs/chat_client_user_entry
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 754fec38aa124b844a61f0f109e3353c
+    m_Address: sequence_event_channel/day_start
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - SequenceEventChannel
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 959302463fe86db418fe1c0ccdc4c5f6
-    m_Address: chat_log/supervisor
+    m_Address: chat_log/phoebe
     m_ReadOnly: 0
     m_SerializedLabels:
     - ChatLog
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9781149889b362f4c85082af6f96a02a
+    m_Address: prefabs/window_shadow
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: afc6da96988f5c6438db68558a763d5c
     m_Address: prefabs/assignment_entry
@@ -127,6 +132,18 @@ MonoBehaviour:
     m_SerializedLabels:
     - ChatUser
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e0c2e5a389d72e44bab5d55b7a4bf4fe
+    m_Address: chat_bubble_sequence/event_sequence_dayend_phoebe_supervisordayend
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ChatBubbleSequence
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e46cff843c27ca447aea1c6733c03e4f
+    m_Address: sequence_event_channel/day_end
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - SequenceEventChannel
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f0971d2c8cdcee64194e628b4f449ca3
     m_Address: chat_log/third_test
     m_ReadOnly: 0
@@ -138,11 +155,21 @@ MonoBehaviour:
     m_SerializedLabels:
     - ChatUser
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f858fa35eedf7d9478a9a3cef4029f5d
+    m_Address: chat_user/mara
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fab6b5c7881a411478bbbd1f873684ff
     m_Address: prefabs/marker_cheat_sheet
     m_ReadOnly: 0
     m_SerializedLabels:
     - Prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb72ef1046bd8fb4c8af5d6f2dd768d0
+    m_Address: chat_log/mara
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 82f5949a9467544429bdb439791fe7c5, type: 2}

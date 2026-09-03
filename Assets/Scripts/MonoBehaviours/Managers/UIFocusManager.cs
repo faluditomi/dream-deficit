@@ -2,10 +2,11 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using System.Linq;
 
 public class UIFocusManager : Singleton<UIFocusManager>
 {
-    public BaseWindowController FocusedWindow;
+    public BaseWindowController focusedWindow;
     public GameObject lastClickedObject;
 
     private void Update()
@@ -27,8 +28,8 @@ public class UIFocusManager : Singleton<UIFocusManager>
         {
             // the top-most UI element hit by the raycast
             lastClickedObject = results[0].gameObject;
-            // check if the clicked object (or any of its parents) is a tracked window
-            BaseWindowController clickedWindow = lastClickedObject.GetComponentInParent<BaseWindowController>();
+            // check if the clicked object is a window and if it's a complex window, take the top-most parent window
+            BaseWindowController clickedWindow = lastClickedObject.GetComponentsInParent<BaseWindowController>().LastOrDefault(focusedWindow => focusedWindow != null);
             
             if(clickedWindow != null)
             {
@@ -50,17 +51,17 @@ public class UIFocusManager : Singleton<UIFocusManager>
 
     private void SetFocusedWindow(BaseWindowController window)
     {
-        if (FocusedWindow == window) return;
-        FocusedWindow?.OnLostFocus();
-        FocusedWindow = window;
-        FocusedWindow?.OnGainedFocus();
+        if(focusedWindow == window) return;
+        focusedWindow?.OnLostFocus();
+        focusedWindow = window;
+        focusedWindow?.OnGainedFocus();
         // bring the focused window to the front of the Canvas
-        if(FocusedWindow != null) FocusedWindow.transform.SetAsLastSibling();
+        if(focusedWindow != null) focusedWindow.transform.SetAsLastSibling();
     }
 
     public void ClearFocusedWindow()
     {
-        FocusedWindow?.OnLostFocus();
-        FocusedWindow = null;
+        focusedWindow?.OnLostFocus();
+        focusedWindow = null;
     }
 }

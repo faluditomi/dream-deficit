@@ -24,11 +24,17 @@ MonoBehaviour:
       - logName: third_test
         isBonus: 1
       unlockedChatLogNames: []
-      activeChatLogNames: []
-      supervisorBubbleSequenceNames: []
+      bubbleSequenceNames:
+      - event_sequence_dayend_phoebe_supervisordayend
+      - event_sequence_daystart_phoebe_supervisordaystart
+      - event_sequence_markeroverload_phoebe_simple_1
+      - event_sequence_markeroverload_phoebe_simple_2
       markerTypeNames:
       - Copy Paste Spam
       - Synchronised Activity Spike
+      activeChatClientUsers:
+      - phoebe
+      - mara
       markerData:
       - markerTypeName: Copy Paste Spam
         chatLogPath: first_test
@@ -44,12 +50,12 @@ MonoBehaviour:
       - logName: second_test
         isBonus: 0
       unlockedChatLogNames: []
-      activeChatLogNames: []
-      supervisorBubbleSequenceNames: []
+      bubbleSequenceNames: []
       markerTypeNames:
       - Copy Paste Spam
       - Synchronised Activity Spike
       - Persuasion Pattern
+      activeChatClientUsers: []
       markerData: []
   - dayNumber: 3
     dayData:
@@ -60,13 +66,13 @@ MonoBehaviour:
       - logName: second_test
         isBonus: 1
       unlockedChatLogNames: []
-      activeChatLogNames: []
-      supervisorBubbleSequenceNames: []
+      bubbleSequenceNames: []
       markerTypeNames:
       - Copy Paste Spam
       - Synchronised Activity Spike
       - Persuasion Pattern
       - Narrative Shaping
+      activeChatClientUsers: []
       markerData: []
   sequencedChatLogEntries:
   - chatLog: {fileID: 11400000, guid: 63f3b356ee1fc094fac403e05bdd4aa4, type: 2}

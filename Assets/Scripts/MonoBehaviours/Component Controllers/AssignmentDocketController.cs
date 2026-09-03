@@ -12,7 +12,7 @@ public class AssignmentDocketController : BaseWindowController, ILoadable
     {
         assignmentEntryPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.AssignmentEntry);
         content = GetComponentInChildren<ContentSizeFitter>().transform;
-        SetupTopBar(Constants.WindowAndFileNames.AssignmentDocket.ToString());
+        SetupBaseWindow(Constants.WindowAndFileNames.AssignmentDocket.ToString());
         GetComponent<TopBarHandler>().Close();
     }
 

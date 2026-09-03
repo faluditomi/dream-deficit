@@ -2,10 +2,12 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager>
 {
-    private SupervisorController supervisorController;
+    private SequenceEventChannel dayStartEventChannel;
+    private SequenceEventChannel dayEndEventChannel;
     private TMP_Text timeText;
     [Range(0, 24)] public float dayStartTime = 8f;
     [Range(0, 24)] public float dayEndTime = 17f;
@@ -38,6 +40,8 @@ public class GameManager : Singleton<GameManager>
 
     private void Start()
     {
+        dayStartEventChannel = AddressableManager.Instance.RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.DayStart);
+        dayEndEventChannel = AddressableManager.Instance.RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.DayEnd);
         // TODO: this will have to be called when we select a save slot in the menu
         SaveManager.Instance.LoadGame();
         // TODO: this will also have to be called from elsewhere
@@ -49,11 +53,7 @@ public class GameManager : Singleton<GameManager>
         currentDayTime = dayLengthInSeconds;
         UpdateTimeText();
         SaveManager.Instance.LoadDay(CurrentDayNumber);
-        // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
-        ChatBubbleSequence nextSupervisorDayStartSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
-            Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequences.DaySignalTest);
-        ChatLogManager.Instance.GetSupervisorChatLogController()
-            .RunBubbleSequence(nextSupervisorDayStartSequence, Constants.ChatBubbleSequenceType.SupervisorDayStart);
+        dayStartEventChannel.Raise();
     }
 
     public void TriggerDayTimePassing()
@@ -80,11 +80,7 @@ public class GameManager : Singleton<GameManager>
         isDayPassing = false;
         currentDayTime = dayLengthInSeconds;
         timeText.text = FormatTime(dayEndTime);
-        // TODO: this sequence will have to be gotten from the DayData's supervisor sequences
-        ChatBubbleSequence nextSupervisorDayEndSequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
-            Constants.AddressablePrefixes.ChatBubbleSequence + Constants.ChatBubbleSequences.DaySignalTest);
-        ChatLogManager.Instance.GetSupervisorChatLogController()
-            .RunBubbleSequence(nextSupervisorDayEndSequence, Constants.ChatBubbleSequenceType.SupervisorDayEnd);
+        dayEndEventChannel.Raise();
     }
 
     public void EndDay()
@@ -111,19 +107,7 @@ public class GameManager : Singleton<GameManager>
         return $"{hours:D2} : {minutes:D2}";
     }
 
-    #region Internal Getters
-    private SupervisorController GetSupervisorController()
-    {
-        if(supervisorController == null)
-        {
-            supervisorController = FindFirstObjectByType<SupervisorController>();
-        }
-
-        return supervisorController;
-    }
-    #endregion
-
-    #region Chat Bubble Sequence Activator Logic
+    #region Chat Bubble Sequence Extra Behaviour Activator Logic
     public void TriggerChatBubbleSequence(Constants.ChatBubbleSequenceType chatBubbleSequenceType)
     {
         switch(chatBubbleSequenceType)
@@ -131,22 +115,48 @@ public class GameManager : Singleton<GameManager>
             case Constants.ChatBubbleSequenceType.Simple:
                 break;
             case Constants.ChatBubbleSequenceType.SupervisorDayStart:
-                SupervisorDayStartSequence();  
+            
+            
+                // TODO: these came here from the old SuperVisorController
+                // TODO: for now it's shit code, because later we'll need a central solution for chat responses and this will be a use case for that
+                GameObject daySignalButtonPrefab = AddressableManager.Instance
+                    .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.DaySignalButton);
+                ChatLogController myChatLogController = ChatLogManager.Instance.GetChatLogControllerByLogName(Constants.ChatLogs.Phoebe);
+                Transform chatBubbleHolder = myChatLogController.transform.Find(Constants.GameObjectNames.Viewport).Find(Constants.GameObjectNames.Content);
+                GameObject startDayButton = Instantiate(daySignalButtonPrefab, chatBubbleHolder);
+                Button button = startDayButton.GetComponent<Button>();
+                button.GetComponentInChildren<TMP_Text>().text = "Start Day";
+                button.onClick.AddListener(() => 
+                {
+                    GameManager.Instance.TriggerDayTimePassing();
+                    Destroy(startDayButton);
+                });
+                // TODO: shit code until here
+
+
                 break; 
             case Constants.ChatBubbleSequenceType.SupervisorDayEnd:
-                SupervisorDayEndSequence();
+            
+
+                // TODO: these came here from the old SuperVisorController
+                // TODO: for now it's shit code, because later we'll need a central solution for chat responses and this will be a use case for that
+                GameObject daySignalButtonPrefab2 = AddressableManager.Instance
+                    .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.DaySignalButton);
+                ChatLogController myChatLogController2 = ChatLogManager.Instance.GetChatLogControllerByLogName(Constants.ChatLogs.Phoebe);
+                Transform chatBubbleHolder2 = myChatLogController2.transform.Find(Constants.GameObjectNames.Viewport).Find(Constants.GameObjectNames.Content);
+                GameObject endDayButton = Instantiate(daySignalButtonPrefab2, chatBubbleHolder2);
+                Button button2 = endDayButton.GetComponent<Button>();
+                button2.GetComponentInChildren<TMP_Text>().text = "End Day";
+                button2.onClick.AddListener(() => 
+                {
+                    GameManager.Instance.EndDay();
+                    Destroy(endDayButton);
+                });
+                // TODO: shit code until here
+
+
                 break;
         }
-    }
-
-    private void SupervisorDayStartSequence()
-    {
-        GetSupervisorController().DayStartSignal();
-    }
-
-    private void SupervisorDayEndSequence()
-    {
-        GetSupervisorController().DayEndSignal();
     }
     #endregion
 
@@ -164,7 +174,9 @@ public class GameManager : Singleton<GameManager>
         yield return new WaitUntil(() => sceneLoadOperation.progress >= 0.9f);
 
         sceneLoadOperation.allowSceneActivation = true;
+
         yield return new WaitUntil(() => sceneLoadOperation.isDone);
+        
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(dreamSceneName));
         SceneManager.UnloadSceneAsync(oldScene);
     }

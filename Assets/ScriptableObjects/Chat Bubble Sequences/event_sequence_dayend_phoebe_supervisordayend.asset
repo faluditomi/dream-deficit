@@ -10,11 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cbff2057e5baa1e49869a37abcfe0807, type: 3}
-  m_Name: event_sequence_markeroverload_supervisor_till_day_0_var_2
+  m_Name: event_sequence_dayend_phoebe_supervisordayend
   m_EditorClassIdentifier: Assembly-CSharp::ChatBubbleSequence
   messages:
   - chatUser: 2
-    message: You're not analyzing rhyme schemes, oldhead...
-    delayLength: 0
-    typingFlagLength: 1
+    message: This is a day signal.
+    delayLength: 1
+    typingFlagLength: 0.7
+    markables: []
+  - chatUser: 2
+    message: An end of day signal to be exact.
+    delayLength: 1
+    typingFlagLength: 1.5
+    markables: []
+  - chatUser: 2
+    message: May we lay down our mouse and lay ourselves down also.
+    delayLength: 0.5
+    typingFlagLength: 2
     markables: []

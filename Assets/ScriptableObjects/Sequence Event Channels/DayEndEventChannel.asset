@@ -10,5 +10,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e00343f11bfc15a428225e1bb8c1c499, type: 3}
-  m_Name: MarkerOverload
+  m_Name: DayEndEventChannel
   m_EditorClassIdentifier: Assembly-CSharp::SequenceEventChannel
+  eventType: 2

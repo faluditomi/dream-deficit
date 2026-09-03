@@ -20,6 +20,8 @@ public static class Constants
     public static class SequenceEventChannels
     {
         public const string MarkerOverload = AddressablePrefixes.EventChannel + "marker_overload";
+        public const string DayStart = AddressablePrefixes.EventChannel + "day_start";
+        public const string DayEnd = AddressablePrefixes.EventChannel + "day_end";
     }
 
     // TODO: maybe we could rework all the other Constants, so we don't have to have 
@@ -35,17 +37,13 @@ public static class Constants
         public const string MarkerCheatSheetEntry = AddressablePrefixes.Prefab + "marker_cheat_sheet_entry";
         public const string DaySignalButton = AddressablePrefixes.Prefab + "day_signal_button";
         public const string ChatClientUserEntry = AddressablePrefixes.Prefab + "chat_client_user_entry";
+        public const string WindowShadow = AddressablePrefixes.Prefab + "window_shadow";
     }
 
-    // NOTE: chat client log names have to match (case-insensitive) the corresponding chat user's name
     public static class ChatLogs
     {
-        public const string Supervisor = "supervisor";
-    }
-
-    public static class ChatBubbleSequences
-    {
-        public const string DaySignalTest = "day_signal_test";
+        public const string Phoebe = "phoebe";
+        public const string Mara = "mara";
     }
 
     public static class GameObjectNames
@@ -94,7 +92,8 @@ public static class Constants
     {
         Delilah,
         Dave,
-        Supervisor
+        Phoebe,
+        Mara
     }
 
     public enum ChatBubbleSequenceType
@@ -107,6 +106,8 @@ public static class Constants
     public enum SequenceEventType
     {
         MarkerOverload,
+        DayStart,
+        DayEnd,
         Default
     }
     #endregion

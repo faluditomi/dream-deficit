@@ -8,19 +8,28 @@ public abstract class BaseWindowController : MonoBehaviour
     public event Action<GameObject> OnGainedFocusEvent;
     public event Action<GameObject> OnLostFocusEvent;
     protected bool isOpen = false;
-    private bool isTopBarSetup = false;
+    protected bool isTopBarVisible = false;
 
-    protected void SetupTopBar(string windowName)
+    protected void SetupBaseWindow(string windowName, bool isTopBarVisible = true)
     {
-        SetupTopBar(gameObject, windowName);
+        SetupBaseWindow(gameObject, windowName, isTopBarVisible);
     }
 
-    protected void SetupTopBar(GameObject targetWindow, string windowName)
+    protected void SetupBaseWindow(GameObject targetWindow, string windowName, bool isTopBarVisible = true)
     {
         windowGameObject = targetWindow;
         topBarHandler = windowGameObject.AddComponent<TopBarHandler>();
-        topBarHandler.Setup(windowGameObject, windowName, this);
-        isTopBarSetup = true;
+        topBarHandler.Setup(windowGameObject, windowName, this, isTopBarVisible);
+
+        if(isTopBarVisible)
+        {
+            GameObject windowShadowPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.WindowShadow);
+            GameObject windowShadowInstance = Instantiate(windowShadowPrefab, windowGameObject.transform);
+            windowShadowInstance.transform.SetAsFirstSibling();
+            float topBarHeight = topBarHandler.TopBarHeight;
+            RectTransform windowShadowRect = windowShadowInstance.GetComponent<RectTransform>();
+            windowShadowRect.offsetMax = new Vector2(windowShadowRect.offsetMax.x, windowShadowRect.offsetMax.y + topBarHeight);
+        }
     }
 
     public bool GetIsOpen()
@@ -35,8 +44,8 @@ public abstract class BaseWindowController : MonoBehaviour
 
     public void Open()
     {
-        if(!isTopBarSetup) return;
         windowGameObject.transform.SetAsLastSibling();
+        OnGainedFocus();
         topBarHandler.Open();
     }
 

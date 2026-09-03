@@ -9,9 +9,11 @@ public class ChatClientUserEntryController : MonoBehaviour
     private TMP_Text usernameText;
     private TMP_Text lastMessageText;
     private ChatLogController myChatLogController;
+    private ChatClientController chatClientController;
 
     public void Setup(ChatUser chatUser, ChatLog chatLog, string lastMessage, Transform container)
     {
+        chatClientController = FindFirstObjectByType<ChatClientController>();
         profilePictureImage = transform.Find(Constants.GameObjectNames.ProfilePicture).GetComponent<Image>();
         usernameText = transform.Find(Constants.GameObjectNames.Username).GetComponent<TMP_Text>();
         lastMessageText = transform.Find(Constants.GameObjectNames.LastMessage).GetComponent<TMP_Text>();
@@ -21,11 +23,30 @@ public class ChatClientUserEntryController : MonoBehaviour
         usernameText.AddComponent<HighlightHandler>().SetupOnlyHighlight();
         lastMessageText.AddComponent<HighlightHandler>().SetupOnlyHighlight();
         myChatLogController = ChatLogManager.Instance.InstantiateChatLog(chatLog, transform, false, container);
-        GetComponent<Button>().onClick.AddListener(OnEntryClicked);
+
+        GetComponent<Button>().onClick.AddListener(() => {
+            myChatLogController.Open();
+            chatClientController.myChatLogController = myChatLogController;
+        });
+
+        myChatLogController.OnNewMessageEvent += UpdateMessagePreview;
+        myChatLogController.OnGainedFocusEvent += OpenMessagePreview;
     }
 
-    private void OnEntryClicked()
+    private void UpdateMessagePreview(string message)
     {
-        // TODO: open the chat log similar to how the AssignmentEntryController does
+        lastMessageText.text = message;
+
+        if(UIFocusManager.Instance.focusedWindow != myChatLogController && chatClientController.myChatLogController != myChatLogController)
+        {
+            lastMessageText.fontStyle = FontStyles.Bold;
+            lastMessageText.color = Color.white;
+        }
+    }
+
+    private void OpenMessagePreview(GameObject focusedWindow)
+    {
+        lastMessageText.fontStyle = FontStyles.Normal;
+        lastMessageText.color = Color.gray;
     }
 }

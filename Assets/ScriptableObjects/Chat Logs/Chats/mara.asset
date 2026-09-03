@@ -10,7 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ce07874a0e1d7d4d93f5cd5a5632d3c, type: 3}
-  m_Name: supervisor
+  m_Name: mara
   m_EditorClassIdentifier: Assembly-CSharp::ChatLog
-  logName: Supervisor
-  messages: []
+  logName: Mara
+  messages:
+  - chatUser: 3
+    message: greetings father
+    delayLength: 0
+    typingFlagLength: 0
+    markables: []
+  - chatUser: 3
+    message: haveth a lovely first day on the job
+    delayLength: 0
+    typingFlagLength: 0
+    markables: []
