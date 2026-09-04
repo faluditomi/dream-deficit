@@ -70,8 +70,4 @@ public class ChatClientController : BaseWindowController, ILoadable
         myChatLogController.transform.SetAsLastSibling();
         myChatLogController.Open();
     }
-
-    // TODO: there is some weird behaviour with the aggregated notification counter
-        // opening the client doesn't clear the supervisor's messages, even though that's the one opened by default
-    // TODO: the basic ResetNotification doesn't support the new multi log notification setup
 }

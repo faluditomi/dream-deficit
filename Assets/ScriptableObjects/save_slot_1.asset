@@ -26,13 +26,13 @@ MonoBehaviour:
         isBonus: 1
       - logName: third_test
         isBonus: 1
-      unlockedChatLogNames:
-      - k23v92mo0j
+      unlockedChatLogNames: []
       bubbleSequenceNames:
       - event_sequence_dayend_phoebe_supervisordayend
       - event_sequence_daystart_phoebe_supervisordaystart
       - event_sequence_markeroverload_phoebe_simple_1
       - event_sequence_markeroverload_phoebe_simple_2
+      - event_sequence_daystart_mara_simple
       markerTypeNames:
       - Copy Paste Spam
       - Synchronised Activity Spike

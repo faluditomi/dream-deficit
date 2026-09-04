@@ -100,7 +100,8 @@ MonoBehaviour:
   - m_GUID: 775c1a26164edd64690b53ea6db2c71d
     m_Address: chat_bubble_sequence/event_sequence_daystart_mara_simple
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ChatBubbleSequence
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 959302463fe86db418fe1c0ccdc4c5f6
     m_Address: chat_log/phoebe
@@ -174,7 +175,8 @@ MonoBehaviour:
   - m_GUID: fb72ef1046bd8fb4c8af5d6f2dd768d0
     m_Address: chat_log/mara
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ChatLog
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 82f5949a9467544429bdb439791fe7c5, type: 2}
