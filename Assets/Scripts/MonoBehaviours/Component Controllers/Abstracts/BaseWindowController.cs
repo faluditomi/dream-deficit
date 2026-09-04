@@ -5,7 +5,7 @@ public abstract class BaseWindowController : MonoBehaviour
 {
     private TopBarHandler topBarHandler;
     protected GameObject windowGameObject;
-    public event Action<GameObject> OnGainedFocusEvent;
+    public event Action<GameObject, int> OnGainedFocusEvent;
     public event Action<GameObject> OnLostFocusEvent;
     protected bool isOpen = false;
     protected bool isTopBarVisible = false;
@@ -32,6 +32,13 @@ public abstract class BaseWindowController : MonoBehaviour
         }
     }
 
+    public virtual void WindowSpecificSetup(Transform initialiser)
+    {
+        // This can be implemented by inheriting window scripts in case they want to do some extra setup.
+        // It has to be called by the script that initialises the window that wants to use it.
+        // It was created so that the ChatClientWindow can set up it's own MessageNotificationController.
+    }
+
     public bool GetIsOpen()
     {
         return isOpen;
@@ -51,7 +58,9 @@ public abstract class BaseWindowController : MonoBehaviour
 
     public void OnGainedFocus()
     {
-        OnGainedFocusEvent?.Invoke(windowGameObject);
+        int unreadMessages = 0;
+        if(this is ChatLogController chatLogController) unreadMessages = chatLogController.unreadMessages;
+        OnGainedFocusEvent?.Invoke(windowGameObject, unreadMessages);
     }
 
     public void OnLostFocus()

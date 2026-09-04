@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,51 +7,59 @@ using UnityEngine.UI;
 // just take the MessageNotification prefab and place it as a child of the button that opens your chat log
 public class MessageNotificationController : MonoBehaviour
 {
-    [HideInInspector] public ChatLogController myChatLogController;
-    private ChatClientController chatClientController;
-    private TextMeshProUGUI newMessageCounter;
+    [HideInInspector] public List<ChatLogController> myChatLogControllers;
+    private TextMeshProUGUI unreadMessageCounter;
     private Image notificationBackground;
-    private int newMessageCount;
+    private int unreadMessageCount = 0;
 
-    // TODO: if it's the chat client, take all the chat log controller under chat client controller and subscribe with all of them
-    public void Setup(ChatLogController chatLogController, bool isChatClient = false)
+    // We can provide multiple chat log controllers, in case we want the notification counter to keep track of more logs at once.
+    public void Setup(List<ChatLogController> chatLogControllers)
     {
-        chatClientController = FindFirstObjectByType<ChatClientController>();
-        newMessageCounter = GetComponentInChildren<TextMeshProUGUI>();
+        unreadMessageCounter = GetComponentInChildren<TextMeshProUGUI>();
         notificationBackground = GetComponentInChildren<Image>();
-        myChatLogController = chatLogController;
-        myChatLogController.OnNewMessageEvent += UpdateNotification;
-        myChatLogController.OnGainedFocusEvent += ResetNotification;
+        myChatLogControllers = chatLogControllers.Count > 0 ? chatLogControllers : new List<ChatLogController>();
+
+        foreach(ChatLogController chatLogController in myChatLogControllers)
+        {
+            chatLogController.OnNewMessageEvent += message => AddNotification(message, chatLogController);
+            chatLogController.OnGainedFocusEvent += SubtractNotification;
+        }
+
         notificationBackground.enabled = false;
-        newMessageCounter.gameObject.SetActive(false);
-        newMessageCount = 0;
-        newMessageCounter.text = newMessageCount.ToString();
+        unreadMessageCounter.gameObject.SetActive(false);
+        unreadMessageCounter.text = unreadMessageCount.ToString();
     }
 
     private void OnDestroy()
     {
-        if(myChatLogController != null) myChatLogController.OnNewMessageEvent -= UpdateNotification;
+        if(myChatLogControllers.Count <= 0) return;
+        myChatLogControllers.ForEach(chatLogController => chatLogController.OnNewMessageEvent -= message => AddNotification(message, chatLogController));
+        myChatLogControllers.ForEach(chatLogController => chatLogController.OnGainedFocusEvent -= SubtractNotification);
     }
 
-    private void UpdateNotification(string message)
+    private void AddNotification(string message, ChatLogController chatLogController)
     {
-        if(UIFocusManager.Instance.focusedWindow != myChatLogController && chatClientController.myChatLogController != myChatLogController)
+        if(ChatLogManager.Instance.IsChatLogInFocus(chatLogController)) return;
+
+        if(!unreadMessageCounter.gameObject.activeSelf)
         {
-            if(!newMessageCounter.gameObject.activeSelf)
-            {
-                notificationBackground.enabled = true;
-                newMessageCounter.gameObject.SetActive(true);
-            }
-            newMessageCount++;
-            newMessageCounter.text = newMessageCount.ToString();
+            notificationBackground.enabled = true;
+            unreadMessageCounter.gameObject.SetActive(true);
         }
+
+        unreadMessageCount++;
+        unreadMessageCounter.text = unreadMessageCount.ToString();
     }
 
-    private void ResetNotification(GameObject focusedWindow)
+    private void SubtractNotification(GameObject focusedWindow, int unreadMessages)
     {
-        notificationBackground.enabled = false;
-        newMessageCounter.gameObject.SetActive(false);
-        newMessageCount = 0;
-        newMessageCounter.text = newMessageCount.ToString();
+        unreadMessageCount -= unreadMessages;
+        unreadMessageCounter.text = unreadMessageCount.ToString();
+
+        if(unreadMessageCount == 0)
+        {
+            notificationBackground.enabled = false;
+            unreadMessageCounter.gameObject.SetActive(false);
+        }
     }
 }

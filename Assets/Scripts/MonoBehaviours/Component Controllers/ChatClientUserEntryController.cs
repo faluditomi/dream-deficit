@@ -44,7 +44,7 @@ public class ChatClientUserEntryController : MonoBehaviour
         }
     }
 
-    private void OpenMessagePreview(GameObject focusedWindow)
+    private void OpenMessagePreview(GameObject focusedWindow, int unreadMessages)
     {
         lastMessageText.fontStyle = FontStyles.Normal;
         lastMessageText.color = Color.gray;

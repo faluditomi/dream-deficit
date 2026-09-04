@@ -31,6 +31,7 @@ public class SequenceEventChannel : ScriptableObject
                     existingVariationList.Add(sequenceEventData);
                 }
             }
+
             OnSequenceEvent?.Invoke(sequenceEventData);
         });
 

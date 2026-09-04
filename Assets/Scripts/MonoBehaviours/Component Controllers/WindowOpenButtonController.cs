@@ -36,6 +36,11 @@ public class WindowOpenButtonController : MonoBehaviour
         }
 
         BaseWindowController baseWindowController = newWindowGameObject.GetComponent<BaseWindowController>();
-        GetComponent<Button>().onClick.AddListener(() => baseWindowController.Open());
+        baseWindowController.WindowSpecificSetup(transform);
+
+        GetComponent<Button>().onClick.AddListener(() => {
+            baseWindowController.Open();
+            UIFocusManager.Instance.SetFocusedWindow(baseWindowController);
+        });
     }
 }

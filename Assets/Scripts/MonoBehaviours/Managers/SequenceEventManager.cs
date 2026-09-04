@@ -47,6 +47,7 @@ public class SequenceEventManager : Singleton<SequenceEventManager>
     //       (use a switch(eventType) instead of generally handling metadata)
     private bool SpamProtectionCheck(EventChannelMetadata metadata)
     {
+        if(metadata.cooldownDurationInSeconds == 0f) return false;
         if(metadata.isOnCooldown) return true;
         metadata.cooldownCoroutine = StartCoroutine(CooldownCoroutine(metadata));
         return false;
@@ -69,7 +70,9 @@ public class SequenceEventManager : Singleton<SequenceEventManager>
         public static List<EventChannelMetadata> metadata = new List<EventChannelMetadata>
         {
             new EventChannelMetadata(Constants.SequenceEventType.MarkerOverload, 10f),
-            new EventChannelMetadata(Constants.SequenceEventType.Default, 60f)
+            new EventChannelMetadata(Constants.SequenceEventType.DayStart, 0f),
+            new EventChannelMetadata(Constants.SequenceEventType.DayEnd, 0f),
+            new EventChannelMetadata(Constants.SequenceEventType.Default, 0f)
         };
 
         public Constants.SequenceEventType eventType;

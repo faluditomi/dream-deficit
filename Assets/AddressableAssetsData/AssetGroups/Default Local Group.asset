@@ -97,6 +97,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - SequenceEventChannel
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 775c1a26164edd64690b53ea6db2c71d
+    m_Address: chat_bubble_sequence/event_sequence_daystart_mara_simple
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 959302463fe86db418fe1c0ccdc4c5f6
     m_Address: chat_log/phoebe
     m_ReadOnly: 0

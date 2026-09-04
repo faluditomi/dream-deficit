@@ -29,6 +29,7 @@ MonoBehaviour:
       - event_sequence_daystart_phoebe_supervisordaystart
       - event_sequence_markeroverload_phoebe_simple_1
       - event_sequence_markeroverload_phoebe_simple_2
+      - event_sequence_daystart_mara_simple
       markerTypeNames:
       - Copy Paste Spam
       - Synchronised Activity Spike

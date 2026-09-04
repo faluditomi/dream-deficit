@@ -49,7 +49,7 @@ public class UIFocusManager : Singleton<UIFocusManager>
         }
     }
 
-    private void SetFocusedWindow(BaseWindowController window)
+    public void SetFocusedWindow(BaseWindowController window)
     {
         if(focusedWindow == window) return;
         focusedWindow?.OnLostFocus();

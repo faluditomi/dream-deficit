@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ChatClientController : BaseWindowController, ILoadable
@@ -7,6 +8,7 @@ public class ChatClientController : BaseWindowController, ILoadable
     private GameObject chatUserEntryPrefab;
     private Transform content;
     private Transform chatWindowHolder;
+    private Transform myInitialiser;
 
     private void Awake()
     {
@@ -16,6 +18,7 @@ public class ChatClientController : BaseWindowController, ILoadable
         chatWindowHolder = transform.Find(Constants.GameObjectNames.ChatWindowHolder);
         SetupBaseWindow(Constants.WindowAndFileNames.ChatClient);
         GetComponent<TopBarHandler>().Close();
+        OnGainedFocusEvent += (focusedWindow, unreadMessages) => myChatLogController.OnGainedFocus();
     }
 
     public void LoadFromDayData(DayData dayData)
@@ -46,6 +49,17 @@ public class ChatClientController : BaseWindowController, ILoadable
                 .Instance
                 .RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + Constants.ChatUser.Phoebe.ToString().ToLower()));
         }
+
+        
+        if(myInitialiser.GetComponentInChildren<MessageNotificationController>() != null)
+        {
+            myInitialiser.GetComponentInChildren<MessageNotificationController>().Setup(chatWindowHolder.GetComponentsInChildren<ChatLogController>().ToList());
+        }
+    }
+
+    public override void WindowSpecificSetup(Transform initialiser)
+    {
+        myInitialiser = initialiser;
     }
 
     public void BringUserToTopAndOpenLog(ChatLog chatLog)
@@ -57,9 +71,7 @@ public class ChatClientController : BaseWindowController, ILoadable
         myChatLogController.Open();
     }
 
-    // TODO: aggregated notification counter has to be handled
-        // TODO: if we make it so that all scripts that inherit BaseWindowController extend its Setup method instead of using Awake,
-        //       then we can call the BaseWindowController's Setup from the window opener button.
-        //       this would allow us to pass initialiser to the Setup method, and in the case of the ChatClientController, it could be
-        //       able to set up it's own MessageNotificationController (by passing a true isChatClient parameter to the notif controller)
+    // TODO: there is some weird behaviour with the aggregated notification counter
+        // opening the client doesn't clear the supervisor's messages, even though that's the one opened by default
+    // TODO: the basic ResetNotification doesn't support the new multi log notification setup
 }

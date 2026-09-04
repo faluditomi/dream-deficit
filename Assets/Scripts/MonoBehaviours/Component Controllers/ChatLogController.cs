@@ -13,6 +13,8 @@ public class ChatLogController : BaseWindowController
     [HideInInspector] public List<ChatBubble> messages;
     public event System.Action<string> OnNewMessageEvent;
     public event System.Action OnDestroyEvent;
+    // TODO: subscribe to newmessage
+    public int unreadMessages = 0;
 
     // The chat log window can be initialised without a chat log and a top bar. This is useful for the ChatClientController. 
     public void Setup(ChatLog chatLog, bool needsTopBar = true)
@@ -24,6 +26,7 @@ public class ChatLogController : BaseWindowController
         messages = chatLog.messages;
         PopulateChatLog();
         SetupBaseWindow(chatLog.logName, needsTopBar);
+        OnGainedFocusEvent += (focusedWindow, unreadMessages) => this.unreadMessages = 0;
     }
 
     private void PopulateChatLog()
@@ -88,6 +91,8 @@ public class ChatLogController : BaseWindowController
             ChatBubbleController chatBubbleInstance = Instantiate(chatBubblePrefab, bubbleContainer).GetComponent<ChatBubbleController>();
             chatBubbleInstance.Setup(chatBubble, myChatLog);
             OnNewMessageEvent?.Invoke(chatBubble.message);
+
+            if(!ChatLogManager.Instance.IsChatLogInFocus(this)) unreadMessages++;
         }
 
         GameManager.Instance.TriggerChatBubbleSequence(bubbleSequenceType);

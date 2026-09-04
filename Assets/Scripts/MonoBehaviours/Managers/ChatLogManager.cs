@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class ChatLogManager : Singleton<ChatLogManager>
 {
+    private ChatClientController chatClientController;
     private GameObject chatLogPrefab;
     private Transform windowContainer;
     private Dictionary<ChatLog, ChatLogController> chatLogControllerCache = new Dictionary<ChatLog, ChatLogController>();
@@ -37,7 +38,7 @@ public class ChatLogManager : Singleton<ChatLogManager>
 
             if(initialiser.GetComponentInChildren<MessageNotificationController>() != null)
             {
-                initialiser.GetComponentInChildren<MessageNotificationController>().Setup(chatLogController);
+                initialiser.GetComponentInChildren<MessageNotificationController>().Setup(new List<ChatLogController>() { chatLogController });
             }
 
             return chatLogController;
@@ -54,5 +55,18 @@ public class ChatLogManager : Singleton<ChatLogManager>
     public ChatLogController GetChatLogController(ChatLog chatLog)
     {
         return chatLogControllerCache.ContainsKey(chatLog) ? chatLogControllerCache[chatLog] : null;
+    }
+
+    public bool IsChatLogInFocus(ChatLogController chatLogController)
+    {
+        return UIFocusManager.Instance.focusedWindow == chatLogController 
+            || (UIFocusManager.Instance.focusedWindow == GetChatClientController() 
+            && GetChatClientController().myChatLogController == chatLogController);
+    }
+
+    private ChatClientController GetChatClientController()
+    {
+        if(chatClientController == null) chatClientController = FindFirstObjectByType<ChatClientController>();
+        return chatClientController;
     }
 }
