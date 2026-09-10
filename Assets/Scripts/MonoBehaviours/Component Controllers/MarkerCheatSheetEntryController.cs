@@ -1,7 +1,6 @@
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine;
-using Unity.VisualScripting;
 
 public class MarkerCheatSheetEntryController : MonoBehaviour
 {
@@ -21,9 +20,9 @@ public class MarkerCheatSheetEntryController : MonoBehaviour
         descriptionText.text = markerType.description;
         keycodeText.text = "Keybind: " + markerType.keycode.ToString();
 
-        nameText.AddComponent<HighlightHandler>().SetupOnlyHighlight();
-        descriptionText.AddComponent<HighlightHandler>().SetupOnlyHighlight();
-        keycodeText.AddComponent<HighlightHandler>().SetupOnlyHighlight();
+        nameText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
+        descriptionText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
+        keycodeText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
 
         isSetUp = true;
     }

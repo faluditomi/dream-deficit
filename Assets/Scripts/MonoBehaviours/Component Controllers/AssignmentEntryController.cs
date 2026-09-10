@@ -22,7 +22,7 @@ public class AssignmentEntryController : MonoBehaviour
         animator = GetComponent<Animator>();
         // the chat window is always instantiated (and starts closed). locked logs keep it
         // closed until the player unlocks them; content stays suppressed by the locked-log
-        // guards in ChatLogController.RunBubbleSequence and SaveManager.GetSequencedChatBubblesForChatLog
+        // drop in ConversationRunner.EvaluateEntries
         myChatLogController = ChatLogManager.Instance.InstantiateChatLog(chatLog, transform);
         lockPanel.SetActive(isLocked);
         GetComponent<Button>().onClick.AddListener(OnEntryClicked);

@@ -6,19 +6,18 @@ using System.Reflection;
 public class DayData
 {
     public int dayNumber;
-    public List<ChatLogEntry> activeChatLogs = new List<ChatLogEntry>();
+    public List<ChatLogEntry> activeAssignments = new List<ChatLogEntry>();
     // runtime-only unlock state — never seeded from the template
     public List<string> unlockedChatLogNames = new List<string>();
-    public List<string> bubbleSequenceNames = new List<string>();
     public List<string> markerTypeNames = new List<string>();
     public List<string> activeChatClientUsers = new List<string>();
     public List<MarkerData> markerData = new List<MarkerData>();
 
     public List<ResolvedChatLogEntry> GetActiveChatLogEntries()
     {
-        if(activeChatLogs == null) activeChatLogs = new List<ChatLogEntry>();
+        if(activeAssignments == null) activeAssignments = new List<ChatLogEntry>();
 
-        return activeChatLogs
+        return activeAssignments
             .Where(entry => entry != null && !string.IsNullOrEmpty(entry.logName))
             .Select(entry => new ResolvedChatLogEntry
             {
@@ -31,7 +30,7 @@ public class DayData
             .ToList();
     }
 
-    public List<ChatLog> GetActiveChatLogs()
+    public List<ChatLog> GetActiveAssignments()
     {
         return GetActiveChatLogEntries()
             .Select(entry => entry.chatLog)
@@ -40,8 +39,8 @@ public class DayData
 
     public bool IsLogBonus(string logName)
     {
-        if(activeChatLogs == null) return false;
-        ChatLogEntry entry = activeChatLogs.Find(e => e != null && e.logName == logName);
+        if(activeAssignments == null) return false;
+        ChatLogEntry entry = activeAssignments.Find(e => e != null && e.logName == logName);
         return entry != null && entry.isBonus;
     }
 
@@ -59,16 +58,6 @@ public class DayData
     {
         if(unlockedChatLogNames == null) unlockedChatLogNames = new List<string>();
         if(!unlockedChatLogNames.Contains(logName)) unlockedChatLogNames.Add(logName);
-    }
-
-    public List<ChatBubbleSequence> GetSequences()
-    {
-        return bubbleSequenceNames
-            .Where(path => !string.IsNullOrEmpty(path))
-            .Select(path => AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(
-                Constants.AddressablePrefixes.ChatBubbleSequence + path))
-            .Where(seq => seq != null)
-            .ToList();
     }
 
     public List<ChatUser> GetActiveChatClientUsers()

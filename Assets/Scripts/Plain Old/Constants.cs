@@ -5,16 +5,15 @@ public static class Constants
     {
         public const string ChatUser = "chat_user/";
         public const string ChatLog = "chat_log/";
-        public const string ChatBubbleSequence = "chat_bubble_sequence/";
+        public const string ConversationGraph = "conversation_graph/";
         public const string EventChannel = "sequence_event_channel/";
-        public const string EventChannelBubbleSeuquence = "event_chat_bubble_sequence/";
         public const string Prefab = "prefabs/";
     }
 
     public static class AddressableLabels
     {
         public const string EventChannel = "SequenceEventChannel";
-        public const string EventChatBubbleSequence = "EventChatBubbleSequence";
+        public const string ConversationGraph = "ConversationGraph";
     }
 
     public static class SequenceEventChannels
@@ -35,9 +34,9 @@ public static class Constants
         public const string TopBar = AddressablePrefixes.Prefab + "top_bar";
         public const string MarkerCheatSheet = AddressablePrefixes.Prefab + "marker_cheat_sheet";
         public const string MarkerCheatSheetEntry = AddressablePrefixes.Prefab + "marker_cheat_sheet_entry";
-        public const string DaySignalButton = AddressablePrefixes.Prefab + "day_signal_button";
         public const string ChatClientUserEntry = AddressablePrefixes.Prefab + "chat_client_user_entry";
         public const string WindowShadow = AddressablePrefixes.Prefab + "window_shadow";
+        public const string UserChatResponseOption = AddressablePrefixes.Prefab + "user_chat_response_option";
     }
 
     public static class ChatLogs
@@ -66,6 +65,7 @@ public static class Constants
         public const string LastMessage = "Last Message";
         public const string UserListWindow = "User List Window";
         public const string ChatWindowHolder = "Chat Window Holder";
+        public const string PreviewText = "Preview Text";
     }
 
     public static class SceneNames
@@ -90,25 +90,18 @@ public static class Constants
     #region Enums
     public enum ChatUser
     {
-        Delilah,
-        Dave,
-        Phoebe,
-        Mara
-    }
-
-    public enum ChatBubbleSequenceType
-    {
-        Simple,
-        SupervisorDayEnd,
-        SupervisorDayStart
+        Phoebe = 2,
+        Mara = 3,
+        Avner = 4,
+        Moira = 5
     }
 
     public enum SequenceEventType
     {
-        MarkerOverload,
-        DayStart,
-        DayEnd,
-        Default
+        MarkerOverload = 0,
+        DayStart = 1,
+        DayEnd = 2,
+        Default = 3
     }
     #endregion
 }

@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e5b7c0756d8d42b62d2cf79fd15a7, type: 3}
+  m_Name: test_assignment_seed
+  m_EditorClassIdentifier: Assembly-CSharp::ConversationGraph
+  isSeed: 1
+  nodes:
+  - guid: 7cf9a5a6-fca7-4427-85b2-915552086144
+    kind: 0
+    bubble:
+      chatUser: 3
+      message: "eyo can you throw \n"
+      delayLength: 0
+      typingFlagLength: 0
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 40}
+  - guid: 2d926294-442c-49c7-a056-cf2f25aa62b6
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: an apple?
+      delayLength: 0
+      typingFlagLength: 0
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 180}
+  - guid: b3b5c3cd-bbfd-4020-9483-81c3010ddbc1
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: what are you on?
+      delayLength: 0
+      typingFlagLength: 0
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 320}
+  edges: []

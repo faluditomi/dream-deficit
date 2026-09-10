@@ -7,7 +7,7 @@ The assignment docket currently treats every chat log in a day identically — r
 - **DayData** gains a per-log entry struct (`name`, `isBonus`) replacing the flat `activeChatLogNames` string list, plus a runtime-only `unlockedChatLogNames` set that is never seeded from the template.
 - **GameTemplate Editor** shows a "Bonus" toggle on each active chat log row; toggling is saved to the template.
 - **AssignmentEntry** (the docket row) shows the existing Lock panel + unlock animation for bonus logs that are still locked; clicking a locked entry unlocks it (free, no gate), records the unlock on the day's data (persisted at day end), then auto-opens the chat log window.
-- A new accessor (`GetActiveChatLogEntries()`) exposes per-log flags alongside resolved `ChatLog`s; existing `GetActiveChatLogs()` consumers (`MarkerManager`) are unaffected.
+- A new accessor (`GetActiveChatLogEntries()`) exposes per-log flags alongside resolved `ChatLog`s; existing `GetActiveAssignments()` consumers (`MarkerManager`) are unaffected.
 - Chat windows are instantiated for every log at day start (closed). Locked logs keep their window closed until unlocked; the locked-log guards suppress notifications and sequenced content.
 - If a sequenced message targets a chat log that is still locked, the sequence is a no-op (early return, no window created, no notification).
 - **BREAKING:** Existing GameTemplate assets and save files must be re-authored / started fresh — the old `activeChatLogNames` field is removed, not migrated.
@@ -25,7 +25,7 @@ The assignment docket currently treats every chat log in a day identically — r
 ## Impact
 
 - **`Assets/Scripts/Plain Old/DayData.cs`** — `activeChatLogNames` → `List<ChatLogEntry>` (name + isBonus), add `unlockedChatLogNames`, add `GetActiveChatLogEntries()`, add `IsLocked(name)` helper.
-- **`Assets/Scripts/Plain Old/DayData.cs`** consumers — `AssignmentDocketController` uses the new accessor; `MarkerManager` keeps `GetActiveChatLogs()`.
+- **`Assets/Scripts/Plain Old/DayData.cs`** consumers — `AssignmentDocketController` uses the new accessor; `MarkerManager` keeps `GetActiveAssignments()`.
 - **`Assets/Scripts/Editor/GameTemplateEditor.cs`** — chat log row gets a Bonus toggle.
 - **`Assets/Scripts/MonoBehaviours/Component Controllers/AssignmentEntryController.cs`** — Setup receives flags; shows the Lock panel for locked entries; triggers the unlock animation; opens the pre-instantiated window on unlock.
 - **`Assets/Scripts/MonoBehaviours/Managers/ChatLogManager.cs` / `SaveManager.cs`** — locked-log sequence path returns early; DayData is JSON-serialized as-is (new fields must stay JsonUtility-serializable).

@@ -1,5 +1,4 @@
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,13 +19,13 @@ public class ChatClientUserEntryController : MonoBehaviour
         profilePictureImage.sprite = chatUser.profilePicture;
         usernameText.text = chatUser.username;
         lastMessageText.text = lastMessage;
-        usernameText.AddComponent<HighlightHandler>().SetupOnlyHighlight();
-        lastMessageText.AddComponent<HighlightHandler>().SetupOnlyHighlight();
+        usernameText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
+        lastMessageText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
         myChatLogController = ChatLogManager.Instance.InstantiateChatLog(chatLog, transform, false, container);
 
         GetComponent<Button>().onClick.AddListener(() => {
-            myChatLogController.Open();
             chatClientController.myChatLogController = myChatLogController;
+            myChatLogController.Open();
         });
 
         myChatLogController.OnNewMessageEvent += UpdateMessagePreview;

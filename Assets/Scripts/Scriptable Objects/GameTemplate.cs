@@ -15,48 +15,11 @@ public class GameTemplate : ScriptableObject
         public DayData dayData;
     }
 
-    [System.Serializable] public struct SequencedChatLogEntry
-    {
-        public ChatLog chatLog;
-        public List<ChatBubbleSequence> sequences;
-    }
-
     public List<DayDataEntry> dayEntries = new List<DayDataEntry>();
-    public List<SequencedChatLogEntry> sequencedChatLogEntries = new List<SequencedChatLogEntry>();
 
     public Dictionary<int, DayData> DayDataMap
     {
         get { return dayEntries.ToDictionary(entry => entry.dayNumber, entry => entry.dayData); }
-    }
-
-    public Dictionary<ChatLog, List<ChatBubbleSequence>> SequencedChatLogMap
-    {
-        get { return sequencedChatLogEntries.ToDictionary(entry => entry.chatLog, entry => entry.sequences); }
-    }
-
-    public List<ChatBubbleSequence> GetSequencesForChatLog(ChatLog chatLog)
-    {
-        var entry = sequencedChatLogEntries.Find(e => e.chatLog == chatLog);
-        return entry.sequences;
-    }
-
-    public void AddSequenceToChatLog(ChatLog chatLog, ChatBubbleSequence sequence)
-    {
-        if(sequencedChatLogEntries.Any(e => e.chatLog == chatLog))
-        {
-            var entry = sequencedChatLogEntries.Find(e => e.chatLog == chatLog);
-            entry.sequences.Add(sequence);
-        }
-        else
-        {
-            sequencedChatLogEntries.Add(
-                new SequencedChatLogEntry 
-                { 
-                    chatLog = chatLog, 
-                    sequences = new List<ChatBubbleSequence> { sequence } 
-                }
-            );
-        }
     }
 
     public DayData GetDayData(int dayNumber)

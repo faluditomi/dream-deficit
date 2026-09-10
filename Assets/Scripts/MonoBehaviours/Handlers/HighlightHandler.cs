@@ -13,6 +13,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     private string rawText;
     private ChatLog chatLog;
     private ChatBubble chatBubble;
+    private string nodeGuid;
     private MarkerData previousHoveredMarker;
     private MarkerData hoveredMarker;
 
@@ -35,17 +36,24 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         canMark = false;
     }
 
-    public void Setup(ChatLog chatLog, ChatBubble chatBubble, bool canMark)
+    public void Setup(ChatLog chatLog, ChatBubble chatBubble, string nodeGuid, bool canMark)
     {
         this.chatLog = chatLog;
         this.chatBubble = chatBubble;
+        this.nodeGuid = nodeGuid;
         this.canMark = canMark;
+    }
+
+    private List<MarkerData> GetMarkers()
+    {
+        if(string.IsNullOrEmpty(nodeGuid)) return new List<MarkerData>();
+        return MarkerManager.Instance.GetMarkersForChatBubble(chatLog, nodeGuid);
     }
 
     public void OnMouseHover()
     {
         int hoveredCharIndex = GetCurrentCharIndex();
-        var markers = MarkerManager.Instance.GetMarkersForChatBubble(chatBubble);
+        var markers = GetMarkers();
         List<MarkerData> overlapping = markers.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
 
         if(overlapping.Count == 0 && MarkerManager.Instance.activeMarkerType == null)
@@ -199,7 +207,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
             if(start != end)
             {
-                MarkerManager.Instance.AddMarker(chatLog, chatBubble, start, end);
+                MarkerManager.Instance.AddMarker(chatLog, chatBubble, nodeGuid, start, end);
             }
         }
 
@@ -342,7 +350,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
     public void Rebuild(Color overrideColor)
     {
-        List<MarkerData> markers = MarkerManager.Instance.GetMarkersForChatBubble(chatBubble);
+        List<MarkerData> markers = GetMarkers();
         if(markers == null || myText == null ||myText.text == null) return;
         myText.text = GetMarkedText(overrideColor, markers);
         myText.ForceMeshUpdate();

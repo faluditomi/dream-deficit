@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e5b7c0756d8d42b62d2cf79fd15a7, type: 3}
+  m_Name: mara_seed
+  m_EditorClassIdentifier: Assembly-CSharp::ConversationGraph
+  isSeed: 1
+  nodes:
+  - guid: 5ecc28cf-af52-4841-b418-d538f72d9691
+    kind: 0
+    bubble:
+      chatUser: 3
+      message: hello, my dear father
+      delayLength: 0
+      typingFlagLength: 0
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 40}
+  - guid: a3fdf6f8-f642-44f7-a7c8-629306e67231
+    kind: 0
+    bubble:
+      chatUser: 3
+      message: haveth a lovely first day on thy new job
+      delayLength: 0
+      typingFlagLength: 0
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 180}
+  edges: []

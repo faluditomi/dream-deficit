@@ -2,9 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// NOTE: When creating a ChatBubbleSequence that we want the auto-sequencer to pick up automatically, we have to name it like:
-///       "event_sequence_" + {SequenceEventType} + "_" + {chatLogName} + "_" + {chatBubbleSequenceType} + "_" + {variationNumber}
-///       The variation number and the underscore prefix can be ommited.
+/// NOTE: this manager is an event bridge — sequence channels broadcast event
+///       types and every conversation runner evaluates its own entries for them.
 public class SequenceEventManager : Singleton<SequenceEventManager>
 {
     private Dictionary<SequenceEventChannel, EventChannelMetadata> eventChannelsWithMetadata = new();
@@ -26,21 +25,29 @@ public class SequenceEventManager : Singleton<SequenceEventManager>
             );
 
             eventChannelsWithMetadata.Add(channel, metadata);
-            channel.OnSequenceEvent += (data) => OnSequenceEvent(channel, data);
+            channel.OnSequenceEvent += (eventType) => OnSequenceEvent(channel, eventType);
         }
     }
 
     private void OnDestroy()
     {
-        foreach(SequenceEventChannel channel in eventChannelsWithMetadata.Keys) channel.OnSequenceEvent -= (data) => OnSequenceEvent(channel, data);
+        foreach(SequenceEventChannel channel in eventChannelsWithMetadata.Keys) channel.OnSequenceEvent -= (eventType) => OnSequenceEvent(channel, eventType);
     }
 
-    private void OnSequenceEvent(SequenceEventChannel channel, SequenceEventData data)
+    private void OnSequenceEvent(SequenceEventChannel channel, Constants.SequenceEventType eventType)
     {
         EventChannelMetadata metadata = eventChannelsWithMetadata[channel];
         if(metadata != null && SpamProtectionCheck(metadata)) return;
-        ChatBubbleSequence sequence = AddressableManager.Instance.RetrieveAddressable<ChatBubbleSequence>(Constants.AddressablePrefixes.ChatBubbleSequence + data.chatBubbleSequenceName);
-        data.chatLogController.RunBubbleSequence(sequence, data.chatBubbleSequenceType);
+
+        // NOTE: this manager is now an event bridge: on a raise it forwards the event
+        //       type to the ConversationManager, which asks every runner to evaluate its entries.
+        if(ConversationManager.Instance == null)
+        {
+            Debug.LogWarning($"SequenceEventManager: ConversationManager is not initialized yet, sequence event '{eventType}' was dropped.");
+            return;
+        }
+
+        ConversationManager.Instance.OnSequenceEvent(eventType);
     }
 
     // NOTE: this could later be expanded to handle checks based on event types also

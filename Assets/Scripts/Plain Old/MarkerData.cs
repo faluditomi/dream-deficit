@@ -7,7 +7,7 @@ public class MarkerData
     // Serializable fields (stored)
     public string markerTypeName;
     public string chatLogPath;
-    public int chatBubbleIndex;
+    public string nodeGuid;
     public int startIndex;
     public int endIndex;
     public int dayNumber;
@@ -20,18 +20,18 @@ public class MarkerData
 
     public MarkerData
     (
-        MarkerType markerType, 
-        ChatLog chatLog, 
-        ChatBubble chatBubble, 
-        int startIndex, 
+        MarkerType markerType,
+        ChatLog chatLog,
+        int startIndex,
         int endIndex,
         int dayNumber,
-        float accuracy
+        float accuracy,
+        string nodeGuid
     )
     {
         markerTypeName = markerType?.name ?? string.Empty;
         chatLogPath = chatLog?.logName ?? string.Empty;
-        chatBubbleIndex = (chatLog != null && chatBubble != null && chatLog.messages != null) ? chatLog.messages.IndexOf(chatBubble) : -1;
+        this.nodeGuid = nodeGuid;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
         this.dayNumber = dayNumber;
@@ -71,8 +71,12 @@ public class MarkerData
 
     private ChatBubble ResolveChatBubble()
     {
+        if(string.IsNullOrEmpty(nodeGuid)) return null;
         ChatLog chatLog = ResolveChatLog();
-        if(chatLog == null || chatLog.messages == null || chatBubbleIndex < 0 || chatBubbleIndex >= chatLog.messages.Count) return null;
-        return chatLog.messages[chatBubbleIndex];
+        if(chatLog == null) return null;
+        ConversationNodeData node = chatLog.GetNode(nodeGuid);
+        if(node != null) return node.bubble;
+        Debug.LogWarning($"MarkerData: node '{nodeGuid}' not found in any conversation graph of chat log '{chatLogPath}'.");
+        return null;
     }
 }

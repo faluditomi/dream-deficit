@@ -38,7 +38,7 @@ public class ChatClientController : BaseWindowController, ILoadable
             }
 
             ChatClientUserEntryController entryInstance = Instantiate(chatUserEntryPrefab, content).GetComponent<ChatClientUserEntryController>();
-            string lastMessage = chatLog.messages.Count > 0 ? chatLog.messages[chatLog.messages.Count - 1].message : "";
+            string lastMessage = GetLastDeliveredMessage(chatLog);
             entryInstance.Setup(chatUser, chatLog, lastMessage, chatWindowHolder);
         }
 
@@ -69,5 +69,29 @@ public class ChatClientController : BaseWindowController, ILoadable
         myChatLogController = chatLogController;
         myChatLogController.transform.SetAsLastSibling();
         myChatLogController.Open();
+    }
+
+    private string GetLastDeliveredMessage(ChatLog chatLog)
+    {
+        if(chatLog == null) return string.Empty;
+        ConversationRunner runner = ConversationManager.Instance.GetRunnerForLog(chatLog);
+
+        // most recent played history record, resolved through the log's graphs
+        if(runner != null && runner.history != null && runner.history.Count > 0)
+        {
+            PlayedBubbleRecord lastRecord = runner.history[runner.history.Count - 1];
+            ChatBubble bubble = chatLog.ResolvePlayedBubble(lastRecord);
+
+            if(bubble != null && !string.IsNullOrEmpty(bubble.message))
+            {
+                return bubble.message;
+            }
+        }
+
+        ChatBubble seedBubble = chatLog.GetLastSeedBubble();
+        
+        return seedBubble != null && !string.IsNullOrEmpty(seedBubble.message)
+            ? seedBubble.message
+            : string.Empty;
     }
 }

@@ -1,5 +1,4 @@
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,7 +12,7 @@ public class ChatBubbleController : MonoBehaviour
     private bool isSetUp = false;
 
     #region Setup
-    public void Setup(ChatBubble chatBubble, ChatLog chatlog)
+    public void Setup(ChatBubble chatBubble, ChatLog chatlog, string nodeGuid)
     {
         if(isSetUp || !FindElements()) return;
 
@@ -28,8 +27,8 @@ public class ChatBubbleController : MonoBehaviour
         usernameText.text = chatUser.username;
         messageText.text = myChatBubble.message;
 
-        usernameText.AddComponent<HighlightHandler>().Setup(chatlog, myChatBubble, true);
-        messageText.AddComponent<HighlightHandler>().Setup(chatlog, myChatBubble, true);
+        usernameText.gameObject.AddComponent<HighlightHandler>().Setup(chatlog, myChatBubble, nodeGuid, true);
+        messageText.gameObject.AddComponent<HighlightHandler>().Setup(chatlog, myChatBubble, nodeGuid, true);
 
         isSetUp = true;
     }

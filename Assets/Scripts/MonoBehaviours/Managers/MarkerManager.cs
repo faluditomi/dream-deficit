@@ -60,26 +60,27 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
         }
     }
 
-    public void AddMarker(ChatLog chatLog, ChatBubble chatBubble, int start, int end)
+    public void AddMarker(ChatLog chatLog, ChatBubble chatBubble, string nodeGuid, int start, int end)
     {
         if(!GameManager.Instance.isDayPassing) return;
 
         MarkerData markerData = new MarkerData(
             activeMarkerType,
             chatLog,
-            chatBubble,
             start,
             end,
             GameManager.Instance.CurrentDayNumber,
-            CalculateMarkerAccuracy(chatBubble, start, end)
+            CalculateMarkerAccuracy(chatBubble, start, end),
+            nodeGuid
         );
 
         placedMarkers.Add(markerData);
-        MarkerOverloadEventCheck(chatBubble);
+        MarkerOverloadEventCheck(chatLog, chatBubble, nodeGuid);
     }
 
     private float CalculateMarkerAccuracy(ChatBubble chatBubble, int start, int end)
     {
+        if(chatBubble == null || chatBubble.markables == null) return 0f;
         float accuracy = 0f;
 
         chatBubble.markables.ForEach(markable =>
@@ -99,12 +100,12 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
         return accuracy;
     }
 
-    private void MarkerOverloadEventCheck(ChatBubble chatBubble)
+    private void MarkerOverloadEventCheck(ChatLog chatLog, ChatBubble chatBubble, string nodeGuid)
     {
         int wordCount = chatBubble.message.Split(new char[] { ' ', '\t', '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries).Length;
         int overloadThreshold = Mathf.Max(Mathf.CeilToInt(wordCount * _markerOverloadWordCountModifier), _markerOverloadMinimumThreshold);
         
-        if(overloadThreshold <= GetMarkersForChatBubble(chatBubble).Count)
+        if(overloadThreshold <= GetMarkersForChatBubble(chatLog, nodeGuid).Count)
         {
             markerOverloadSequenceEventChannel.Raise();
         }
@@ -162,14 +163,13 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
         markerHoldAction.Enable();
     }
 
-    public List<MarkerData> GetMarkersForChatBubble(ChatBubble chatBubble)
+    public List<MarkerData> GetMarkersForChatBubble(ChatLog chatLog, string nodeGuid)
     {
-        string chatLogPath = GetChatLogPathFromBubble(chatBubble);
-        int bubbleIndex = GetBubbleIndexInLog(chatBubble);
+        if(chatLog == null || string.IsNullOrEmpty(nodeGuid)) return new List<MarkerData>();
+
         return placedMarkers.Where(m =>
-            m.chatLogPath == chatLogPath &&
-            m.chatBubbleIndex == bubbleIndex &&
-            bubbleIndex >= 0).ToList();
+            m.chatLogPath == chatLog.logName &&
+            m.nodeGuid == nodeGuid).ToList();
     }
 
     /// <summary>
@@ -187,37 +187,6 @@ public class MarkerManager : Singleton<MarkerManager>, ILoadable
         markers.ForEach(m => totalAccuracy += m.accuracy);
 
         return totalAccuracy / markers.Count;
-    }
-
-    private static string GetChatLogPathFromBubble(ChatBubble chatBubble)
-    {
-        if(chatBubble == null) return string.Empty;
-
-        foreach(var log in SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber).GetActiveChatLogs())
-        {
-            if(log != null && log.messages != null && log.messages.Contains(chatBubble))
-            {
-                return log.logName;
-            }
-        }
-
-        return string.Empty;
-    }
-
-    private static int GetBubbleIndexInLog(ChatBubble chatBubble)
-    {
-        if(chatBubble == null) return -1;
-
-        foreach(var log in SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber).GetActiveChatLogs())
-        {
-            if(log != null && log.messages != null)
-            {
-                int index = log.messages.IndexOf(chatBubble);
-                if(index >= 0) return index;
-            }
-        }
-
-        return -1;
     }
 
     public void LoadFromDayData(DayData dayData)

@@ -2,7 +2,7 @@
 
 See proposal.md — Why. Current state that shapes this design:
 
-- `DayData.activeChatLogNames` is a `List<string>` of name-based refs to `ChatLog` assets, resolved via `AddressableManager` at runtime (`GetActiveChatLogs()`), consumed by `AssignmentDocketController` and `MarkerManager` (2×).
+- `DayData.activeChatLogNames` is a `List<string>` of name-based refs to `ChatLog` assets, resolved via `AddressableManager` at runtime (`GetActiveAssignments()`), consumed by `AssignmentDocketController` and `MarkerManager` (2×).
 - `DayData` already mixes authoring data and runtime state (`markerData.accuracy` is runtime-scored, sits next to template structure) — so bonus flags and unlock state both belong here, following the house pattern.
 - `SaveManager.InitializeFromTemplate()` copies template `DayData` entries into slot/runtime by **reference** (the template's `DayData` object is shared until a save rewrites the slot). Any runtime mutation of a field inside the copied `DayData` also touches the template's in-memory object.
 - `ChatLogManager.InstantiateChatLog(chatLog, initialiser)` creates the chat window, caches it, **wires the entry's Button onClick → `Open()`**, and hooks the notification badge. `AssignmentEntryController.Setup()` calls it eagerly.
@@ -53,7 +53,7 @@ Rationale over alternatives:
 
 ### D2 — Accessor split
 
-Add `GetActiveChatLogEntries()` returning `List<ChatLogEntry>` with resolved logs (a small resolved-entry POCO: `ChatLog chatLog`, `bool isBonus`, `bool isUnlocked`). Reimplement `GetActiveChatLogs()` on top of it so `MarkerManager` keeps working unchanged and scoring later has one place to read both flags. `activeChatLogNames`-based lookup for a single log (used by the unlock check) becomes a `Find` over `activeChatLogs`.
+Add `GetActiveChatLogEntries()` returning `List<ChatLogEntry>` with resolved logs (a small resolved-entry POCO: `ChatLog chatLog`, `bool isBonus`, `bool isUnlocked`). Reimplement `GetActiveAssignments()` on top of it so `MarkerManager` keeps working unchanged and scoring later has one place to read both flags. `activeChatLogNames`-based lookup for a single log (used by the unlock check) becomes a `Find` over `activeChatLogs`.
 
 ### D3 — Locked entries instantiate the window closed (no deferral)
 

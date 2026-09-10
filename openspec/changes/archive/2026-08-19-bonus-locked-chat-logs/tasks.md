@@ -4,7 +4,7 @@
 - [x] 1.2 Replace `DayData.activeChatLogNames` with `activeChatLogs: List<ChatLogEntry>` (default-initialized, null-guarded in accessors)
 - [x] 1.3 Add runtime-only `DayData.unlockedChatLogNames: List<string>` — never seeded from template
 - [x] 1.4 Add `DayData.GetActiveChatLogEntries()` returning resolved entries (ChatLog, isBonus, isUnlocked) via AddressableManager
-- [x] 1.5 Reimplement `DayData.GetActiveChatLogs()` on top of `GetActiveChatLogEntries()` so existing consumers (MarkerManager) keep working
+- [x] 1.5 Reimplement `DayData.GetActiveAssignments()` on top of `GetActiveChatLogEntries()` so existing consumers (MarkerManager) keep working
 - [x] 1.6 Add unlock-state helpers on DayData (e.g. `IsLogUnlocked(name)`, `UnlockLog(name)` that appends to `unlockedChatLogNames`) — serialization-safe
 - [x] 1.7 Add `DayData.IsLocked(name)` helper — returns `isBonus && !unlockedChatLogNames.Contains(name)`
 

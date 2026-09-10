@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e5b7c0756d8d42b62d2cf79fd15a7, type: 3}
+  m_Name: moira_seed
+  m_EditorClassIdentifier: Assembly-CSharp::ConversationGraph
+  isSeed: 1
+  nodes:
+  - guid: b5979b2e-9290-4346-ac70-0c0e69390ce1
+    kind: 0
+    bubble:
+      chatUser: 5
+      message: booogo gaaga
+      delayLength: 0
+      typingFlagLength: 0
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 40}
+  - guid: ec3a0dc7-267e-4dce-9bea-53fb8bcc3766
+    kind: 0
+    bubble:
+      chatUser: 5
+      message: ....
+      delayLength: 0
+      typingFlagLength: 0
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 180}
+  - guid: b9e456ff-cb0d-428a-b88a-975f01c96199
+    kind: 0
+    bubble:
+      chatUser: 5
+      message: :D
+      delayLength: 0
+      typingFlagLength: 0
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 320}
+  edges: []

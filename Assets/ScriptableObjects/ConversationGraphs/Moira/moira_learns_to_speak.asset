@@ -1,0 +1,146 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e5b7c0756d8d42b62d2cf79fd15a7, type: 3}
+  m_Name: moira_learns_to_speak
+  m_EditorClassIdentifier: Assembly-CSharp::ConversationGraph
+  isSeed: 0
+  nodes:
+  - guid: 98d5567f-1251-4063-b487-98ded45f3296
+    kind: 0
+    bubble:
+      chatUser: 5
+      message: GRANDPAAAAAAAAA
+      delayLength: 3
+      typingFlagLength: 5
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 320, y: 40}
+  - guid: 69ca1471-59e0-4172-8c39-60ab045ed780
+    kind: 1
+    bubble:
+      chatUser: 0
+      message: 
+      delayLength: 0
+      typingFlagLength: 0
+      markables: []
+    options:
+    - guid: 0f344812-0f07-4e4f-88cd-d9fa74bb0117
+      previewText: WHAT IN THE HELL?!?
+      postedBubble:
+        chatUser: 4
+        message: WHAT IN THE HELL?!?
+        delayLength: 0
+        typingFlagLength: 0
+        markables: []
+      effects: []
+    - guid: bf1bf13f-4574-4ae2-959e-7f5769a69507
+      previewText: mara, is that you?
+      postedBubble:
+        chatUser: 4
+        message: mara, is that you?
+        delayLength: 0
+        typingFlagLength: 0
+        markables: []
+      effects: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 40}
+  - guid: d93ea66c-84e1-463c-b5cc-399eb95a91cb
+    kind: 0
+    bubble:
+      chatUser: 5
+      message: I learned speak :)
+      delayLength: 0.8
+      typingFlagLength: 6
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 1194.2858, y: 40}
+  - guid: 639b1776-9858-48bb-aa46-d0fce70e8871
+    kind: 0
+    bubble:
+      chatUser: 5
+      message: no it is i
+      delayLength: 0.5
+      typingFlagLength: 4
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 936, y: 157.71428}
+  - guid: 4839842e-a57d-4af6-950b-8cae7b755516
+    kind: 4
+    bubble:
+      chatUser: 0
+      message: 
+      delayLength: 0
+      typingFlagLength: 0
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 1440, y: 40}
+  - guid: 110cb7cc-e47d-4a7c-aa0e-cce006085ce0
+    kind: 3
+    bubble:
+      chatUser: 0
+      message: 
+      delayLength: 0
+      typingFlagLength: 0
+      markables: []
+    options: []
+    blocksDay: 0
+    conditions:
+    - kind: 0
+      stringValue: DayStart
+      intValue: 0
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 40, y: 40}
+  edges:
+  - fromNodeGuid: 110cb7cc-e47d-4a7c-aa0e-cce006085ce0
+    fromOptionGuid: 
+    toNodeGuid: 98d5567f-1251-4063-b487-98ded45f3296
+  - fromNodeGuid: 98d5567f-1251-4063-b487-98ded45f3296
+    fromOptionGuid: 
+    toNodeGuid: 69ca1471-59e0-4172-8c39-60ab045ed780
+  - fromNodeGuid: d93ea66c-84e1-463c-b5cc-399eb95a91cb
+    fromOptionGuid: 
+    toNodeGuid: 4839842e-a57d-4af6-950b-8cae7b755516
+  - fromNodeGuid: 69ca1471-59e0-4172-8c39-60ab045ed780
+    fromOptionGuid: bf1bf13f-4574-4ae2-959e-7f5769a69507
+    toNodeGuid: 639b1776-9858-48bb-aa46-d0fce70e8871
+  - fromNodeGuid: 639b1776-9858-48bb-aa46-d0fce70e8871
+    fromOptionGuid: 
+    toNodeGuid: d93ea66c-84e1-463c-b5cc-399eb95a91cb
+  - fromNodeGuid: 69ca1471-59e0-4172-8c39-60ab045ed780
+    fromOptionGuid: 0f344812-0f07-4e4f-88cd-d9fa74bb0117
+    toNodeGuid: d93ea66c-84e1-463c-b5cc-399eb95a91cb

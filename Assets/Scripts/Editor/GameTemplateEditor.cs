@@ -8,10 +8,8 @@ public class GameTemplateEditor : EditorWindow
     private GameTemplate gameTemplate;
     private Vector2 scrollPosition;
     private int selectedDayIndex = -1;
-    private int selectedChatLogIndex = -1;
     private ReorderableList dayReorderableList;
     private bool showMarkerDataFoldout = false;
-    private bool showSequencedChatLogsFoldout = false;
 
     private string[] markerTypeNames;
 
@@ -80,7 +78,6 @@ public class GameTemplateEditor : EditorWindow
         {
             dayReorderableList = null;
             selectedDayIndex = -1;
-            selectedChatLogIndex = -1;
         }
 
         if(gameTemplate == null)
@@ -100,8 +97,6 @@ public class GameTemplateEditor : EditorWindow
             DrawSelectedDay(selectedDayIndex);
         }
 
-        EditorGUILayout.Space();
-        DrawSequencedChatLogsSection();
         EditorGUILayout.Space();
         EditorGUILayout.EndScrollView();
     }
@@ -163,7 +158,7 @@ public class GameTemplateEditor : EditorWindow
         if(entry.dayData != null)
         {
             int markerCount = entry.dayData.markerData != null ? entry.dayData.markerData.Count : 0;
-            int chatLogCount = entry.dayData.activeChatLogs != null ? entry.dayData.activeChatLogs.Count : 0;
+            int chatLogCount = entry.dayData.activeAssignments != null ? entry.dayData.activeAssignments.Count : 0;
             text += " - " + chatLogCount + " logs, " + markerCount + " markers";
         }
         else
@@ -226,25 +221,23 @@ public class GameTemplateEditor : EditorWindow
         EditorGUILayout.Space(10);
         DrawChatClientUsersSection(dayData);
         EditorGUILayout.Space(10);
-        DrawSequenceSection(dayData);
-        EditorGUILayout.Space(10);
         DrawMarkerDataSection(dayData);
     }
 
     private void DrawChatLogSection(DayData dayData)
     {
-        EditorGUILayout.LabelField("Active Chat Logs", EditorStyles.label);
+        EditorGUILayout.LabelField("Active Assignments", EditorStyles.label);
 
-        if(dayData.activeChatLogs == null)
+        if(dayData.activeAssignments == null)
         {
-            dayData.activeChatLogs = new List<ChatLogEntry>();
+            dayData.activeAssignments = new List<ChatLogEntry>();
         }
 
         int chatLogToRemove = -1;
 
-        for(int i = 0; i < dayData.activeChatLogs.Count; i++)
+        for(int i = 0; i < dayData.activeAssignments.Count; i++)
         {
-            ChatLogEntry entry = dayData.activeChatLogs[i];
+            ChatLogEntry entry = dayData.activeAssignments[i];
             EditorGUILayout.BeginHorizontal();
             ChatLog currentLog = FindAssetByName<ChatLog>(entry.logName);
             EditorGUI.BeginChangeCheck();
@@ -275,13 +268,13 @@ public class GameTemplateEditor : EditorWindow
 
         if(chatLogToRemove >= 0)
         {
-            dayData.activeChatLogs.RemoveAt(chatLogToRemove);
+            dayData.activeAssignments.RemoveAt(chatLogToRemove);
             AutoSave();
         }
 
         if(GUILayout.Button("+ Add Chat Log", GUILayout.Width(120)))
         {
-            dayData.activeChatLogs.Add(new ChatLogEntry { logName = string.Empty, isBonus = false });
+            dayData.activeAssignments.Add(new ChatLogEntry { logName = string.Empty, isBonus = false });
             AutoSave();
         }
     }
@@ -424,7 +417,6 @@ public class GameTemplateEditor : EditorWindow
                 }
 
                 EditorGUI.BeginChangeCheck();
-                markerData.chatBubbleIndex = EditorGUILayout.IntField("Bubble Index", markerData.chatBubbleIndex);
                 markerData.startIndex = EditorGUILayout.IntField("Start Index", markerData.startIndex);
                 markerData.endIndex = EditorGUILayout.IntField("End Index", markerData.endIndex);
                 
@@ -446,174 +438,6 @@ public class GameTemplateEditor : EditorWindow
                 MarkerData newMd = new MarkerData();
                 newMd.markerTypeName = markerTypeNames.Length > 0 ? markerTypeNames[0] : string.Empty;
                 dayData.markerData.Add(newMd);
-                AutoSave();
-            }
-
-            EditorGUI.indentLevel--;
-        }
-    }
-
-    private void DrawSequenceSection(DayData dayData)
-    {
-        EditorGUILayout.LabelField("Bubble Sequences", EditorStyles.label);
-
-        if(dayData.bubbleSequenceNames == null)
-        {
-            dayData.bubbleSequenceNames = new List<string>();
-        }
-
-        int sequenceToRemove = -1;
-        
-        for(int i = 0; i < dayData.bubbleSequenceNames.Count; i++)
-        {
-            EditorGUILayout.BeginHorizontal();
-            ChatBubbleSequence currentSeq = FindAssetByName<ChatBubbleSequence>(dayData.bubbleSequenceNames[i]);
-            EditorGUI.BeginChangeCheck();
-            ChatBubbleSequence newSeq = (ChatBubbleSequence)EditorGUILayout.ObjectField(currentSeq, typeof(ChatBubbleSequence), false);
-            
-            if(EditorGUI.EndChangeCheck())
-            {
-                dayData.bubbleSequenceNames[i] = newSeq != null ? newSeq.name : string.Empty;
-                AutoSave();
-            }
-
-            if(GUILayout.Button("-", GUILayout.Width(25)))
-            {
-                sequenceToRemove = i;
-            }
-
-            EditorGUILayout.EndHorizontal();
-        }
-        if(sequenceToRemove >= 0)
-        {
-            dayData.bubbleSequenceNames.RemoveAt(sequenceToRemove);
-            AutoSave();
-        }
-
-        if(GUILayout.Button("+ Add Sequence", GUILayout.Width(120)))
-        {
-            dayData.bubbleSequenceNames.Add(string.Empty);
-            AutoSave();
-        }
-    }
-
-    private void DrawSequencedChatLogsSection()
-    {
-        showSequencedChatLogsFoldout = EditorGUILayout.Foldout(showSequencedChatLogsFoldout, "Sequenced Chat Logs", true);
-
-        if(showSequencedChatLogsFoldout)
-        {
-            EditorGUI.indentLevel++;
-            EditorGUILayout.BeginHorizontal();
-
-            if(GUILayout.Button("Add Chat Log Entry", GUILayout.Width(140)))
-            {
-                gameTemplate.sequencedChatLogEntries.Add(new GameTemplate.SequencedChatLogEntry
-                {
-                    chatLog = null,
-                    sequences = new List<ChatBubbleSequence>()
-                });
-                selectedChatLogIndex = gameTemplate.sequencedChatLogEntries.Count - 1;
-                AutoSave();
-            }
-
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.Space(5);
-            int sequencedChatLogToRemove = -1;
-
-            for(int i = 0; i < gameTemplate.sequencedChatLogEntries.Count; i++)
-            {
-                var entry = gameTemplate.sequencedChatLogEntries[i];
-                bool isSelected = (i == selectedChatLogIndex);
-                EditorGUILayout.BeginVertical("box");
-                EditorGUILayout.BeginHorizontal();
-                GUIStyle headerStyle = new GUIStyle(EditorStyles.label);
-                
-                if(isSelected)
-                {
-                    headerStyle.fontStyle = FontStyle.Bold;
-                }
-
-                EditorGUILayout.LabelField("Chat Log #" + (i + 1), headerStyle, GUILayout.Width(100));
-
-                if(GUILayout.Button("Select", GUILayout.Width(60)))
-                {
-                    selectedChatLogIndex = isSelected ? -1 : i;
-                }
-
-                if(GUILayout.Button("X", GUILayout.Width(25)))
-                {
-                    sequencedChatLogToRemove = i;
-                }
-
-                EditorGUILayout.EndHorizontal();
-
-                if(isSelected)
-                {
-                    EditorGUILayout.Space(5);
-                    EditorGUI.BeginChangeCheck();
-                    ChatLog newChatLog = (ChatLog)EditorGUILayout.ObjectField("Chat Log", entry.chatLog, typeof(ChatLog), false);
-                    
-                    if(EditorGUI.EndChangeCheck())
-                    {
-                        entry.chatLog = newChatLog;
-                        gameTemplate.sequencedChatLogEntries[i] = entry;
-                        AutoSave();
-                    }
-
-                    EditorGUILayout.Space(5);
-                    EditorGUILayout.LabelField("Bubble Sequences", EditorStyles.label);
-
-                    if(entry.sequences == null)
-                    {
-                        entry.sequences = new List<ChatBubbleSequence>();
-                        gameTemplate.sequencedChatLogEntries[i] = entry;
-                    }
-
-                    int sequenceIndexToRemove = -1;
-                    
-                    for(int j = 0; j < entry.sequences.Count; j++)
-                    {
-                        EditorGUILayout.BeginHorizontal();
-                        EditorGUI.BeginChangeCheck();
-                        ChatBubbleSequence newSeq = (ChatBubbleSequence)EditorGUILayout.ObjectField(entry.sequences[j], typeof(ChatBubbleSequence), false);
-                        
-                        if(EditorGUI.EndChangeCheck())
-                        {
-                            entry.sequences[j] = newSeq;
-                            gameTemplate.sequencedChatLogEntries[i] = entry;
-                            AutoSave();
-                        }
-
-                        if(GUILayout.Button("-", GUILayout.Width(25)))
-                        {
-                            sequenceIndexToRemove = j;
-                        }
-
-                        EditorGUILayout.EndHorizontal();
-                    }
-
-                    if(sequenceIndexToRemove >= 0)
-                    {
-                        entry.sequences.RemoveAt(sequenceIndexToRemove);
-                        gameTemplate.sequencedChatLogEntries[i] = entry;
-                        AutoSave();
-                    }
-
-                    if(GUILayout.Button("+ Add Sequence", GUILayout.Width(120)))
-                    {
-                        entry.sequences.Add(null);
-                        gameTemplate.sequencedChatLogEntries[i] = entry;
-                        AutoSave();
-                    }
-                }
-
-                EditorGUILayout.EndVertical();
-            }
-
-            if(sequencedChatLogToRemove >= 0)
-            {
-                gameTemplate.sequencedChatLogEntries.RemoveAt(sequencedChatLogToRemove);
                 AutoSave();
             }
 

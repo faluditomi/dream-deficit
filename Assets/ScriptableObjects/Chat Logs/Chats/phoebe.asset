@@ -13,4 +13,6 @@ MonoBehaviour:
   m_Name: phoebe
   m_EditorClassIdentifier: Assembly-CSharp::ChatLog
   logName: Supervisor
-  messages: []
+  graphs:
+  - {fileID: 11400000, guid: 89d07a6acfea6e141aa64805482062b6, type: 2}
+  - {fileID: 11400000, guid: 9d93ead344295694ca0c9f3d6038c52f, type: 2}

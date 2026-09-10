@@ -2,7 +2,6 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -14,6 +13,9 @@ public class GameManager : Singleton<GameManager>
     public float dayLengthInSeconds = 60f;
     private float currentDayTime = 0f;
     public bool isDayPassing = false;
+    // NOTE: set while EndDay is deferred behind an unresolved day-blocking choice.
+    //       Guards EndDay against re-entry so EndOfDaybehaviour can never be started twice.
+    private bool isEndDayDeferred = false;
     [HideInInspector] public Transform focusedWindow;
 
     public int CurrentDayNumber
@@ -52,7 +54,12 @@ public class GameManager : Singleton<GameManager>
     {
         currentDayTime = dayLengthInSeconds;
         UpdateTimeText();
+        // NOTE: restore run-level chat state BEFORE the day's windows are built, so chat log controllers render the restored history during setup,
+        //       and so runners are reused (never recreated) and windows stay subscribed to them. OnDayChanged then guarantees a runner exists for
+        //       every active log before DayStart fires — otherwise the event reaches an empty runner set and conversations never start.
+        ConversationManager.Instance?.RestoreChatState(SaveManager.Instance.chatRunState);
         SaveManager.Instance.LoadDay(CurrentDayNumber);
+        ConversationManager.Instance?.OnDayChanged();
         dayStartEventChannel.Raise();
     }
 
@@ -85,7 +92,25 @@ public class GameManager : Singleton<GameManager>
 
     public void EndDay()
     {
+        // NOTE: the day does not end while any day-blocking choice is unresolved. Defer and
+        //       retry once ConversationManager reports that the blocking choice has been cleared.
+        if(isEndDayDeferred) return;
+
+        if(ConversationManager.Instance.HasUnresolvedDayBlockingChoice)
+        {
+            isEndDayDeferred = true;
+            ConversationManager.Instance.OnDayBlockingChoiceResolved += OnDayBlockingChoiceResolved;
+            return;
+        }
+
         StartCoroutine(EndOfDaybehaviour());
+    }
+
+    private void OnDayBlockingChoiceResolved()
+    {
+        ConversationManager.Instance.OnDayBlockingChoiceResolved -= OnDayBlockingChoiceResolved;
+        isEndDayDeferred = false;
+        EndDay();
     }
 
     private void UpdateTimeText()
@@ -106,59 +131,6 @@ public class GameManager : Singleton<GameManager>
 
         return $"{hours:D2} : {minutes:D2}";
     }
-
-    #region Chat Bubble Sequence Extra Behaviour Activator Logic
-    public void TriggerChatBubbleSequence(Constants.ChatBubbleSequenceType chatBubbleSequenceType)
-    {
-        switch(chatBubbleSequenceType)
-        {
-            case Constants.ChatBubbleSequenceType.Simple:
-                break;
-            case Constants.ChatBubbleSequenceType.SupervisorDayStart:
-            
-            
-                // TODO: these came here from the old SuperVisorController
-                // TODO: for now it's shit code, because later we'll need a central solution for chat responses and this will be a use case for that
-                GameObject daySignalButtonPrefab = AddressableManager.Instance
-                    .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.DaySignalButton);
-                ChatLogController myChatLogController = ChatLogManager.Instance.GetChatLogControllerByLogName(Constants.ChatLogs.Phoebe);
-                Transform chatBubbleHolder = myChatLogController.transform.Find(Constants.GameObjectNames.Viewport).Find(Constants.GameObjectNames.Content);
-                GameObject startDayButton = Instantiate(daySignalButtonPrefab, chatBubbleHolder);
-                Button button = startDayButton.GetComponent<Button>();
-                button.GetComponentInChildren<TMP_Text>().text = "Start Day";
-                button.onClick.AddListener(() => 
-                {
-                    GameManager.Instance.TriggerDayTimePassing();
-                    Destroy(startDayButton);
-                });
-                // TODO: shit code until here
-
-
-                break; 
-            case Constants.ChatBubbleSequenceType.SupervisorDayEnd:
-            
-
-                // TODO: these came here from the old SuperVisorController
-                // TODO: for now it's shit code, because later we'll need a central solution for chat responses and this will be a use case for that
-                GameObject daySignalButtonPrefab2 = AddressableManager.Instance
-                    .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.DaySignalButton);
-                ChatLogController myChatLogController2 = ChatLogManager.Instance.GetChatLogControllerByLogName(Constants.ChatLogs.Phoebe);
-                Transform chatBubbleHolder2 = myChatLogController2.transform.Find(Constants.GameObjectNames.Viewport).Find(Constants.GameObjectNames.Content);
-                GameObject endDayButton = Instantiate(daySignalButtonPrefab2, chatBubbleHolder2);
-                Button button2 = endDayButton.GetComponent<Button>();
-                button2.GetComponentInChildren<TMP_Text>().text = "End Day";
-                button2.onClick.AddListener(() => 
-                {
-                    GameManager.Instance.EndDay();
-                    Destroy(endDayButton);
-                });
-                // TODO: shit code until here
-
-
-                break;
-        }
-    }
-    #endregion
 
     #region Coroutines
     private IEnumerator EndOfDaybehaviour()
