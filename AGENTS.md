@@ -33,22 +33,26 @@ This project uses OpenSpec (spec-driven development). Planning artifacts live in
 ```
 Scripts/
 ├── MonoBehaviours/
-│   ├── Managers/          # Core singletons (GameManager, SaveManager, MarkerManager, AddressableManager, HighlightManager)
-│   ├── Component Controllers/  # Prefab/UI controllers (ChatBubbleController, ChatLogController, SupervisorController, etc.)
+│   ├── Managers/          # Core singletons (GameManager, SaveManager, MarkerManager, AddressableManager,
+│   │                      #   HighlightManager, ConversationManager, ChatLogManager, SequenceEventManager, UIFocusManager)
+│   │                      # ConversationRunner also lives here but is a PLAIN C# class, not a MonoBehaviour
+│   ├── Component Controllers/  # Prefab/UI controllers (ChatBubbleController, ChatLogController, ChatClientController, MarkerFlagController, etc.)
 │   ├── Handlers/          # Input/event handlers (DragHandler, HighlightHandler, PointerHandler, TopBarHandler)
 │   ├── BaseWindowController.cs   # Base class for draggable window UI
 │   ├── NoDragScrollRect.cs       # Custom scroll rect behavior
 │   └── Singleton.cs              # Generic singleton base class
 ├── Plain Old/             # POCOs, data classes, and interfaces
 │   ├── Interfaces/        # IHighlightable, ILoadable, ISavable
-│   └── (data classes)     # ChatBubble, DayData, MarkerData, MarkerType, Constants, etc.
+│   └── (data classes)     # ChatBubble, DayData, MarkerData, MarkerType, Constants, plus conversation data
+│                          #   (ConversationNodeData/EdgeData, ConversationGraphEnums, ConversationConditionClause, ConversationEffectData)
 ├── Scriptable Objects/    # ScriptableObject definitions
 │   ├── ChatBubbleSequence.cs     # Sequence of chat bubbles for dialogue
-│   ├── ChatLog.cs                # Collection of chat messages
+│   ├── ChatLog.cs                # Collection of chat messages (links to related ConversationGraphs)
 │   ├── ChatUser.cs               # Chat user definition
+│   ├── ConversationGraph.cs      # Node/edge graph of conversation flow (Entry/Bubble/Choice/Wait/End)
 │   ├── GameTemplate.cs           # Game run template (tutorial, full game)
 │   └── SaveSlot.cs               # Save slot with day entries
-├── Editor/              # Custom editor scripts (ChatLogEditor, GameTemplateEditor)
+├── Editor/              # Custom editor scripts (ConversationGraphEditor, ConversationNodeView, GameTemplateEditor)
 └── Dev Hacks/           # Development utilities (FrameRateCap)
 ```
 
@@ -65,6 +69,13 @@ Scripts/
 - `ChatBubbleSequence` defines sequences of bubbles for dialogue playback
 - `ChatLogController` runs bubble sequences with typing indicators
 - Chat logs are Addressable assets loaded at runtime
+
+#### Conversation Graph System
+- `ConversationGraph` (ScriptableObject): nodes (`Entry`, `Bubble`, `Choice`, `Wait`, `End`) + a flat edge list; assets live under `Assets/ScriptableObjects/ConversationGraphs/<character>/`
+- `ChatLog.Graphs` resolves related graphs via Addressables (`conversation_graph/` prefix, label + name match)
+- `ConversationManager` (singleton) owns one `ConversationRunner` per chat log
+- `ConversationRunner` (plain C#, not a MonoBehaviour): entry evaluation by `SequenceEvent`, thread walk, parking at wait/choice nodes, day-blocking choices, history/activation state for saves
+- Authoring: `Custom Tools/Conversation Graph Editor` — right-click canvas to add nodes / Layout Graph / Validate Graph. Port rules: the input port is `Multi` (fan-in allowed), output and choice-option ports are `Single` (the runtime follows only the first outgoing edge — fan-out is unsupported). `ConversationGraphView.GetCompatiblePorts` is overridden because Unity 6 ships no default port adapter; ports are created with `typeof(object)`.
 
 #### Marker System
 - `MarkerManager` handles keyboard-driven marker placement on chat text
@@ -92,17 +103,16 @@ GameTemplate → SaveSlot (initialization) → JSON save file (runtime)
 
 ## Current State
 - **Single scene:** `v1 prototye.unity` (note the typo in filename)
-- **Core systems implemented:** Day progression, chat display, marker placement, save/load
+- **Core systems implemented:** Day progression, chat display, marker placement, save/load, conversation graph playback
 - **TODOs in codebase:**
   - Save slot picker/creator menu (currently brute-force assigned)
   - Async Addressable loading (currently synchronous)
-  - Supervisor sequences should come from DayData (currently hardcoded)
   - Safeguard against multiple markers per markable
   - Game loading triggered from menu (currently auto-starts)
 
 ## Asset Locations
 - **Prefabs:** `Assets/Prefabs/` (loaded via Addressables)
-- **ScriptableObjects:** `Assets/ScriptableObjects/` (chat logs, sequences, users, save slots)
+- **ScriptableObjects:** `Assets/ScriptableObjects/` (chat logs, sequences, users, save slots, conversation graphs — per-character folders under `ConversationGraphs/`)
 - **Sprites:** `Assets/Sprites/`
 - **Animations:** `Assets/Animations/`
 - **Materials:** `Assets/Materials/`
@@ -112,7 +122,7 @@ GameTemplate → SaveSlot (initialization) → JSON save file (runtime)
 - Run in Unity Editor Play Mode to test
 - Addressable assets must be built or in play mode with "Use Existing Build" disabled
 - Save data persists in `%APPDATA%/../LocalLow/[CompanyName]/[ProductName]/`
-- Editor scripts exist for ChatLog and GameTemplate inspection
+- Editor tooling: "Custom Tools/Conversation Graph Editor" (graph authoring) and "Custom Tools/Game Template Editor" (template inspection)
 
 ## Naming Conventions
 - **Managers:** Singleton pattern, `ClassName.Instance` access

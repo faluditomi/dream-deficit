@@ -8,23 +8,34 @@ context: |
 
   Architecture:
   - Managers (Singleton pattern): GameManager, SaveManager, MarkerManager,
-    AddressableManager, HighlightManager under Assets/Scripts/MonoBehaviours/Managers/
+    AddressableManager, HighlightManager, ConversationManager, ChatLogManager,
+    SequenceEventManager, UIFocusManager under Assets/Scripts/MonoBehaviours/Managers/
+    (ConversationRunner also lives there but is a plain C# class, not a MonoBehaviour)
   - Data classes (POCOs) under Assets/Scripts/Plain Old/: DayData, MarkerData,
-    ChatBubble, MarkerType, Constants
+    ChatBubble, MarkerType, Constants, plus conversation data (ConversationNodeData,
+    ConversationEdgeData, ConversationGraphEnums, ConversationConditionClause,
+    ConversationEffectData)
   - ScriptableObjects under Assets/ScriptableObjects/: ChatLog, ChatBubbleSequence,
-    ChatUser, GameTemplate, SaveSlot
+    ChatUser, GameTemplate, SaveSlot, ConversationGraph (per-character folders under
+    ConversationGraphs/)
   - Day progression: GameManager.TriggerDayTimePassing() / EndDay()
   - Markers: MarkerManager places keyboard-driven markers on chat text, scored by
     overlap accuracy against Markable targets
+  - Conversation graphs: ConversationGraph nodes (Entry/Bubble/Choice/Wait/End) + a
+    flat edge list; ConversationManager owns one ConversationRunner per chat log
+    (entry evaluation by SequenceEvent, thread walk, wait/choice parking, day-blocking
+    choices). Authored via "Custom Tools/Conversation Graph Editor". Input ports are
+    Multi (fan-in), output/option ports Single (runtime follows only the first edge).
   - Save: SaveManager persists JSON via JsonUtility; SaveSlot + GameTemplate init
-    new saves; ISavable/ILoadable register components
+    new saves; ISavable/ILoadable register components; ConversationManager snapshots
+    run-level chat state
 
   Guardrails for any implementation work:
   - NEVER edit .asset/.prefab/.unity/.csproj/.sln files (binary/YAML, corrupts)
   - All prefabs/data load via AddressableManager.Instance.RetrieveAddressable<T>(address)
   - Managers accessed via Instance singletons; save fields must stay JsonUtility-serializable
-  - Known TODOs: save slot picker menu, async Addressables, DayData-driven
-    supervisor sequences, multi-marker safeguard, menu-triggered game loading
+  - Known TODOs: save slot picker menu, async Addressables,
+    multi-marker safeguard, menu-triggered game loading
 
 # Per-artifact rules (optional)
 rules:
