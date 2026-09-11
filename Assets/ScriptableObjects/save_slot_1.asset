@@ -14,5 +14,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SaveSlot
   slotName: Slot 1
   template: {fileID: 11400000, guid: 3196e0e5350f75f4fa48370e40655a13, type: 2}
-  currentDayNumber: 1
-  dayEntries: []
+  currentDayNumber: 2
+  dayEntries:
+  - dayNumber: 1
+    dayData:
+      dayNumber: 1
+      activeAssignments: []
+      unlockedChatLogNames: []
+      markerTypeNames:
+      - Copy Paste Spam
+      - Synchronised Activity Spike
+      - Persuasion Pattern
+      activeChatClientUsers:
+      - phoebe
+      - mara
+      - moira
+      markerData: []
+  - dayNumber: 2
+    dayData:
+      dayNumber: 2
+      activeAssignments: []
+      unlockedChatLogNames: []
+      markerTypeNames:
+      - Copy Paste Spam
+      - Synchronised Activity Spike
+      - Persuasion Pattern
+      - Narrative Shaping
+      activeChatClientUsers: []
+      markerData: []

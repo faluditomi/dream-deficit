@@ -76,7 +76,7 @@ MonoBehaviour:
     exclusive: 0
     exclusiveGroupId: 
     isRepeatable: 0
-    editorPosition: {x: 1194.2858, y: 40}
+    editorPosition: {x: 968, y: -52}
   - guid: 639b1776-9858-48bb-aa46-d0fce70e8871
     kind: 0
     bubble:
@@ -91,7 +91,7 @@ MonoBehaviour:
     exclusive: 0
     exclusiveGroupId: 
     isRepeatable: 0
-    editorPosition: {x: 936, y: 157.71428}
+    editorPosition: {x: 880, y: 142.28572}
   - guid: 4839842e-a57d-4af6-950b-8cae7b755516
     kind: 4
     bubble:
@@ -106,7 +106,7 @@ MonoBehaviour:
     exclusive: 0
     exclusiveGroupId: 
     isRepeatable: 0
-    editorPosition: {x: 1440, y: 40}
+    editorPosition: {x: 1160, y: 40}
   - guid: 110cb7cc-e47d-4a7c-aa0e-cce006085ce0
     kind: 3
     bubble:

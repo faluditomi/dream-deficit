@@ -91,6 +91,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - ChatLog
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e9b719320c82204695c48a5ca7e4473
+    m_Address: sequence_event_channel/work_start
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - SequenceEventChannel
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 89d07a6acfea6e141aa64805482062b6
     m_Address: conversation_graph/phoebe_seed
     m_ReadOnly: 0
@@ -135,6 +141,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - ConversationGraph
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d75faf1495767574dac9a17150f1b70b
+    m_Address: sequence_event_channel/work_end
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - SequenceEventChannel
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d7c72dbe56d53244c8c5fa072c036e11
     m_Address: conversation_graph/moira_seed

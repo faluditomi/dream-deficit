@@ -42,7 +42,7 @@ MonoBehaviour:
     kind: 0
     bubble:
       chatUser: 2
-      message: good morning! did you read the client email about the deadline?
+      message: good morning! did u see?
       delayLength: 0.4
       typingFlagLength: 0.6
       markables: []
@@ -52,7 +52,7 @@ MonoBehaviour:
     exclusive: 0
     exclusiveGroupId: 
     isRepeatable: 0
-    editorPosition: {x: 339.4286, y: 26.857143}
+    editorPosition: {x: 320, y: 40}
   - guid: aa58b1d6-812f-4646-b5ec-cbca8dea8e24
     kind: 1
     bubble:
@@ -63,10 +63,10 @@ MonoBehaviour:
       markables: []
     options:
     - guid: e3d46c8e-1a16-4968-a654-d717ef0bd6c9
-      previewText: '"we should push back"'
+      previewText: '"we should push back, innit"'
       postedBubble:
         chatUser: 4
-        message: we should push back on the deadline.
+        message: we should push back on the deadline, innit
         delayLength: 0
         typingFlagLength: 0
         markables: []
@@ -95,15 +95,15 @@ MonoBehaviour:
         typingFlagLength: 0
         markables: []
       effects:
-      - operation: 2
-        stringValue: 
+      - operation: 1
+        stringValue: DayEnd
         intValue: 0
     blocksDay: 1
     conditions: []
     exclusive: 0
     exclusiveGroupId: 
     isRepeatable: 0
-    editorPosition: {x: 609.1428, y: 191.42857}
+    editorPosition: {x: 600, y: 40}
   - guid: 71e724dc-98a8-4765-8140-76a6fea0303c
     kind: 0
     bubble:
@@ -169,7 +169,7 @@ MonoBehaviour:
     exclusive: 0
     exclusiveGroupId: 
     isRepeatable: 0
-    editorPosition: {x: 1113.143, y: 320}
+    editorPosition: {x: 1160, y: 40}
   - guid: 36d8d70d-a3f7-427f-8935-6666cb3ab15e
     kind: 4
     bubble:
@@ -184,7 +184,7 @@ MonoBehaviour:
     exclusive: 0
     exclusiveGroupId: 
     isRepeatable: 0
-    editorPosition: {x: 1280.5714, y: 180}
+    editorPosition: {x: 1160, y: 180}
   edges:
   - fromNodeGuid: 5eb9923e-d266-41f5-b577-c389808354fe
     fromOptionGuid: 

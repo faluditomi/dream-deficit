@@ -18,9 +18,15 @@ public static class Constants
 
     public static class SequenceEventChannels
     {
+        // NOTE: DayStart is system-raised when switching to the desktop scene (StartDay),
+        //       DayEnd is player-requested via a choice effect (day ends, transitions to dream),
+        //       WorkStart is player-requested via a choice effect (starts the work clock),
+        //       WorkEnd is system-raised when the work clock reaches zero.
         public const string MarkerOverload = AddressablePrefixes.EventChannel + "marker_overload";
         public const string DayStart = AddressablePrefixes.EventChannel + "day_start";
         public const string DayEnd = AddressablePrefixes.EventChannel + "day_end";
+        public const string WorkStart = AddressablePrefixes.EventChannel + "work_start";
+        public const string WorkEnd = AddressablePrefixes.EventChannel + "work_end";
     }
 
     // TODO: maybe we could rework all the other Constants, so we don't have to have 
@@ -101,7 +107,11 @@ public static class Constants
         MarkerOverload = 0,
         DayStart = 1,
         DayEnd = 2,
-        Default = 3
+        WorkStart = 3,
+        WorkEnd = 4,
+        // NOTE: metadata fallback only (SequenceEventManager), never serialized into
+        //       channel assets or graph assets (event values are stored as names).
+        Default = 5
     }
     #endregion
 }

@@ -25,9 +25,14 @@ public class ConversationManager : Singleton<ConversationManager>
         }
     }
 
-    /// Raised when a day-blocking choice resolves and no other day-blocking choice
-    /// remains unresolved — GameManager uses it to retry a deferred day end.
+    /// Raised when a day-blocking choice resolves and no other day-blocking choice remains unresolved — GameManager uses it to retry a deferred day end.
     public event Action OnDayBlockingChoiceResolved;
+
+    /// Fired for every sequence event after all runners have evaluated entries and re-checked parked waits. 
+    /// This is the single choke point reached by BOTH channel-raised events (via SequenceEventManager) and choice-effect-raised
+    /// events (via ApplyEffects) — subscribers that care about day/work progression (e.g. GameManager) must hook here rather 
+    /// than SequenceEventManager, so the runners see the event before a subscriber tears down the scene or saves the day.
+    public event Action<Constants.SequenceEventType> OnSequenceEventRaised;
 
     private void Update()
     {
@@ -73,8 +78,9 @@ public class ConversationManager : Singleton<ConversationManager>
 
     #region Events
 
-    /// A sequence event fired — every runner evaluates its entries for it, then parked
-    /// waits are re-checked (an event can release a parked thread).
+    /// A sequence event fired — every runner evaluates its entries for it, then parked waits are re-checked (an event can release a parked thread). 
+    /// Raised only AFTER the runner loop completes, so DayEnd/WorkEnd-gated entries and parked waits are evaluated before any OnSequenceEventRaised 
+    /// subscriber acts on the event.
     public void OnSequenceEvent(Constants.SequenceEventType eventType)
     {
         foreach(ConversationRunner runner in runners.Values)
@@ -83,11 +89,12 @@ public class ConversationManager : Singleton<ConversationManager>
             runner.EvaluateEntries(eventType);
             runner.ReevaluateParkedThreads(eventType);
         }
+
+        OnSequenceEventRaised?.Invoke(eventType);
     }
 
-    /// The day changed — every active chat log gets a runner (headless playback must not
-    /// depend on a window being open), one-shot entry activation guards for
-    /// earlier days expire, then day-gated parked waits re-check.
+    /// The day changed — every active chat log gets a runner (headless playback must not depend on a window being open), 
+    /// one-shot entry activation guards for earlier days expire, then day-gated parked waits re-check.
     public void OnDayChanged()
     {
         EnsureRunnersForActiveLogs();
@@ -100,9 +107,8 @@ public class ConversationManager : Singleton<ConversationManager>
         }
     }
 
-    /// Creates a runner for every chat log active on the current day — assignment logs
-    /// and chat client user logs alike — so sequence events always reach them even when
-    /// no window has been opened yet.
+    /// Creates a runner for every chat log active on the current day — assignment logs and chat client user logs alike — 
+    /// so sequence events always reach them even when no window has been opened yet.
     private void EnsureRunnersForActiveLogs()
     {
         DayData dayData = SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber);
@@ -150,14 +156,6 @@ public class ConversationManager : Singleton<ConversationManager>
                     {
                         Debug.LogWarning($"ConversationManager: could not parse RaiseEvent value '{effect.stringValue}'.");
                     }
-                    break;
-
-                case ConversationEffectOperation.StartDayClock:
-                    if(GameManager.Instance != null) GameManager.Instance.TriggerDayTimePassing();
-                    break;
-
-                case ConversationEffectOperation.EndDay:
-                    if(GameManager.Instance != null) GameManager.Instance.EndDay();
                     break;
             }
         }

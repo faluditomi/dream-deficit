@@ -79,6 +79,8 @@ public class SequenceEventManager : Singleton<SequenceEventManager>
             new EventChannelMetadata(Constants.SequenceEventType.MarkerOverload, 10f),
             new EventChannelMetadata(Constants.SequenceEventType.DayStart, 0f),
             new EventChannelMetadata(Constants.SequenceEventType.DayEnd, 0f),
+            new EventChannelMetadata(Constants.SequenceEventType.WorkStart, 0f),
+            new EventChannelMetadata(Constants.SequenceEventType.WorkEnd, 0f),
             new EventChannelMetadata(Constants.SequenceEventType.Default, 0f)
         };
 

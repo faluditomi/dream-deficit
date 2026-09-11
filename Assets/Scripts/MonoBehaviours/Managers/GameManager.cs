@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 public class GameManager : Singleton<GameManager>
 {
     private SequenceEventChannel dayStartEventChannel;
-    private SequenceEventChannel dayEndEventChannel;
+    private SequenceEventChannel workEndEventChannel;
     private TMP_Text timeText;
     [Range(0, 24)] public float dayStartTime = 8f;
     [Range(0, 24)] public float dayEndTime = 17f;
@@ -43,9 +43,10 @@ public class GameManager : Singleton<GameManager>
     private void Start()
     {
         dayStartEventChannel = AddressableManager.Instance.RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.DayStart);
-        dayEndEventChannel = AddressableManager.Instance.RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.DayEnd);
+        workEndEventChannel = AddressableManager.Instance.RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.WorkEnd);
         // TODO: this will have to be called when we select a save slot in the menu
         SaveManager.Instance.LoadGame();
+        ConversationManager.Instance.OnSequenceEventRaised += OnSequenceEventRaised;
         // TODO: this will also have to be called from elsewhere
         StartDay();
     }
@@ -87,7 +88,21 @@ public class GameManager : Singleton<GameManager>
         isDayPassing = false;
         currentDayTime = dayLengthInSeconds;
         timeText.text = FormatTime(dayEndTime);
-        dayEndEventChannel.Raise();
+        if(workEndEventChannel != null) workEndEventChannel.Raise();
+    }
+    
+    private void OnSequenceEventRaised(Constants.SequenceEventType eventType)
+    {
+        switch(eventType)
+        {
+            case Constants.SequenceEventType.WorkStart:
+                TriggerDayTimePassing();
+                break;
+
+            case Constants.SequenceEventType.DayEnd:
+                EndDay();
+                break;
+        }
     }
 
     public void EndDay()

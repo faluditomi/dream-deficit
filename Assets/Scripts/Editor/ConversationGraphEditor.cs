@@ -21,6 +21,22 @@ public class ConversationGraphEditor : EditorWindow
     private ConversationNodeData selectedNodeData;
     private Vector2 inspectorScroll;
 
+    // node GUID -> view map, rebuilt wholesale by RebuildGraphView(); lets inspector
+    // commits refresh a single node's preview in place (design D2)
+    private readonly Dictionary<string, ConversationNodeView> nodeViews = new Dictionary<string, ConversationNodeView>();
+
+    /// In-window clipboard (design D5): deep clones of selected nodes plus the
+    /// internal edges between them, with old→new GUID remaps prepared at paste.
+    private class NodeClipboard
+    {
+        public List<ConversationNodeData> nodes = new List<ConversationNodeData>();
+        public List<ConversationEdgeData> edges = new List<ConversationEdgeData>();
+    }
+
+    // clipboard is scoped to one graph (design D5): cleared when targetGraph changes
+    // or the window closes; never survives a domain reload (declared non-goal)
+    private NodeClipboard clipboard;
+
     // markable authoring state (ported from ChatLogEditor)
     private string editedMessage = string.Empty;
     private int newMarkableMarkerIndex;
@@ -54,26 +70,75 @@ public class ConversationGraphEditor : EditorWindow
 
     private void OnEnable()
     {
+        // NOTE: Unity re-invokes OnEnable on a surviving window after a domain reload
+        //       (e.g. a recompile or the migration's AssetDatabase.Refresh), and the
+        //       native visual tree persists across that reload. Without clearing, a
+        //       second split view stacks under the first and the window renders doubled
+        //       (with the stale graph view in the top half). Clear is a no-op when the
+        //       tree is already empty.
+        rootVisualElement.Clear();
+
         var splitView = new TwoPaneSplitView(0, 300, TwoPaneSplitViewOrientation.Horizontal);
         rootVisualElement.Add(splitView);
 
         graphView = new ConversationGraphView();
         graphView.graphViewChanged = OnGraphViewChanged;
         graphView.SelectionChanged += OnGraphViewSelectionChanged;
+        graphView.CutRequested += OnCutRequested;
+        graphView.CopyRequested += OnCopyRequested;
+        graphView.PasteRequested += OnPasteRequested;
+        graphView.DuplicateRequested += OnDuplicateRequested;
+        graphView.CanPasteHandler = () => clipboard != null && clipboard.nodes.Count > 0 && targetGraph != null;
         graphView.RegisterCallback<ContextualMenuPopulateEvent>(OnBuildContextualMenu);
         splitView.Add(graphView);
 
         inspectorContainer = new IMGUIContainer(DrawInspector);
         splitView.Add(inspectorContainer);
 
+        // NOTE: OnEnable can run again without a preceding OnDisable, so unsubscribe
+        //       before subscribing to keep the static event single-subscribed
+        Selection.selectionChanged -= OnSelectionChanged;
         Selection.selectionChanged += OnSelectionChanged;
+        // undo/redo mutates the graph asset in memory — the canvas must be rebuilt or
+        // the change is invisible (design D5's operations record Undo)
+        Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+        Undo.undoRedoPerformed += OnUndoRedoPerformed;
         OnSelectionChanged();
     }
 
     private void OnDisable()
     {
-        if(graphView != null) graphView.SelectionChanged -= OnGraphViewSelectionChanged;
+        if(graphView != null)
+        {
+            graphView.SelectionChanged -= OnGraphViewSelectionChanged;
+            graphView.CutRequested -= OnCutRequested;
+            graphView.CopyRequested -= OnCopyRequested;
+            graphView.PasteRequested -= OnPasteRequested;
+            graphView.DuplicateRequested -= OnDuplicateRequested;
+            graphView.CanPasteHandler = null;
+        }
         Selection.selectionChanged -= OnSelectionChanged;
+        Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+        nodeViews.Clear();
+        clipboard = null;
+    }
+
+    /// Undo/redo restores the graph asset's serialized state, but the GraphView is a
+    /// separate visual tree that must be rebuilt to reflect it — otherwise Ctrl+Z looks
+    /// like a no-op (the nodes stay on the canvas) (design D5).
+    private void OnUndoRedoPerformed()
+    {
+        if(targetGraph == null) return;
+
+        // the selected node may have been removed by the undo (e.g. undoing a paste)
+        if(selectedNodeData != null && !string.IsNullOrEmpty(selectedNodeData.guid)
+            && targetGraph.GetNode(selectedNodeData.guid) == null)
+        {
+            selectedNodeData = null;
+        }
+
+        RebuildGraphView();
+        inspectorContainer?.MarkDirtyRepaint();
     }
 
     private void OnSelectionChanged()
@@ -82,9 +147,11 @@ public class ConversationGraphEditor : EditorWindow
         if(newTarget == null || newTarget == targetGraph) return;
 
         targetGraph = newTarget;
+        clipboard = null; // clipboard is per-graph (design D5)
         selectedNodeData = null;
-        EnsureDefaultLayout();
+        bool laidOut = EnsureDefaultLayout();
         RebuildGraphView();
+        if(laidOut) FrameGraphContent();
         inspectorContainer?.MarkDirtyRepaint();
     }
 
@@ -94,6 +161,8 @@ public class ConversationGraphEditor : EditorWindow
     {
         if(graphView == null) return;
 
+        nodeViews.Clear();
+
         foreach(GraphElement element in graphView.graphElements.ToList())
         {
             graphView.RemoveElement(element);
@@ -101,15 +170,13 @@ public class ConversationGraphEditor : EditorWindow
 
         if(targetGraph == null) return;
 
-        Dictionary<string, ConversationNodeView> views = new Dictionary<string, ConversationNodeView>();
-
         if(targetGraph.nodes != null)
         {
             foreach(ConversationNodeData node in targetGraph.nodes)
             {
                 if(node == null || string.IsNullOrEmpty(node.guid)) continue;
                 ConversationNodeView view = new ConversationNodeView(node);
-                views[node.guid] = view;
+                nodeViews[node.guid] = view;
                 graphView.AddElement(view);
             }
         }
@@ -119,8 +186,8 @@ public class ConversationGraphEditor : EditorWindow
             foreach(ConversationEdgeData edge in targetGraph.edges)
             {
                 if(edge == null) continue;
-                if(!views.TryGetValue(edge.fromNodeGuid, out ConversationNodeView fromView)) continue;
-                if(!views.TryGetValue(edge.toNodeGuid, out ConversationNodeView toView)) continue;
+                if(!nodeViews.TryGetValue(edge.fromNodeGuid, out ConversationNodeView fromView)) continue;
+                if(!nodeViews.TryGetValue(edge.toNodeGuid, out ConversationNodeView toView)) continue;
 
                 Port outputPort = string.IsNullOrEmpty(edge.fromOptionGuid)
                     ? fromView.OutputPort
@@ -235,7 +302,7 @@ public class ConversationGraphEditor : EditorWindow
         evt.menu.AppendAction("Add Entry Node", _ => AddNode(ConversationNodeKind.Entry));
         evt.menu.AppendAction("Add End Node", _ => AddNode(ConversationNodeKind.End));
         evt.menu.AppendSeparator();
-        evt.menu.AppendAction("Layout Graph", _ => { LayoutGraph(); RebuildGraphView(); });
+        evt.menu.AppendAction("Layout Graph", _ => { LayoutGraph(); RebuildGraphView(); FrameGraphContent(); });
         evt.menu.AppendAction("Validate Graph", _ => ValidateGraph());
     }
 
@@ -310,9 +377,10 @@ public class ConversationGraphEditor : EditorWindow
 
     /// Freshly-authored nodes sit at the origin — run the default layout when any two
     /// nodes overlap. Called on graph open, so manually arranged layouts are untouched.
-    private void EnsureDefaultLayout()
+    /// Returns true when the default layout actually ran (design D3).
+    private bool EnsureDefaultLayout()
     {
-        if(targetGraph == null || targetGraph.nodes == null || targetGraph.nodes.Count < 2) return;
+        if(targetGraph == null || targetGraph.nodes == null || targetGraph.nodes.Count < 2) return false;
 
         for(int i = 0; i < targetGraph.nodes.Count; i++)
         {
@@ -325,10 +393,92 @@ public class ConversationGraphEditor : EditorWindow
                 if(Vector2.Distance(targetGraph.nodes[i].editorPosition, targetGraph.nodes[j].editorPosition) < 1f)
                 {
                     LayoutGraph();
-                    return;
+                    return true;
                 }
             }
         }
+
+        return false;
+    }
+
+    /// Frames all graph content in the center of the viewport. Bounds come from the data
+    /// model (node editorPosition) plus laid-out/placeholder sizes, so — unlike
+    /// FrameAll()/CalculateRectToFitAll() — framing does not depend on a measured layout
+    /// pass and can be applied synchronously. The transform is produced by Unity's own
+    /// GraphView.CalculateFrameTransform, so the fit/centering matches FrameAll exactly.
+    private void FrameGraphContent()
+    {
+        if(graphView == null || targetGraph == null || nodeViews.Count == 0) return;
+
+        ApplyGraphFrame();
+
+        // re-apply once on the next tick so pre-layout placeholder sizes are replaced by
+        // the real laid-out sizes
+        graphView.schedule.Execute(ApplyGraphFrame);
+    }
+
+    /// True when a float is neither NaN nor ±Infinity. Layout sizes read as NaN before
+    /// an element has been laid out, and NaN fails every comparison, so a plain
+    /// `value < threshold` test silently lets NaN through.
+    private static bool IsFinite(float value)
+    {
+        return !float.IsNaN(value) && !float.IsInfinity(value);
+    }
+
+    private void ApplyGraphFrame()
+    {
+        if(graphView == null) return;
+
+        // nominal node footprint, ~= one layout grid cell (columnSpacing 280 x rowSpacing 140)
+        const float fallbackWidth = 240f;
+        const float fallbackHeight = 120f;
+
+        bool hasBounds = false;
+        Rect contentRect = new Rect();
+
+        foreach(ConversationNodeView view in nodeViews.Values)
+        {
+            if(view == null) continue;
+
+            // use the data-model position (the exact content-space coordinate LayoutGraph
+            // writes) plus the element's laid-out size; the size is NaN/zero until the
+            // layout pass has run, so fall back to a nominal footprint
+            Vector2 nodePosition = view.NodeData != null ? view.NodeData.editorPosition : Vector2.zero;
+            if(!IsFinite(nodePosition.x) || !IsFinite(nodePosition.y)) nodePosition = Vector2.zero;
+
+            Vector2 nodeSize = view.layout.size;
+            if(!IsFinite(nodeSize.x) || nodeSize.x <= 1f) nodeSize.x = fallbackWidth;
+            if(!IsFinite(nodeSize.y) || nodeSize.y <= 1f) nodeSize.y = fallbackHeight;
+            Rect nodeRect = new Rect(nodePosition, nodeSize);
+
+            if(!hasBounds)
+            {
+                contentRect = nodeRect;
+                hasBounds = true;
+            }
+            else
+            {
+                contentRect = Rect.MinMaxRect(
+                    Mathf.Min(contentRect.xMin, nodeRect.xMin),
+                    Mathf.Min(contentRect.yMin, nodeRect.yMin),
+                    Mathf.Max(contentRect.xMax, nodeRect.xMax),
+                    Mathf.Max(contentRect.yMax, nodeRect.yMax));
+            }
+        }
+
+        // a non-finite rect would make CalculateFrameTransform emit NaN, which
+        // UpdateViewTransform rejects outright (silent no-op)
+        if(!hasBounds || !IsFinite(contentRect.x) || !IsFinite(contentRect.y)
+            || !IsFinite(contentRect.width) || !IsFinite(contentRect.height)) return;
+
+        // clientRect is the GraphView's own layout rect, exactly what Frame() passes
+        Rect viewport = graphView.layout;
+        if(!IsFinite(viewport.width) || !IsFinite(viewport.height) || viewport.width <= 1f || viewport.height <= 1f) return;
+
+        GraphView.CalculateFrameTransform(contentRect, viewport, 30, out Vector3 translation, out Vector3 scaling);
+        graphView.UpdateViewTransform(translation, scaling);
+        // the editor panel does not always repaint on a pure transform change
+        graphView.MarkDirtyRepaint();
     }
 
     private void AddNode(ConversationNodeKind kind)
@@ -349,9 +499,192 @@ public class ConversationGraphEditor : EditorWindow
         AssetDatabase.SaveAssetIfDirty(targetGraph);
     }
 
+    /// Targeted in-place refresh of the selected node's preview after an inspector
+    /// commit that changed data shown on the node (title, message/condition labels,
+    /// option port labels). Structural changes still go through RebuildGraphView().
+    private void RefreshSelectedNodePreview()
+    {
+        if(selectedNodeData == null || string.IsNullOrEmpty(selectedNodeData.guid)) return;
+        if(nodeViews.TryGetValue(selectedNodeData.guid, out ConversationNodeView view) && view != null)
+        {
+            view.RefreshPreview();
+        }
+    }
+
     private void RecordChange(string operation)
     {
         if(targetGraph != null) Undo.RecordObject(targetGraph, operation);
+    }
+
+    #endregion
+
+    #region Clipboard Operations
+
+    /// Copies the selected nodes plus the edges between them into the in-window
+    /// clipboard (design D5). GUIDs are NOT remapped here — that happens at paste
+    /// time so repeated pastes each get fresh identities. No mutation, no Undo.
+    private void OnCopyRequested()
+    {
+        if(graphView == null) return;
+
+        List<ConversationNodeView> selectedViews = new List<ConversationNodeView>();
+        foreach(ISelectable selectable in graphView.selection)
+        {
+            if(selectable is ConversationNodeView nodeView) selectedViews.Add(nodeView);
+        }
+        if(selectedViews.Count == 0) return;
+
+        HashSet<string> selectedGuids = new HashSet<string>();
+        NodeClipboard copy = new NodeClipboard();
+        foreach(ConversationNodeView view in selectedViews)
+        {
+            if(view.NodeData == null || string.IsNullOrEmpty(view.NodeGuid)) continue;
+            selectedGuids.Add(view.NodeGuid);
+            // JsonUtility round-trip deep-clones the nested lists (markables, options,
+            // conditions, effects) and editorPosition; ScriptableObject references
+            // (Markable.markerType) survive as instance-ID references, which resolve
+            // within the same editor session — the declared clipboard scope (design D5)
+            copy.nodes.Add(JsonUtility.FromJson<ConversationNodeData>(JsonUtility.ToJson(view.NodeData)));
+        }
+
+        if(copy.nodes.Count == 0) return;
+
+        // the payload's edges are the graph edges whose BOTH endpoints are selected
+        if(targetGraph != null && targetGraph.edges != null)
+        {
+            foreach(ConversationEdgeData edge in targetGraph.edges)
+            {
+                if(edge == null) continue;
+                if(!selectedGuids.Contains(edge.fromNodeGuid) || !selectedGuids.Contains(edge.toNodeGuid)) continue;
+                copy.edges.Add(new ConversationEdgeData
+                {
+                    fromNodeGuid = edge.fromNodeGuid,
+                    fromOptionGuid = edge.fromOptionGuid,
+                    toNodeGuid = edge.toNodeGuid
+                });
+            }
+        }
+
+        clipboard = copy;
+    }
+
+    /// Pastes the in-window clipboard (design D5): re-clones each stored node with
+    /// fresh node and option GUIDs, reconnects the internal edges via the old→new
+    /// remap, persists, rebuilds the view, and selects the new nodes. One Undo step
+    /// covers the whole paste — the graph asset is a single object.
+    private void OnPasteRequested()
+    {
+        if(targetGraph == null || clipboard == null || clipboard.nodes.Count == 0) return;
+
+        Undo.RecordObject(targetGraph, "Paste conversation nodes");
+
+        Dictionary<string, string> nodeRemap = new Dictionary<string, string>();
+        Dictionary<string, string> optionRemap = new Dictionary<string, string>();
+        List<string> pastedGuids = new List<string>();
+
+        foreach(ConversationNodeData clipNode in clipboard.nodes)
+        {
+            if(clipNode == null || string.IsNullOrEmpty(clipNode.guid)) continue;
+
+            // re-clone per paste so repeated pastes never share instances
+            ConversationNodeData fresh = JsonUtility.FromJson<ConversationNodeData>(JsonUtility.ToJson(clipNode));
+
+            string newNodeGuid = Guid.NewGuid().ToString();
+            fresh.guid = newNodeGuid;
+            nodeRemap[clipNode.guid] = newNodeGuid;
+
+            if(fresh.options != null)
+            {
+                foreach(ConversationChoiceOptionData option in fresh.options)
+                {
+                    if(option == null) continue;
+                    // record the remap from the clipboard node's option guid before
+                    // overwriting — the re-clone carries the same option guids
+                    string newOptionGuid = Guid.NewGuid().ToString();
+                    optionRemap[option.guid] = newOptionGuid;
+                    option.guid = newOptionGuid;
+                }
+            }
+
+            // offset from the source position so both stay visible and selectable
+            fresh.editorPosition += new Vector2(40f, 40f);
+            targetGraph.nodes.Add(fresh);
+            pastedGuids.Add(newNodeGuid);
+        }
+
+        foreach(ConversationEdgeData edge in clipboard.edges)
+        {
+            if(edge == null) continue;
+            if(!nodeRemap.TryGetValue(edge.fromNodeGuid, out string fromGuid)) continue;
+            if(!nodeRemap.TryGetValue(edge.toNodeGuid, out string toGuid)) continue;
+
+            string optionGuid = string.Empty;
+            if(!string.IsNullOrEmpty(edge.fromOptionGuid))
+            {
+                if(!optionRemap.TryGetValue(edge.fromOptionGuid, out optionGuid)) continue;
+            }
+
+            // Connect dedupes identical edges and SetDirty's the asset
+            targetGraph.Connect(fromGuid, toGuid, optionGuid);
+        }
+
+        PersistGraph();
+        RebuildGraphView();
+
+        // ClearSelection/AddToSelection raise SelectionChanged → OnGraphViewSelectionChanged,
+        // which sets selectedNodeData to the first pasted node and repaints the inspector —
+        // no need to set selectedNodeData manually (design D5)
+        graphView.ClearSelection();
+        foreach(string guid in pastedGuids)
+        {
+            if(nodeViews.TryGetValue(guid, out ConversationNodeView view) && view != null)
+            {
+                graphView.AddToSelection(view);
+            }
+        }
+    }
+
+    /// Duplicate = copy + paste immediately (design D5).
+    private void OnDuplicateRequested()
+    {
+        OnCopyRequested();
+        OnPasteRequested();
+    }
+
+    /// Cut = copy into the clipboard, then remove the source nodes (and their touching
+    /// edges) in one Undo step (design D5). Kept off OnGraphViewChanged's
+    /// elementsToRemove path — that route is for user Delete-key removals and schedules
+    /// per-element delayed rebuilds.
+    private void OnCutRequested()
+    {
+        if(graphView == null) return;
+
+        // capture the guids BEFORE removing — the removal mutates the graph data
+        List<string> removedGuids = new List<string>();
+        foreach(ISelectable selectable in graphView.selection)
+        {
+            if(selectable is ConversationNodeView nodeView && !string.IsNullOrEmpty(nodeView.NodeGuid))
+            {
+                removedGuids.Add(nodeView.NodeGuid);
+            }
+        }
+        if(removedGuids.Count == 0) return;
+
+        OnCopyRequested();
+
+        // one Undo step for the whole cut
+        Undo.RecordObject(targetGraph, "Cut conversation nodes");
+        foreach(string guid in removedGuids)
+        {
+            // RemoveNode also drops every edge touching the node
+            targetGraph.RemoveNode(guid);
+        }
+
+        if(selectedNodeData != null && removedGuids.Contains(selectedNodeData.guid)) selectedNodeData = null;
+
+        PersistGraph();
+        RebuildGraphView();
+        inspectorContainer?.MarkDirtyRepaint();
     }
 
     #endregion
@@ -391,10 +724,10 @@ public class ConversationGraphEditor : EditorWindow
                 DrawChoiceSettings();
                 break;
             case ConversationNodeKind.Wait:
-                DrawConditionList("Wait Conditions", selectedNodeData.conditions);
+                DrawConditionList("Wait Conditions", ConversationEditorTooltips.WaitConditions, selectedNodeData.conditions);
                 break;
             case ConversationNodeKind.Entry:
-                DrawConditionList("Entry Conditions", selectedNodeData.conditions);
+                DrawConditionList("Entry Conditions", ConversationEditorTooltips.EntryConditions, selectedNodeData.conditions);
                 DrawEntrySettings();
                 break;
         }
@@ -406,11 +739,11 @@ public class ConversationGraphEditor : EditorWindow
     {
         ChatBubble bubble = selectedNodeData.bubble;
 
-        EditorGUILayout.LabelField("Bubble Data", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(new GUIContent("Bubble Data", ConversationEditorTooltips.BubbleData), EditorStyles.boldLabel);
         EditorGUI.BeginChangeCheck();
-        Constants.ChatUser newUser = (Constants.ChatUser)EditorGUILayout.EnumPopup("Chat User", bubble.chatUser);
-        float newDelay = EditorGUILayout.Slider("Delay Length", bubble.delayLength, 0f, 10f);
-        float newTyping = EditorGUILayout.Slider("Typing Flag Length", bubble.typingFlagLength, 0f, 10f);
+        Constants.ChatUser newUser = (Constants.ChatUser)EditorGUILayout.EnumPopup(new GUIContent("Chat User", ConversationEditorTooltips.ChatUser), bubble.chatUser);
+        float newDelay = EditorGUILayout.Slider(new GUIContent("Delay Length", ConversationEditorTooltips.DelayLength), bubble.delayLength, 0f, 10f);
+        float newTyping = EditorGUILayout.Slider(new GUIContent("Typing Flag Length", ConversationEditorTooltips.TypingFlagLength), bubble.typingFlagLength, 0f, 10f);
         if(EditorGUI.EndChangeCheck())
         {
             RecordChange("Edit bubble metadata");
@@ -429,7 +762,9 @@ public class ConversationGraphEditor : EditorWindow
 
     private void DrawMessageEditor(ChatBubble bubble)
     {
-        EditorGUILayout.LabelField("Message", EditorStyles.boldLabel);
+        // NOTE: GUILayout.TextArea has no GUIContent overload, so the Message tooltip
+        // lives on this header; it still describes the editable TextArea below it.
+        EditorGUILayout.LabelField(new GUIContent("Message", ConversationEditorTooltips.Message), EditorStyles.boldLabel);
         GUI.SetNextControlName(TextAreaControlName);
         EditorGUI.BeginChangeCheck();
         editedMessage = GUILayout.TextArea(editedMessage, GUI.skin.textArea, GUILayout.Height(90));
@@ -439,6 +774,7 @@ public class ConversationGraphEditor : EditorWindow
             bubble.message = editedMessage;
             bubble.SyncMarkables();
             PersistGraph();
+            RefreshSelectedNodePreview();
         }
 
         if(Event.current.type == EventType.Repaint) CaptureTextAreaSelection();
@@ -472,8 +808,8 @@ public class ConversationGraphEditor : EditorWindow
 
     private void DrawMarkableControls(ChatBubble bubble)
     {
-        EditorGUILayout.LabelField("New Markable", EditorStyles.boldLabel);
-        newMarkableMarkerIndex = EditorGUILayout.Popup("Marker Type", newMarkableMarkerIndex, GetMarkerTypeLabels());
+        EditorGUILayout.LabelField(new GUIContent("New Markable", ConversationEditorTooltips.NewMarkable), EditorStyles.boldLabel);
+        newMarkableMarkerIndex = EditorGUILayout.Popup(new GUIContent("Marker Type", ConversationEditorTooltips.MarkerTypeNew), newMarkableMarkerIndex, GetMarkerTypeLabels());
 
         string selectionDisplay = "No active selection";
         if(currentSelectionStart >= 0 && currentSelectionEnd > currentSelectionStart)
@@ -481,7 +817,11 @@ public class ConversationGraphEditor : EditorWindow
             string selected = editedMessage.Substring(currentSelectionStart, currentSelectionEnd - currentSelectionStart);
             selectionDisplay = $"'{selected}' ({currentSelectionStart} to {currentSelectionEnd - 1})";
         }
-        EditorGUILayout.LabelField("Current Selection", selectionDisplay);
+        // NOTE: wrap the display text in GUIContent — a bare string binds to the
+        //       LabelField(GUIContent, GUIStyle) overload, and Unity's implicit
+        //       string→GUIStyle operator then looks the *text* up as a skin style
+        //       ("Unable to find style 'No active selection' in skin 'DarkSkin'").
+        EditorGUILayout.LabelField(new GUIContent("Current Selection", ConversationEditorTooltips.CurrentSelection), new GUIContent(selectionDisplay));
 
         EditorGUI.BeginDisabledGroup(currentSelectionStart < 0 || currentSelectionEnd <= currentSelectionStart);
         if(GUILayout.Button("Create Markable from Selection"))
@@ -526,7 +866,7 @@ public class ConversationGraphEditor : EditorWindow
 
     private void DrawMarkables(ChatBubble bubble)
     {
-        EditorGUILayout.LabelField("Markables", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(new GUIContent("Markables", ConversationEditorTooltips.Markables), EditorStyles.boldLabel);
         if(bubble.markables == null) bubble.markables = new List<Markable>();
 
         int markableToRemove = -1;
@@ -536,10 +876,10 @@ public class ConversationGraphEditor : EditorWindow
             if(markable == null) continue;
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            EditorGUILayout.LabelField($"Markable {i + 1}", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(new GUIContent($"Markable {i + 1}", ConversationEditorTooltips.Markables), EditorStyles.boldLabel);
 
             int currentMarkerIndex = GetMarkerIndex(markable.markerType);
-            int selectedMarkerIndex = EditorGUILayout.Popup("Marker Type", currentMarkerIndex, GetMarkerTypeLabels());
+            int selectedMarkerIndex = EditorGUILayout.Popup(new GUIContent("Marker Type", ConversationEditorTooltips.MarkerTypeExisting), currentMarkerIndex, GetMarkerTypeLabels());
             if(selectedMarkerIndex != currentMarkerIndex)
             {
                 RecordChange("Change markable type");
@@ -547,7 +887,7 @@ public class ConversationGraphEditor : EditorWindow
                 PersistGraph();
             }
 
-            string newSpan = EditorGUILayout.TextField("Anchor Text", markable.spanText);
+            string newSpan = EditorGUILayout.TextField(new GUIContent("Anchor Text", ConversationEditorTooltips.AnchorText), markable.spanText);
             if(newSpan != markable.spanText)
             {
                 RecordChange("Edit markable anchor text");
@@ -555,7 +895,7 @@ public class ConversationGraphEditor : EditorWindow
                 PersistGraph();
             }
 
-            int newOccurrence = EditorGUILayout.IntField("Occurrence", markable.occurrence);
+            int newOccurrence = EditorGUILayout.IntField(new GUIContent("Occurrence", ConversationEditorTooltips.Occurrence), markable.occurrence);
             if(newOccurrence != markable.occurrence)
             {
                 RecordChange("Edit markable occurrence");
@@ -563,8 +903,8 @@ public class ConversationGraphEditor : EditorWindow
                 PersistGraph();
             }
 
-            EditorGUILayout.LabelField("Indexes", $"{markable.startIndex} - {markable.endIndex}");
-            EditorGUILayout.LabelField("Resolved Text", markable.GetSelectedText(editedMessage));
+            EditorGUILayout.LabelField(new GUIContent("Indexes", ConversationEditorTooltips.Indexes), $"{markable.startIndex} - {markable.endIndex}");
+            EditorGUILayout.LabelField(new GUIContent("Resolved Text", ConversationEditorTooltips.ResolvedText), markable.GetSelectedText(editedMessage));
 
             if(GUILayout.Button("Re-sync indexes"))
             {
@@ -590,19 +930,20 @@ public class ConversationGraphEditor : EditorWindow
 
     private void DrawChoiceSettings()
     {
-        EditorGUILayout.LabelField("Choice Data", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(new GUIContent("Choice Data", ConversationEditorTooltips.ChoiceData), EditorStyles.boldLabel);
 
         EditorGUI.BeginChangeCheck();
-        bool newBlocksDay = EditorGUILayout.Toggle("Blocks Day", selectedNodeData.blocksDay);
+        bool newBlocksDay = EditorGUILayout.Toggle(new GUIContent("Blocks Day", ConversationEditorTooltips.BlocksDay), selectedNodeData.blocksDay);
         if(EditorGUI.EndChangeCheck())
         {
             RecordChange("Toggle blocks day");
             selectedNodeData.blocksDay = newBlocksDay;
             PersistGraph();
+            RefreshSelectedNodePreview();
         }
 
         EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Options (one draft per option)", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(new GUIContent("Options (one draft per option)", ConversationEditorTooltips.OptionsHeader), EditorStyles.boldLabel);
 
         List<ConversationChoiceOptionData> options = selectedNodeData.options;
         if(options == null) selectedNodeData.options = options = new List<ConversationChoiceOptionData>();
@@ -614,18 +955,19 @@ public class ConversationGraphEditor : EditorWindow
             if(option == null) continue;
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            EditorGUILayout.LabelField($"Option {i + 1}", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(new GUIContent($"Option {i + 1}", ConversationEditorTooltips.OptionsHeader), EditorStyles.boldLabel);
 
-            string newPreview = EditorGUILayout.TextField("Preview Text", option.previewText);
+            string newPreview = EditorGUILayout.TextField(new GUIContent("Preview Text", ConversationEditorTooltips.OptionPreviewText), option.previewText);
             if(newPreview != option.previewText)
             {
                 RecordChange("Edit option preview");
                 option.previewText = newPreview;
                 PersistGraph();
+                RefreshSelectedNodePreview();
             }
 
             EditorGUI.BeginChangeCheck();
-            Constants.ChatUser newUser = (Constants.ChatUser)EditorGUILayout.EnumPopup("Posted By", option.postedBubble.chatUser);
+            Constants.ChatUser newUser = (Constants.ChatUser)EditorGUILayout.EnumPopup(new GUIContent("Posted By", ConversationEditorTooltips.PostedBy), option.postedBubble.chatUser);
             if(EditorGUI.EndChangeCheck())
             {
                 RecordChange("Edit option author");
@@ -633,6 +975,9 @@ public class ConversationGraphEditor : EditorWindow
                 PersistGraph();
             }
 
+            // NOTE: EditorGUILayout.TextArea has no GUIContent overload, so the Posted
+            // Message tooltip is carried by this label immediately above the TextArea.
+            EditorGUILayout.LabelField(new GUIContent("Posted Message", ConversationEditorTooltips.PostedMessage));
             EditorGUI.BeginChangeCheck();
             string newMessage = EditorGUILayout.TextArea(option.postedBubble.message, GUI.skin.textArea, GUILayout.Height(60));
             if(EditorGUI.EndChangeCheck())
@@ -667,9 +1012,60 @@ public class ConversationGraphEditor : EditorWindow
         }
     }
 
+    /// <summary>
+    /// Draws a sequence-event value as a popup of the known
+    /// <see cref="Constants.SequenceEventType"/> names (design D4). An unrecognized
+    /// non-empty stored value is appended as a final selected entry so legacy/typo
+    /// strings stay visible and are NOT rewritten until the designer picks a known type.
+    /// Returns the string to store (unchanged if untouched).
+    /// </summary>
+    /// <remarks>
+    /// NOTE: the popup body uses the label-less <c>EditorGUILayout.Popup</c> overload so
+    /// the inspector's condition/effect rows stay one line tall (design D4's call sites
+    /// draw the value inline). A non-empty <paramref name="tooltip"/> therefore draws a
+    /// compact leading "Value" label that carries the hover text — IMGUI binds tooltips
+    /// to a label rect, and the label-less value overload cannot take a GUIContent.
+    /// NOTE: an empty/null stored value maps to no selection (index -1) rather than index
+    /// 0. The task's literal "0 when empty" would make the caller's string-compare see
+    /// "MarkerOverload" != "" on the first repaint and silently persist it; index -1 keeps
+    /// an unset value unchanged while still allowing any option to be picked.
+    /// </remarks>
+    private string DrawSequenceEventPopup(string currentValue, string tooltip = null, params GUILayoutOption[] options)
+    {
+        string[] names = Enum.GetNames(typeof(Constants.SequenceEventType));
+
+        // append the raw stored value when it matches no known name (case-insensitive),
+        // matching the runtime's Enum.TryParse(ignoreCase) + OrdinalIgnoreCase compares
+        bool hasRawValue = !string.IsNullOrEmpty(currentValue)
+            && !names.Any(name => string.Equals(name, currentValue, StringComparison.OrdinalIgnoreCase));
+
+        string[] displayedOptions = hasRawValue ? names.Concat(new[] { currentValue }).ToArray() : names;
+
+        int selectedIndex = -1;
+        if(!string.IsNullOrEmpty(currentValue))
+        {
+            selectedIndex = Array.FindIndex(names, name => string.Equals(name, currentValue, StringComparison.OrdinalIgnoreCase));
+            // non-empty + no name match implies hasRawValue, so the raw entry is last
+            if(selectedIndex < 0) selectedIndex = displayedOptions.Length - 1;
+        }
+
+        if(!string.IsNullOrEmpty(tooltip))
+        {
+            EditorGUILayout.LabelField(new GUIContent("Value", tooltip), GUILayout.Width(38f));
+        }
+
+        int pickedIndex = EditorGUILayout.Popup(selectedIndex, displayedOptions, options);
+
+        // -1 means no selection is active (the stored value was empty and is untouched)
+        if(pickedIndex < 0) return currentValue;
+
+        // the appended raw entry maps back to the untouched stored string
+        return pickedIndex < names.Length ? names[pickedIndex] : currentValue;
+    }
+
     private void DrawEffects(List<ConversationEffectData> effects)
     {
-        EditorGUILayout.LabelField("Effects (applied on pick)", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(new GUIContent("Effects (applied on pick)", ConversationEditorTooltips.EffectsHeader), EditorStyles.boldLabel);
         if(effects == null) return;
 
         int effectToRemove = -1;
@@ -679,7 +1075,8 @@ public class ConversationGraphEditor : EditorWindow
             if(effect == null) continue;
 
             EditorGUILayout.BeginHorizontal();
-            ConversationEffectOperation newOp = (ConversationEffectOperation)EditorGUILayout.EnumPopup(effect.operation, GUILayout.Width(120));
+            EditorGUILayout.LabelField(new GUIContent("Op", ConversationEditorTooltips.EffectOperation), GUILayout.Width(26f));
+            ConversationEffectOperation newOp = (ConversationEffectOperation)EditorGUILayout.EnumPopup(effect.operation, GUILayout.Width(105));
             if(newOp != effect.operation)
             {
                 RecordChange("Edit effect operation");
@@ -690,7 +1087,9 @@ public class ConversationGraphEditor : EditorWindow
             switch(effect.operation)
             {
                 case ConversationEffectOperation.SetFlag:
-                case ConversationEffectOperation.RaiseEvent:
+                {
+                    // flags are arbitrary strings, NOT sequence events — keep free text
+                    EditorGUILayout.LabelField(new GUIContent("Flag", ConversationEditorTooltips.EffectValueFlag), GUILayout.Width(36f));
                     string newStringValue = EditorGUILayout.TextField(effect.stringValue);
                     if(newStringValue != effect.stringValue)
                     {
@@ -699,6 +1098,18 @@ public class ConversationGraphEditor : EditorWindow
                         PersistGraph();
                     }
                     break;
+                }
+                case ConversationEffectOperation.RaiseEvent:
+                {
+                    string newStringValue = DrawSequenceEventPopup(effect.stringValue, ConversationEditorTooltips.EffectValueEvent);
+                    if(newStringValue != effect.stringValue)
+                    {
+                        RecordChange("Edit effect value");
+                        effect.stringValue = newStringValue;
+                        PersistGraph();
+                    }
+                    break;
+                }
             }
 
             if(GUILayout.Button("-", GUILayout.Width(25))) effectToRemove = i;
@@ -720,9 +1131,9 @@ public class ConversationGraphEditor : EditorWindow
         }
     }
 
-    private void DrawConditionList(string title, List<ConversationConditionClause> conditions)
+    private void DrawConditionList(string title, string headerTooltip, List<ConversationConditionClause> conditions)
     {
-        EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(new GUIContent(title, headerTooltip), EditorStyles.boldLabel);
         if(conditions == null) return;
 
         int clauseToRemove = -1;
@@ -732,36 +1143,58 @@ public class ConversationGraphEditor : EditorWindow
             if(clause == null) continue;
 
             EditorGUILayout.BeginHorizontal();
-            ConversationConditionKind newKind = (ConversationConditionKind)EditorGUILayout.EnumPopup(clause.kind, GUILayout.Width(110));
+            EditorGUILayout.LabelField(new GUIContent("Kind", ConversationEditorTooltips.ConditionKind), GUILayout.Width(32f));
+            ConversationConditionKind newKind = (ConversationConditionKind)EditorGUILayout.EnumPopup(clause.kind, GUILayout.Width(105));
             if(newKind != clause.kind)
             {
                 RecordChange("Edit condition kind");
                 clause.kind = newKind;
                 PersistGraph();
+                RefreshSelectedNodePreview();
             }
 
             switch(clause.kind)
             {
                 case ConversationConditionKind.Event:
+                {
+                    string newStringValue = DrawSequenceEventPopup(clause.stringValue, ConversationEditorTooltips.ConditionValueEvent);
+                    if(newStringValue != clause.stringValue)
+                    {
+                        RecordChange("Edit condition value");
+                        clause.stringValue = newStringValue;
+                        PersistGraph();
+                        RefreshSelectedNodePreview();
+                    }
+                    break;
+                }
                 case ConversationConditionKind.RequiredFlag:
+                {
+                    // flags are arbitrary strings, NOT sequence events — keep free text
+                    EditorGUILayout.LabelField(new GUIContent("Flag", ConversationEditorTooltips.ConditionValueFlag), GUILayout.Width(36f));
                     string newStringValue = EditorGUILayout.TextField(clause.stringValue);
                     if(newStringValue != clause.stringValue)
                     {
                         RecordChange("Edit condition value");
                         clause.stringValue = newStringValue;
                         PersistGraph();
+                        RefreshSelectedNodePreview();
                     }
                     break;
+                }
                 case ConversationConditionKind.DayMin:
                 case ConversationConditionKind.DayMax:
+                {
+                    EditorGUILayout.LabelField(new GUIContent("Day", ConversationEditorTooltips.ConditionValueDay), GUILayout.Width(36f));
                     int newIntValue = EditorGUILayout.IntField(clause.intValue);
                     if(newIntValue != clause.intValue)
                     {
                         RecordChange("Edit condition day");
                         clause.intValue = newIntValue;
                         PersistGraph();
+                        RefreshSelectedNodePreview();
                     }
                     break;
+                }
             }
 
             if(GUILayout.Button("-", GUILayout.Width(25))) clauseToRemove = i;
@@ -773,6 +1206,7 @@ public class ConversationGraphEditor : EditorWindow
             RecordChange("Remove condition");
             conditions.RemoveAt(clauseToRemove);
             PersistGraph();
+            RefreshSelectedNodePreview();
         }
 
         if(GUILayout.Button("+ Add Condition"))
@@ -780,34 +1214,37 @@ public class ConversationGraphEditor : EditorWindow
             RecordChange("Add condition");
             conditions.Add(new ConversationConditionClause());
             PersistGraph();
+            RefreshSelectedNodePreview();
         }
     }
 
     private void DrawEntrySettings()
     {
         EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Entry Scheduling", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(new GUIContent("Entry Scheduling", ConversationEditorTooltips.EntryScheduling), EditorStyles.boldLabel);
 
         EditorGUI.BeginChangeCheck();
-        bool newExclusive = EditorGUILayout.Toggle("Exclusive", selectedNodeData.exclusive);
-        string newGroupId = EditorGUILayout.TextField("Exclusive Group Id", selectedNodeData.exclusiveGroupId);
+        bool newExclusive = EditorGUILayout.Toggle(new GUIContent("Exclusive", ConversationEditorTooltips.Exclusive), selectedNodeData.exclusive);
+        string newGroupId = EditorGUILayout.TextField(new GUIContent("Exclusive Group Id", ConversationEditorTooltips.ExclusiveGroupId), selectedNodeData.exclusiveGroupId);
         if(EditorGUI.EndChangeCheck())
         {
             RecordChange("Edit entry scheduling");
             selectedNodeData.exclusive = newExclusive;
             selectedNodeData.exclusiveGroupId = newGroupId;
             PersistGraph();
+            RefreshSelectedNodePreview();
         }
 
         EditorGUILayout.Space();
 
         EditorGUI.BeginChangeCheck();
-        bool newRepeatable = EditorGUILayout.Toggle("Is Repeatable", selectedNodeData.isRepeatable);
+        bool newRepeatable = EditorGUILayout.Toggle(new GUIContent("Is Repeatable", ConversationEditorTooltips.IsRepeatable), selectedNodeData.isRepeatable);
         if(EditorGUI.EndChangeCheck())
         {
             RecordChange("Toggle entry repeatable");
             selectedNodeData.isRepeatable = newRepeatable;
             PersistGraph();
+            RefreshSelectedNodePreview();
         }
     }
 
@@ -948,14 +1385,83 @@ public class ConversationGraphEditor : EditorWindow
     }
 
     #endregion
+
+    /// <summary>
+    /// Single reviewable table of inspector hover-tooltip wording (design D1). Each entry
+    /// explains the RUNTIME effect of the field rather than restating its label, so the
+    /// authoring tool doubles as documentation.
+    /// </summary>
+    private static class ConversationEditorTooltips
+    {
+        public const string ChatUser = "Which chat identity posts this bubble. The player's own identity is Avner.";
+        public const string DelayLength = "Seconds waited before the typing indicator appears for this bubble.";
+        public const string TypingFlagLength = "Seconds the typing indicator shows before the message posts.";
+        public const string Message = "The bubble's message text. Markables are anchored to this text; editing it re-syncs markable indexes.";
+        public const string MarkerTypeNew = "Marker type assigned to a markable created from the current text selection.";
+        public const string MarkerTypeExisting = "Marker type this markable is scored against at runtime.";
+        public const string CurrentSelection = "The text range currently selected in the message above; used to create a markable.";
+        public const string AnchorText = "Literal text the markable anchors to. Indexes are resolved by searching the message for this span.";
+        public const string Occurrence = "Which occurrence of the anchor text to use when it appears more than once (0 = first).";
+        public const string Indexes = "Character range in the message this markable currently resolves to (start - end).";
+        public const string ResolvedText = "The message substring the markable currently resolves to.";
+        public const string BlocksDay = "While this choice is unanswered, the day cannot end — EndDay defers until the player picks an option.";
+        public const string OptionPreviewText = "Text shown on the player's draft reply. May differ from the posted message.";
+        public const string PostedBy = "Chat identity that posts the bubble when this option is picked — normally the player.";
+        public const string PostedMessage = "Message actually posted to the log when this option is picked.";
+        public const string EffectOperation = "What happens when this option is picked: SetFlag records a string flag; RaiseEvent broadcasts a sequence event.";
+        public const string EffectValueFlag = "Flag name recorded on pick. Entry/Wait conditions can require this flag.";
+        public const string EffectValueEvent = "Sequence event raised on pick. WorkStart starts the work clock; DayEnd ends the day (defers behind day-blocking choices).";
+        public const string ConditionKind = "Gate type: Event requires a specific sequence event; DayMin/DayMax bound the day number; RequiredFlag requires a flag.";
+        public const string ConditionValueEvent = "Event type that must fire for this condition to pass.";
+        public const string ConditionValueFlag = "Flag name that must have been set for this condition to pass.";
+        public const string ConditionValueDay = "Day number bound (inclusive) for this condition.";
+        public const string Exclusive = "When true, entries sharing a group id compete per event and exactly one is queued.";
+        public const string ExclusiveGroupId = "Group id for exclusive resolution. Ignored when Exclusive is off (entry is additive).";
+        public const string IsRepeatable = "When true, this entry may activate every time its event fires; when false, at most once per event type per day.";
+
+        // section-header tooltips (design D1: headers that describe editable content)
+        public const string BubbleData = "Chat metadata applied when this bubble node plays.";
+        public const string NewMarkable = "Create a scored marker target from a text selection in the message above.";
+        public const string Markables = "Scored marker targets anchored to spans of this bubble's message.";
+        public const string ChoiceData = "Settings for this choice node.";
+        public const string OptionsHeader = "One draft reply per option; the player picks one to continue the thread.";
+        public const string EffectsHeader = "Effects applied to game state when this option is picked.";
+        public const string EntryScheduling = "Controls when this entry activates relative to other entries.";
+        public const string WaitConditions = "Conditions that must all pass before a thread parked at this wait resumes.";
+        public const string EntryConditions = "Conditions that must all pass for this entry to activate. An empty list means always eligible.";
+    }
 }
 
 /// GraphView shell with zoom/pan/box-select and a public SelectionChanged C# event
 /// (Unity 6's GraphView exposes only a read-only selection list — selection changes
 /// are dispatched by overriding the AddToSelection/RemoveFromSelection virtuals).
+/// Clipboard intents (design D5) follow the same pattern: the default Cut/Copy/Paste/
+/// Duplicate pipeline round-trips through GraphView's element serialization, which
+/// carries no payload for our custom nodes — so the view forwards intents to the
+/// editor window, which owns all data mutation.
 public class ConversationGraphView : GraphView
 {
     public event System.Action SelectionChanged;
+
+    // clipboard intents (design D5) — raised from the trickle-down ExecuteCommandEvent
+    // handler (Ctrl+X/C/V/D) and from the context menu actions rebuilt in
+    // BuildContextualMenu; consumed by ConversationGraphEditor
+    public event System.Action CutRequested;
+    public event System.Action CopyRequested;
+    public event System.Action PasteRequested;
+    public event System.Action DuplicateRequested;
+
+    // paste enablement is owned by the window (the in-memory clipboard lives there —
+    // design D5); the view only consults it in canPaste and in the menu status callback
+    public System.Func<bool> CanPasteHandler;
+
+    // NOTE: UnityEngine.UIElements.EventCommandNames is INTERNAL in Unity 6 — the
+    //       clipboard command names arrive as plain strings on
+    //       ExecuteCommandEvent.commandName, so they are literal constants here
+    private const string CommandCut = "Cut";
+    private const string CommandCopy = "Copy";
+    private const string CommandPaste = "Paste";
+    private const string CommandDuplicate = "Duplicate";
 
     public ConversationGraphView()
     {
@@ -964,6 +1470,104 @@ public class ConversationGraphView : GraphView
         this.AddManipulator(new ContentDragger());
         this.AddManipulator(new SelectionDragger());
         this.AddManipulator(new RectangleSelector());
+
+        // Ctrl+X/C/V/D arrive as ExecuteCommandEvent, NOT KeyDownEvent (Unity 6 GraphView
+        // handles them in its bubble-phase OnExecuteCommand, which for Cut/Copy/Duplicate
+        // calls the non-virtual CutSelectionCallback/CopySelectionCallback/
+        // DuplicateSelectionCallback and for Paste calls PasteCallback — all useless for
+        // our custom nodes). Intercept trickle-down and forward the intents instead,
+        // stopping the event so the default element-serialization pipeline never runs.
+        this.RegisterCallback<ExecuteCommandEvent>(OnExecuteClipboardCommand, TrickleDown.TrickleDown);
+        // NOTE: no ValidateCommandEvent handler is registered — GraphView's own
+        //       OnValidateCommand (registered in its constructor) consults the overridable
+        //       canCutSelection/canCopySelection/canPaste/canDuplicateSelection virtuals,
+        //       so shortcut and menu enablement already reflect the overrides below.
+    }
+
+    // clipboard enablement: the can* virtuals are the ONLY overridable part of the
+    // default clipboard pipeline in Unity 6 (design D5) — the callbacks themselves are
+    // non-virtual and unusable, so the intents above carry the real work
+    protected override bool canCutSelection => HasNodeSelection();
+    protected override bool canCopySelection => HasNodeSelection();
+    protected override bool canDuplicateSelection => HasNodeSelection();
+    protected override bool canPaste => CanPasteHandler != null && CanPasteHandler();
+
+    private bool HasNodeSelection()
+    {
+        foreach(ISelectable selectable in selection)
+        {
+            if(selectable is ConversationNodeView) return true;
+        }
+        return false;
+    }
+
+    private void OnExecuteClipboardCommand(ExecuteCommandEvent evt)
+    {
+        if(evt.commandName == CommandCut)
+        {
+            if(!canCutSelection) return;
+            CutRequested?.Invoke();
+            evt.StopImmediatePropagation();
+        }
+        else if(evt.commandName == CommandCopy)
+        {
+            if(!canCopySelection) return;
+            CopyRequested?.Invoke();
+            evt.StopImmediatePropagation();
+        }
+        else if(evt.commandName == CommandPaste)
+        {
+            if(!canPaste) return;
+            PasteRequested?.Invoke();
+            evt.StopImmediatePropagation();
+        }
+        else if(evt.commandName == CommandDuplicate)
+        {
+            if(!canDuplicateSelection) return;
+            DuplicateRequested?.Invoke();
+            evt.StopImmediatePropagation();
+        }
+        // unhandled commands (Delete, Select All, ...) fall through to the base handler
+    }
+
+    /// The base appends the default Cut/Copy/Paste/Duplicate actions, wired to the
+    /// unusable element-serialization pipeline. Remove them and re-insert our own
+    /// actions at the same positions, wired to the intent events (design D5). The
+    /// window's own OnBuildContextualMenu callback still appends the Add-node /
+    /// Layout / Validate entries afterwards.
+    public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+    {
+        base.BuildContextualMenu(evt);
+
+        // NOTE: Unity 6 removed the nested DropdownMenu.MenuItem type (items are the
+        //       top-level DropdownMenuItem), and only DropdownMenuAction exposes the
+        //       public `name` the defaults are keyed by — match through a cast, not
+        //       ToString() (which yields the type name). .ToList() normalizes the
+        //       collection shape returned by MenuItems().
+        List<DropdownMenuItem> items = evt.menu.MenuItems().ToList();
+        int cutIndex = items.FindIndex(item => item is DropdownMenuAction action && action.name == "Cut");
+        int copyIndex = items.FindIndex(item => item is DropdownMenuAction action && action.name == "Copy");
+        int pasteIndex = items.FindIndex(item => item is DropdownMenuAction action && action.name == "Paste");
+        int duplicateIndex = items.FindIndex(item => item is DropdownMenuAction action && action.name == "Duplicate");
+
+        // nothing to replace (base variant without the clipboard actions) — keep defaults
+        if(cutIndex < 0 && copyIndex < 0 && pasteIndex < 0 && duplicateIndex < 0) return;
+
+        // remove from the highest index to the lowest so earlier indices stay valid
+        int[] removeAt = { duplicateIndex, pasteIndex, copyIndex, cutIndex };
+        for(int i = 0; i < removeAt.Length; i++)
+        {
+            if(removeAt[i] >= 0) evt.menu.RemoveItemAt(removeAt[i]);
+        }
+
+        // DropdownMenuAction callbacks are private, so the defaults cannot be retargeted
+        // in place — insert fresh actions at the slot where "Cut" used to sit, keeping
+        // the four grouped where the defaults were
+        int insertAt = cutIndex >= 0 ? cutIndex : 0;
+        evt.menu.InsertAction(insertAt, "Cut", _ => CutRequested?.Invoke(), _ => canCutSelection ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        evt.menu.InsertAction(insertAt + 1, "Copy", _ => CopyRequested?.Invoke(), _ => canCopySelection ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        evt.menu.InsertAction(insertAt + 2, "Paste", _ => PasteRequested?.Invoke(), _ => canPaste ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        evt.menu.InsertAction(insertAt + 3, "Duplicate", _ => DuplicateRequested?.Invoke(), _ => canDuplicateSelection ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
     }
 
     // Unity 6 ships no default NodeAdapter for PortSource<T>, so the stock
