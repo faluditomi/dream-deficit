@@ -24,7 +24,6 @@ public class ChatClientController : BaseWindowController, ILoadable
     public void LoadFromDayData(DayData dayData)
     {
         List<ChatUser> activeEntries = SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber).GetActiveChatClientUsers();
-
         foreach(Transform child in content) Destroy(child.gameObject);
         
         foreach(ChatUser chatUser in activeEntries)
