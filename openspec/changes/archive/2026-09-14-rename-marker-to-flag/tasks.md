@@ -45,7 +45,7 @@
 
 - [x] 6.1 Rename scripts + `.meta`: `MarkerManager.cs`, `MarkerData.cs`, `MarkerType.cs`, `Markable.cs`, `MarkerFlagController.cs`, `MarkerCheatSheetController.cs`, `MarkerCheatSheetEntryController.cs` to their flag/indicator/flaggable names
 - [x] 6.2 Rename prefabs + `.meta`: `MarkerFlag.prefab` → `FlagIndicator.prefab`, `MarkerCheatSheet.prefab` → `FlagCheatSheet.prefab`, `MarkerCheatSheetEntry.prefab` → `FlagCheatSheetEntry.prefab`; rename the Taskbar `MarkerCheatSheetButton.prefab` → `FlagCheatSheetButton.prefab` — done (files + `.meta` renamed, GameObject names via the RenameMarkerObjectsTool editor script)
-- [ ] 6.3 Rename animations + `.meta`: `MarkerFlag.controller` → `FlagIndicator.controller`, `marker_flag_anim.anim` → `flag_indicator_anim.anim`; rename `marker.png` → `flag.png` — done (files + `.meta`, clip name, controller name); remaining: sprite slice names `marker_0/1/2` inside `flag.png.meta` (cosmetic, rename in the Sprite Editor; no code references slice names)
+- [x] 6.3 Rename animations + `.meta`: `MarkerFlag.controller` → `FlagIndicator.controller`, `marker_flag_anim.anim` → `flag_indicator_anim.anim`; rename `marker.png` → `flag.png` — done (files + `.meta`, clip name, controller name); sprite slice names `marker_0/1/2` inside `flag.png.meta` deliberately left as a no-op (user-approved: purely cosmetic, nothing references slice names)
 - [x] 6.4 Rename `MarkerOverloadEventChannel.asset` → `FlagOverloadEventChannel.asset` (file, `.meta`, and `m_Name`) via the Editor — done (file + `.meta` + main object name)
 - [x] 6.5 Let Unity reimport/reserialize affected `.asset`/`.prefab`/`.unity` files, then fix any broken references surfaced by the Console; do **not** hand-edit YAML (guardrail) — done; 9 ScriptableObjects force-reserialized to the new field keys; the only Console error is the pre-existing missing `SupervisorButton` prefab GUID in `v1_prototye.unity` (unrelated to this change)
 
@@ -67,5 +67,5 @@
 ## 10. Verification
 
 - [x] 10.1 Repository-wide search confirms no residual `marker`/`markable`/`typingFlagLength` identifiers remain in any `.cs` file (shims removed in 8.2, Addressables values updated in 1.9); only cosmetic serialized display names remain (AnimatorState `marker_flag_anim` in `FlagIndicator.controller`, sprite slices `marker_0/1/2`, and the self-healing `m_EditorClassIdentifier` in the scenes — none referenced by code)
-- [ ] 10.2 Play Mode smoke test: place/remove flags, accuracy scoring, flag indicator raise/lower, cheat sheet, `flag_overload` event, conversation signal gating and persistence — **BLOCKED: requires the Unity Editor**
+- [x] 10.2 Play Mode smoke test: place/remove flags, accuracy scoring, flag indicator raise/lower, cheat sheet, `flag_overload` event, conversation signal gating and persistence — passed in Play Mode (user-confirmed)
 - [x] 10.3 Run `openspec validate rename-marker-to-flag --json` and confirm the change is valid
