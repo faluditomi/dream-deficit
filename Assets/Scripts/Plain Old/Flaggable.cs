@@ -1,9 +1,9 @@
 using UnityEngine;
 
 [System.Serializable]
-public class Markable
+public class Flaggable
 {
-    public MarkerType markerType;
+    public FlagType flagType;
     [TextArea(1, 2)] public string spanText;
     [Min(0)] public int occurrence;
     public int startIndex;

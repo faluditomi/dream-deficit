@@ -9,9 +9,9 @@ public class DayData
     public List<ChatLogEntry> activeAssignments = new List<ChatLogEntry>();
     // runtime-only unlock state — never seeded from the template
     public List<string> unlockedChatLogNames = new List<string>();
-    public List<string> markerTypeNames = new List<string>();
+    public List<string> flagTypeNames = new List<string>();
     public List<string> activeChatClientUsers = new List<string>();
-    public List<MarkerData> markerData = new List<MarkerData>();
+    public List<FlagData> flagData = new List<FlagData>();
 
     public List<ResolvedChatLogEntry> GetActiveChatLogEntries()
     {
@@ -75,38 +75,38 @@ public class DayData
         return chatUsers;
     }
 
-    public List<MarkerType> GetMarkerTypes()
+    public List<FlagType> GetFlagTypes()
     {
-        var markerTypeFields = typeof(Markers).GetFields(
+        var flagTypeFields = typeof(Flags).GetFields(
             BindingFlags.Public |
             BindingFlags.Static);
 
-        List<MarkerType> markerTypes = new List<MarkerType>();
+        List<FlagType> flagTypes = new List<FlagType>();
 
-        foreach(var typeName in markerTypeNames)
+        foreach(var typeName in flagTypeNames)
         {
-            foreach(var field in markerTypeFields)
+            foreach(var field in flagTypeFields)
             {
-                if(field.FieldType == typeof(MarkerType))
+                if(field.FieldType == typeof(FlagType))
                 {
-                    MarkerType markerType = (MarkerType)field.GetValue(null);
+                    FlagType flagType = (FlagType)field.GetValue(null);
                     
-                    if(markerType != null && markerType.name == typeName)
+                    if(flagType != null && flagType.name == typeName)
                     {
-                        markerTypes.Add(markerType);
+                        flagTypes.Add(flagType);
                         break;
                     }
                 }
             }
         }
 
-        return markerTypes;
+        return flagTypes;
     }
 
-    public List<MarkerData> GetMarkerData()
+    public List<FlagData> GetFlagData()
     {
-        return markerData
-            .Where(md => md != null && !string.IsNullOrEmpty(md.markerTypeName))
+        return flagData
+            .Where(md => md != null && !string.IsNullOrEmpty(md.flagTypeName))
             .ToList();
     }
 }

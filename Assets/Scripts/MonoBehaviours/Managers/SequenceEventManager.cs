@@ -76,7 +76,7 @@ public class SequenceEventManager : Singleton<SequenceEventManager>
         //       a new entry should be added here
         public static List<EventChannelMetadata> metadata = new List<EventChannelMetadata>
         {
-            new EventChannelMetadata(Constants.SequenceEventType.MarkerOverload, 10f),
+            new EventChannelMetadata(Constants.SequenceEventType.FlagOverload, 10f),
             new EventChannelMetadata(Constants.SequenceEventType.DayStart, 0f),
             new EventChannelMetadata(Constants.SequenceEventType.DayEnd, 0f),
             new EventChannelMetadata(Constants.SequenceEventType.WorkStart, 0f),

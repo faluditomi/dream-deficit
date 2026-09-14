@@ -34,7 +34,7 @@ MonoBehaviour:
     - ConversationGraph
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 12ae7b45e3323c9458ff7133c82f7d9b
-    m_Address: prefabs/marker_cheat_sheet_entry
+    m_Address: prefabs/flag_cheat_sheet_entry
     m_ReadOnly: 0
     m_SerializedLabels:
     - Prefab
@@ -46,7 +46,7 @@ MonoBehaviour:
     - ConversationGraph
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 170fea88bfc2bc54ab46d2c0f7b395da
-    m_Address: prefabs/marker_flag
+    m_Address: prefabs/flag_indicator
     m_ReadOnly: 0
     m_SerializedLabels:
     - Prefab
@@ -155,7 +155,7 @@ MonoBehaviour:
     - ConversationGraph
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dbeb48b57c84ee441a0d266ead5ad19e
-    m_Address: sequence_event_channel/marker_overload
+    m_Address: sequence_event_channel/flag_overload
     m_ReadOnly: 0
     m_SerializedLabels:
     - SequenceEventChannel
@@ -178,7 +178,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fab6b5c7881a411478bbbd1f873684ff
-    m_Address: prefabs/marker_cheat_sheet
+    m_Address: prefabs/flag_cheat_sheet
     m_ReadOnly: 0
     m_SerializedLabels:
     - Prefab

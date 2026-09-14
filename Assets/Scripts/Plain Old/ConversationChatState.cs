@@ -46,6 +46,6 @@ public class LogChatState
 [System.Serializable]
 public class ChatRunState
 {
-    public List<string> flags = new List<string>();
+    public List<string> signals = new List<string>();
     public List<LogChatState> logs = new List<LogChatState>();
 }

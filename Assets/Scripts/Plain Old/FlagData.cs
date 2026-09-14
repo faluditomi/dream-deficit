@@ -2,10 +2,10 @@ using System.Reflection;
 using UnityEngine;
 
 [System.Serializable]
-public class MarkerData
+public class FlagData
 {
     // Serializable fields (stored)
-    public string markerTypeName;
+    public string flagTypeName;
     public string chatLogPath;
     public string nodeGuid;
     public int startIndex;
@@ -14,13 +14,13 @@ public class MarkerData
     public float accuracy;
 
     // Resolved properties (computed on demand)
-    public MarkerType ResolvedMarkerType => ResolveMarkerType();
+    public FlagType ResolvedFlagType => ResolveFlagType();
     public ChatLog ResolvedChatLog => ResolveChatLog();
     public ChatBubble ResolvedChatBubble => ResolveChatBubble();
 
-    public MarkerData
+    public FlagData
     (
-        MarkerType markerType,
+        FlagType flagType,
         ChatLog chatLog,
         int startIndex,
         int endIndex,
@@ -29,7 +29,7 @@ public class MarkerData
         string nodeGuid
     )
     {
-        markerTypeName = markerType?.name ?? string.Empty;
+        flagTypeName = flagType?.name ?? string.Empty;
         chatLogPath = chatLog?.logName ?? string.Empty;
         this.nodeGuid = nodeGuid;
         this.startIndex = startIndex;
@@ -39,27 +39,27 @@ public class MarkerData
     }
 
     // Parameterless constructor for deserialization
-    public MarkerData() { }
+    public FlagData() { }
 
-    private MarkerType ResolveMarkerType()
+    private FlagType ResolveFlagType()
     {
-        if(string.IsNullOrEmpty(markerTypeName)) return null;
-        var markerTypeFields = typeof(Markers).GetFields(BindingFlags.Public | BindingFlags.Static);
+        if(string.IsNullOrEmpty(flagTypeName)) return null;
+        var flagTypeFields = typeof(Flags).GetFields(BindingFlags.Public | BindingFlags.Static);
 
-        foreach(var field in markerTypeFields)
+        foreach(var field in flagTypeFields)
         {
-            if(field.FieldType == typeof(MarkerType))
+            if(field.FieldType == typeof(FlagType))
             {
-                MarkerType markerType = (MarkerType)field.GetValue(null);
+                FlagType flagType = (FlagType)field.GetValue(null);
 
-                if(markerType != null && markerType.name == markerTypeName)
+                if(flagType != null && flagType.name == flagTypeName)
                 {
-                    return markerType;
+                    return flagType;
                 }
             }
         }
 
-        Debug.LogWarning($"MarkerType '{markerTypeName}' not found.");
+        Debug.LogWarning($"FlagType '{flagTypeName}' not found.");
         return null;
     }
 
@@ -76,7 +76,7 @@ public class MarkerData
         if(chatLog == null) return null;
         ConversationNodeData node = chatLog.GetNode(nodeGuid);
         if(node != null) return node.bubble;
-        Debug.LogWarning($"MarkerData: node '{nodeGuid}' not found in any conversation graph of chat log '{chatLogPath}'.");
+        Debug.LogWarning($"FlagData: node '{nodeGuid}' not found in any conversation graph of chat log '{chatLogPath}'.");
         return null;
     }
 }

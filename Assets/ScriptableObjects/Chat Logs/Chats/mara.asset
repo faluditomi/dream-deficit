@@ -13,14 +13,3 @@ MonoBehaviour:
   m_Name: mara
   m_EditorClassIdentifier: Assembly-CSharp::ChatLog
   logName: Mara
-  messages:
-  - chatUser: 3
-    message: greetings father
-    delayLength: 0
-    typingFlagLength: 0
-    markables: []
-  - chatUser: 3
-    message: haveth a lovely first day on the job
-    delayLength: 0
-    typingFlagLength: 0
-    markables: []

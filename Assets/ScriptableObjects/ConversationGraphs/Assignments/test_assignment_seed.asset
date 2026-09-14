@@ -20,8 +20,8 @@ MonoBehaviour:
       chatUser: 3
       message: "eyo can you throw \n"
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -35,8 +35,8 @@ MonoBehaviour:
       chatUser: 2
       message: an apple?
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -50,8 +50,8 @@ MonoBehaviour:
       chatUser: 2
       message: what are you on?
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []

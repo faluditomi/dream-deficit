@@ -7,17 +7,17 @@ public class ChatBubble
     public Constants.ChatUser chatUser;
     [TextArea(2, 5)] public string message;
     [Range(0, 10)] public float delayLength;
-    [Range(0, 10)] public float typingFlagLength;
-    [SerializeField] public List<Markable> markables = new List<Markable>();
+    [Range(0, 10)] public float typingIndicatorLength;
+    [SerializeField] public List<Flaggable> flaggables = new List<Flaggable>();
 
-    public void SyncMarkables()
+    public void SyncFlaggables()
     {
-        if(markables == null) markables = new List<Markable>();
+        if(flaggables == null) flaggables = new List<Flaggable>();
         
-        foreach(var markable in markables)
+        foreach(var flaggable in flaggables)
         {
-            if(markable == null) continue;
-            markable.RecalculateIndexes(message);
+            if(flaggable == null) continue;
+            flaggable.RecalculateIndexes(message);
         }
     }
 }

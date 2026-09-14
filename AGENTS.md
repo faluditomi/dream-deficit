@@ -1,7 +1,7 @@
 # Dream Deficit - AI Agent Guide
 
 ## Project Overview
-**Dream Deficit** is a 2D Unity game where players monitor and analyze chat logs across a day-based progression system. The core gameplay involves reading messages, identifying key content, and placing timed markers on text passages to score accuracy.
+**Dream Deficit** is a 2D Unity game where players monitor and analyze chat logs across a day-based progression system. The core gameplay involves reading messages, identifying key content, and placing timed flags on text passages to score accuracy.
 
 ## Spec-Driven Development (OpenSpec)
 This project uses OpenSpec (spec-driven development). Planning artifacts live in `openspec/`; the `openspec` CLI (installed globally via npm as `@fission-ai/openspec`) is the source of truth.
@@ -33,17 +33,17 @@ This project uses OpenSpec (spec-driven development). Planning artifacts live in
 ```
 Scripts/
 ├── MonoBehaviours/
-│   ├── Managers/          # Core singletons (GameManager, SaveManager, MarkerManager, AddressableManager,
+│   ├── Managers/          # Core singletons (GameManager, SaveManager, FlagManager, AddressableManager,
 │   │                      #   HighlightManager, ConversationManager, ChatLogManager, SequenceEventManager, UIFocusManager)
 │   │                      # ConversationRunner also lives here but is a PLAIN C# class, not a MonoBehaviour
-│   ├── Component Controllers/  # Prefab/UI controllers (ChatBubbleController, ChatLogController, ChatClientController, MarkerFlagController, etc.)
+│   ├── Component Controllers/  # Prefab/UI controllers (ChatBubbleController, ChatLogController, ChatClientController, FlagIndicatorController, etc.)
 │   ├── Handlers/          # Input/event handlers (DragHandler, HighlightHandler, PointerHandler, TopBarHandler)
 │   ├── BaseWindowController.cs   # Base class for draggable window UI
 │   ├── NoDragScrollRect.cs       # Custom scroll rect behavior
 │   └── Singleton.cs              # Generic singleton base class
 ├── Plain Old/             # POCOs, data classes, and interfaces
 │   ├── Interfaces/        # IHighlightable, ILoadable, ISavable
-│   └── (data classes)     # ChatBubble, DayData, MarkerData, MarkerType, Constants, plus conversation data
+│   └── (data classes)     # ChatBubble, DayData, FlagData, FlagType, Constants, plus conversation data
 │                          #   (ConversationNodeData/EdgeData, ConversationGraphEnums, ConversationConditionClause, ConversationEffectData)
 ├── Scriptable Objects/    # ScriptableObject definitions
 │   ├── ChatBubbleSequence.cs     # Sequence of chat bubbles for dialogue
@@ -62,7 +62,7 @@ Scripts/
 - Game runs in days (Day 1, Day 2, ...)
 - `GameManager` controls day time: configurable start/end hours, day length in seconds
 - `TriggerDayTimePassing()` starts the day clock, `EndDay()` saves and advances
-- Days have associated `DayData` containing markers, active chat logs, etc.
+- Days have associated `DayData` containing flags, active chat logs, etc.
 
 #### Chat System
 - `ChatLog` (ScriptableObject) contains ordered `ChatBubble` messages
@@ -77,12 +77,12 @@ Scripts/
 - `ConversationRunner` (plain C#, not a MonoBehaviour): entry evaluation by `SequenceEvent`, thread walk, parking at wait/choice nodes, day-blocking choices, history/activation state for saves
 - Authoring: `Custom Tools/Conversation Graph Editor` — right-click canvas to add nodes / Layout Graph / Validate Graph. Port rules: the input port is `Multi` (fan-in allowed), output and choice-option ports are `Single` (the runtime follows only the first outgoing edge — fan-out is unsupported). `ConversationGraphView.GetCompatiblePorts` is overridden because Unity 6 ships no default port adapter; ports are created with `typeof(object)`.
 
-#### Marker System
-- `MarkerManager` handles keyboard-driven marker placement on chat text
-- Players hold keys to activate marker types, then select text ranges
-- Markers scored by accuracy (overlap with `Markable` targets, excess penalty)
-- `MarkerType` (ScriptableObject) defines marker properties including keycode
-- Marker flags displayed as UI indicators on screen
+#### Flag System
+- `FlagManager` handles keyboard-driven flag placement on chat text
+- Players hold keys to activate flag types, then select text ranges
+- Flags scored by accuracy (overlap with `Flaggable` targets, excess penalty)
+- `FlagType` (plain serializable data class) defines flag properties including keycode
+- Flags displayed as on-screen indicators (`FlagIndicatorController`); conversation narrative state is a signal
 
 #### Save System
 - `SaveManager` persists game state to JSON in `Application.persistentDataPath`
@@ -95,7 +95,7 @@ Scripts/
 ```
 GameTemplate → SaveSlot (initialization) → JSON save file (runtime)
                 ↓
-           DayData per day (markers, chat logs, state)
+           DayData per day (flags, chat logs, state)
                 ↓
            ISavable components save → DayData
            ILoadable components load ← DayData
@@ -103,11 +103,11 @@ GameTemplate → SaveSlot (initialization) → JSON save file (runtime)
 
 ## Current State
 - **Single scene:** `v1 prototye.unity` (note the typo in filename)
-- **Core systems implemented:** Day progression, chat display, marker placement, save/load, conversation graph playback
+- **Core systems implemented:** Day progression, chat display, flag placement, save/load, conversation graph playback
 - **TODOs in codebase:**
   - Save slot picker/creator menu (currently brute-force assigned)
   - Async Addressable loading (currently synchronous)
-  - Safeguard against multiple markers per markable
+  - Safeguard against multiple flags per flaggable
   - Game loading triggered from menu (currently auto-starts)
 
 ## Asset Locations

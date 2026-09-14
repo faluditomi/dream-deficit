@@ -20,8 +20,8 @@ MonoBehaviour:
       chatUser: 3
       message: hello, my dear father
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -35,8 +35,8 @@ MonoBehaviour:
       chatUser: 3
       message: haveth a lovely first day on thy new job
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []

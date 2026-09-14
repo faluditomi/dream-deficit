@@ -192,7 +192,7 @@ public class ConversationNodeView : Node
             case ConversationConditionKind.Event: return "event: " + condition.stringValue;
             case ConversationConditionKind.DayMin: return "day >= " + condition.intValue;
             case ConversationConditionKind.DayMax: return "day <= " + condition.intValue;
-            case ConversationConditionKind.RequiredFlag: return "flag: " + condition.stringValue;
+            case ConversationConditionKind.RequiredSignal: return "signal: " + condition.stringValue;
             default: return string.Empty;
         }
     }

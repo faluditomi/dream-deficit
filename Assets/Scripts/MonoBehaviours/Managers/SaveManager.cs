@@ -12,7 +12,7 @@ public class SaveManager : Singleton<SaveManager>
     private List<ILoadable> loadables = new List<ILoadable>();
     private Dictionary<int, DayData> runtimeSaveData = new Dictionary<int, DayData>();
     private string savePath;
-    /// Run-level conversation state (played history, thread cursors, flags).
+    /// Run-level conversation state (played history, thread cursors, signals).
     /// Not day-scoped: threads parked on day 5 must resume on day 6.
     public ChatRunState chatRunState;
 
@@ -132,7 +132,7 @@ public class SaveManager : Singleton<SaveManager>
         // copy template day entries into slot's own day entries
         activeSlot.dayEntries.Clear();
         runtimeSaveData.Clear();
-        // a fresh save starts with no conversation history, no parked threads, no flags
+        // a fresh save starts with no conversation history, no parked threads, no signals
         chatRunState = new ChatRunState();
 
         foreach(var entry in template.dayEntries)
@@ -154,13 +154,13 @@ public class SaveManager : Singleton<SaveManager>
         }
     }
 
-    public List<MarkerData> GetSavedMarkersForChatLog(ChatLog chatLog)
+    public List<FlagData> GetSavedFlagsForChatLog(ChatLog chatLog)
     {
         DayData currentDayData = GetDayData(GameManager.Instance.CurrentDayNumber);
-        if(currentDayData == null) return new List<MarkerData>();
-        List<MarkerData> allMarkers = currentDayData.GetMarkerData();
-        if(allMarkers == null) return new List<MarkerData>();
-        return allMarkers.Where(m => m.ResolvedChatLog == chatLog).ToList();
+        if(currentDayData == null) return new List<FlagData>();
+        List<FlagData> allFlags = currentDayData.GetFlagData();
+        if(allFlags == null) return new List<FlagData>();
+        return allFlags.Where(m => m.ResolvedChatLog == chatLog).ToList();
     }
 
     public bool HasSaveForDay(int dayNumber)

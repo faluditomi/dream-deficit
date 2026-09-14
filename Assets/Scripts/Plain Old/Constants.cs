@@ -22,7 +22,7 @@ public static class Constants
         //       DayEnd is player-requested via a choice effect (day ends, transitions to dream),
         //       WorkStart is player-requested via a choice effect (starts the work clock),
         //       WorkEnd is system-raised when the work clock reaches zero.
-        public const string MarkerOverload = AddressablePrefixes.EventChannel + "marker_overload";
+        public const string FlagOverload = AddressablePrefixes.EventChannel + "flag_overload";
         public const string DayStart = AddressablePrefixes.EventChannel + "day_start";
         public const string DayEnd = AddressablePrefixes.EventChannel + "day_end";
         public const string WorkStart = AddressablePrefixes.EventChannel + "work_start";
@@ -36,10 +36,10 @@ public static class Constants
         public const string AssignmentEntry = AddressablePrefixes.Prefab + "assignment_entry";
         public const string ChatLog = AddressablePrefixes.Prefab + "chat_log";
         public const string ChatBubble = AddressablePrefixes.Prefab + "chat_bubble";
-        public const string MarkerFlag = AddressablePrefixes.Prefab + "marker_flag";
+        public const string FlagIndicator = AddressablePrefixes.Prefab + "flag_indicator";
         public const string TopBar = AddressablePrefixes.Prefab + "top_bar";
-        public const string MarkerCheatSheet = AddressablePrefixes.Prefab + "marker_cheat_sheet";
-        public const string MarkerCheatSheetEntry = AddressablePrefixes.Prefab + "marker_cheat_sheet_entry";
+        public const string FlagCheatSheet = AddressablePrefixes.Prefab + "flag_cheat_sheet";
+        public const string FlagCheatSheetEntry = AddressablePrefixes.Prefab + "flag_cheat_sheet_entry";
         public const string ChatClientUserEntry = AddressablePrefixes.Prefab + "chat_client_user_entry";
         public const string WindowShadow = AddressablePrefixes.Prefab + "window_shadow";
         public const string UserChatResponseOption = AddressablePrefixes.Prefab + "user_chat_response_option";
@@ -104,7 +104,7 @@ public static class Constants
 
     public enum SequenceEventType
     {
-        MarkerOverload = 0,
+        FlagOverload = 0,
         DayStart = 1,
         DayEnd = 2,
         WorkStart = 3,

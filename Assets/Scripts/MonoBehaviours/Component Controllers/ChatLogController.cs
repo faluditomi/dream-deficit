@@ -69,8 +69,8 @@ public class ChatLogController : BaseWindowController
             }
         }
 
-        List<MarkerData> savedMarkers = SaveManager.Instance.GetSavedMarkersForChatLog(myChatLog);
-        if(savedMarkers.Count > 0) MarkerManager.Instance.AddMarkersInstantly(savedMarkers);
+        List<FlagData> savedFlags = SaveManager.Instance.GetSavedFlagsForChatLog(myChatLog);
+        if(savedFlags.Count > 0) FlagManager.Instance.AddFlagsInstantly(savedFlags);
 
         foreach(HighlightHandler highlightHandler in GetComponentsInChildren<HighlightHandler>())
         {

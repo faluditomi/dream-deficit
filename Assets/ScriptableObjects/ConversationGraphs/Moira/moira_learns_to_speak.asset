@@ -20,8 +20,8 @@ MonoBehaviour:
       chatUser: 5
       message: GRANDPAAAAAAAAA
       delayLength: 3
-      typingFlagLength: 5
-      markables: []
+      typingIndicatorLength: 5
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -35,8 +35,8 @@ MonoBehaviour:
       chatUser: 0
       message: 
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options:
     - guid: 0f344812-0f07-4e4f-88cd-d9fa74bb0117
       previewText: WHAT IN THE HELL?!?
@@ -44,8 +44,8 @@ MonoBehaviour:
         chatUser: 4
         message: WHAT IN THE HELL?!?
         delayLength: 0
-        typingFlagLength: 0
-        markables: []
+        typingIndicatorLength: 0
+        flaggables: []
       effects: []
     - guid: bf1bf13f-4574-4ae2-959e-7f5769a69507
       previewText: mara, is that you?
@@ -53,8 +53,8 @@ MonoBehaviour:
         chatUser: 4
         message: mara, is that you?
         delayLength: 0
-        typingFlagLength: 0
-        markables: []
+        typingIndicatorLength: 0
+        flaggables: []
       effects: []
     blocksDay: 0
     conditions: []
@@ -68,8 +68,8 @@ MonoBehaviour:
       chatUser: 5
       message: I learned speak :)
       delayLength: 0.8
-      typingFlagLength: 6
-      markables: []
+      typingIndicatorLength: 6
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -83,8 +83,8 @@ MonoBehaviour:
       chatUser: 5
       message: no it is i
       delayLength: 0.5
-      typingFlagLength: 4
-      markables: []
+      typingIndicatorLength: 4
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -98,8 +98,8 @@ MonoBehaviour:
       chatUser: 0
       message: 
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -113,8 +113,8 @@ MonoBehaviour:
       chatUser: 0
       message: 
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions:

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// Owns one ConversationRunner per chat log. A tickable singleton that
-/// bridges sequence events into entry evaluation, holds run-level flags, applies
+/// bridges sequence events into entry evaluation, holds run-level signals, applies
 /// choice effects, and snapshots/restores run-level chat state for the save file.
 public class ConversationManager : Singleton<ConversationManager>
 {
     private readonly Dictionary<ChatLog, ConversationRunner> runners = new Dictionary<ChatLog, ConversationRunner>();
-    private readonly List<string> flags = new List<string>();
+    private readonly List<string> signals = new List<string>();
     private bool hadDayBlockingChoice = false;
-    public List<string> Flags => flags;
+    public List<string> Signals => signals;
 
     public bool HasUnresolvedDayBlockingChoice
     {
@@ -128,12 +128,12 @@ public class ConversationManager : Singleton<ConversationManager>
 
     #endregion
 
-    #region Flags & Effects
+    #region Signals & Effects
 
-    private void SetFlag(string flagName)
+    private void SetSignal(string signalName)
     {
-        if(string.IsNullOrEmpty(flagName)) return;
-        if(!flags.Contains(flagName)) flags.Add(flagName);
+        if(string.IsNullOrEmpty(signalName)) return;
+        if(!signals.Contains(signalName)) signals.Add(signalName);
     }
 
     /// Applies data-driven choice effects.
@@ -143,8 +143,8 @@ public class ConversationManager : Singleton<ConversationManager>
         {
             switch(effect.operation)
             {
-                case ConversationEffectOperation.SetFlag:
-                    SetFlag(effect.stringValue);
+                case ConversationEffectOperation.SetSignal:
+                    SetSignal(effect.stringValue);
                     break;
 
                 case ConversationEffectOperation.RaiseEvent:
@@ -170,8 +170,8 @@ public class ConversationManager : Singleton<ConversationManager>
     public void RestoreChatState(ChatRunState state)
     {
         if(state == null) return;
-        flags.Clear();
-        if(state.flags != null) flags.AddRange(state.flags);
+        signals.Clear();
+        if(state.signals != null) signals.AddRange(state.signals);
         hadDayBlockingChoice = false;
         if(state.logs == null) return;
 
@@ -196,7 +196,7 @@ public class ConversationManager : Singleton<ConversationManager>
     public ChatRunState CaptureChatState()
     {
         ChatRunState state = new ChatRunState();
-        if(flags != null) state.flags.AddRange(flags);
+        if(signals != null) state.signals.AddRange(signals);
 
         foreach(KeyValuePair<ChatLog, ConversationRunner> pair in runners)
         {

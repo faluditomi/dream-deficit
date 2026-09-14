@@ -1,20 +1,20 @@
 using System.Collections;
 using UnityEngine;
 
-public class MarkerFlagController : MonoBehaviour
+public class FlagIndicatorController : MonoBehaviour
 {
     RectTransform myRectTransform;
     private Coroutine raiseLowerCoroutine;
 
-    public void Setup(MarkerType markerType, float xPos)
+    public void Setup(FlagType flagType, float xPos)
     {
         myRectTransform = GetComponent<RectTransform>();
         myRectTransform.anchorMin = new Vector2(0f, 0f);
         myRectTransform.anchorMax = new Vector2(0f, 0f);
         myRectTransform.pivot = new Vector2(0f, 0f);
         myRectTransform.anchoredPosition = new Vector2(xPos, -myRectTransform.rect.height);
-        GetComponent<UnityEngine.UI.Image>().color = markerType.colour;
-        GetComponentInChildren<TMPro.TextMeshProUGUI>().text = markerType.name;
+        GetComponent<UnityEngine.UI.Image>().color = flagType.colour;
+        GetComponentInChildren<TMPro.TextMeshProUGUI>().text = flagType.name;
     }
 
     public void SetRaised(bool raised)
@@ -27,10 +27,10 @@ public class MarkerFlagController : MonoBehaviour
             raiseLowerCoroutine = null;
         }
 
-        raiseLowerCoroutine = StartCoroutine(MoveMarkerFlagBehaviour(myRectTransform, targetY));
+        raiseLowerCoroutine = StartCoroutine(MoveFlagIndicatorBehaviour(myRectTransform, targetY));
     }
 
-    private IEnumerator MoveMarkerFlagBehaviour(RectTransform rectTransform, float targetY)
+    private IEnumerator MoveFlagIndicatorBehaviour(RectTransform rectTransform, float targetY)
     {
         Vector2 startPosition = rectTransform.anchoredPosition;
         Vector2 targetPosition = new Vector2(startPosition.x, targetY);

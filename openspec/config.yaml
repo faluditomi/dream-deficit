@@ -2,25 +2,25 @@ schema: spec-driven
 
 # Project context shown to AI when creating artifacts.
 context: |
-  Dream Deficit — 2D Unity game (chat-log analysis / marker placement gameplay).
+  Dream Deficit — 2D Unity game (chat-log analysis / flag placement gameplay).
   Unity 6000.3.8f1 (Unity 6), URP 17.3.0, uGUI + TextMeshPro, New Input System,
   Addressables 2.8.1. Single scene: "v1 prototye.unity".
 
   Architecture:
-  - Managers (Singleton pattern): GameManager, SaveManager, MarkerManager,
+  - Managers (Singleton pattern): GameManager, SaveManager, FlagManager,
     AddressableManager, HighlightManager, ConversationManager, ChatLogManager,
     SequenceEventManager, UIFocusManager under Assets/Scripts/MonoBehaviours/Managers/
     (ConversationRunner also lives there but is a plain C# class, not a MonoBehaviour)
-  - Data classes (POCOs) under Assets/Scripts/Plain Old/: DayData, MarkerData,
-    ChatBubble, MarkerType, Constants, plus conversation data (ConversationNodeData,
+  - Data classes (POCOs) under Assets/Scripts/Plain Old/: DayData, FlagData,
+    ChatBubble, FlagType, Constants, plus conversation data (ConversationNodeData,
     ConversationEdgeData, ConversationGraphEnums, ConversationConditionClause,
     ConversationEffectData)
   - ScriptableObjects under Assets/ScriptableObjects/: ChatLog, ChatBubbleSequence,
     ChatUser, GameTemplate, SaveSlot, ConversationGraph (per-character folders under
     ConversationGraphs/)
   - Day progression: GameManager.TriggerDayTimePassing() / EndDay()
-  - Markers: MarkerManager places keyboard-driven markers on chat text, scored by
-    overlap accuracy against Markable targets
+  - Flags: FlagManager places keyboard-driven flags on chat text, scored by
+    overlap accuracy against Flaggable targets
   - Conversation graphs: ConversationGraph nodes (Entry/Bubble/Choice/Wait/End) + a
     flat edge list; ConversationManager owns one ConversationRunner per chat log
     (entry evaluation by SequenceEvent, thread walk, wait/choice parking, day-blocking
@@ -35,7 +35,7 @@ context: |
   - All prefabs/data load via AddressableManager.Instance.RetrieveAddressable<T>(address)
   - Managers accessed via Instance singletons; save fields must stay JsonUtility-serializable
   - Known TODOs: save slot picker menu, async Addressables,
-    multi-marker safeguard, menu-triggered game loading
+    multi-flag safeguard, menu-triggered game loading
 
 # Per-artifact rules (optional)
 rules:

@@ -9,9 +9,9 @@ public class GameTemplateEditor : EditorWindow
     private Vector2 scrollPosition;
     private int selectedDayIndex = -1;
     private ReorderableList dayReorderableList;
-    private bool showMarkerDataFoldout = false;
+    private bool showFlagDataFoldout = false;
 
-    private string[] markerTypeNames;
+    private string[] flagTypeNames;
 
     [MenuItem("Custom Tools/Game Template Editor")]
     public static void ShowWindow()
@@ -22,30 +22,30 @@ public class GameTemplateEditor : EditorWindow
 
     private void OnEnable()
     {
-        RefreshMarkerTypeNames();
+        RefreshFlagTypeNames();
     }
 
-    private void RefreshMarkerTypeNames()
+    private void RefreshFlagTypeNames()
     {
-        var markerTypeFields = typeof(Markers).GetFields(
+        var flagTypeFields = typeof(Flags).GetFields(
             System.Reflection.BindingFlags.Public |
             System.Reflection.BindingFlags.Static);
-        var markerTypeList = new List<string>();
+        var flagTypeList = new List<string>();
 
-        foreach(var field in markerTypeFields)
+        foreach(var field in flagTypeFields)
         {
-            if(field.FieldType == typeof(MarkerType))
+            if(field.FieldType == typeof(FlagType))
             {
-                MarkerType markerType = (MarkerType)field.GetValue(null);
+                FlagType flagType = (FlagType)field.GetValue(null);
 
-                if(markerType != null)
+                if(flagType != null)
                 {
-                    markerTypeList.Add(markerType.name);
+                    flagTypeList.Add(flagType.name);
                 }
             }
         }
 
-        markerTypeNames = markerTypeList.ToArray();
+        flagTypeNames = flagTypeList.ToArray();
     }
 
     private T FindAssetByName<T>(string name) where T : ScriptableObject
@@ -157,9 +157,9 @@ public class GameTemplateEditor : EditorWindow
 
         if(entry.dayData != null)
         {
-            int markerCount = entry.dayData.markerData != null ? entry.dayData.markerData.Count : 0;
+            int flagCount = entry.dayData.flagData != null ? entry.dayData.flagData.Count : 0;
             int chatLogCount = entry.dayData.activeAssignments != null ? entry.dayData.activeAssignments.Count : 0;
-            text += " - " + chatLogCount + " logs, " + markerCount + " markers";
+            text += " - " + chatLogCount + " logs, " + flagCount + " flags";
         }
         else
         {
@@ -217,11 +217,11 @@ public class GameTemplateEditor : EditorWindow
         EditorGUILayout.Space(5);
         DrawChatLogSection(dayData);
         EditorGUILayout.Space(10);
-        DrawMarkerTypeSection(dayData);
+        DrawFlagTypeSection(dayData);
         EditorGUILayout.Space(10);
         DrawChatClientUsersSection(dayData);
         EditorGUILayout.Space(10);
-        DrawMarkerDataSection(dayData);
+        DrawFlagDataSection(dayData);
     }
 
     private void DrawChatLogSection(DayData dayData)
@@ -279,47 +279,47 @@ public class GameTemplateEditor : EditorWindow
         }
     }
 
-    private void DrawMarkerTypeSection(DayData dayData)
+    private void DrawFlagTypeSection(DayData dayData)
     {
-        EditorGUILayout.LabelField("Active Marker Types", EditorStyles.label);
+        EditorGUILayout.LabelField("Active Flag Types", EditorStyles.label);
 
-        if(dayData.markerTypeNames == null)
+        if(dayData.flagTypeNames == null)
         {
-            dayData.markerTypeNames = new List<string>();
+            dayData.flagTypeNames = new List<string>();
         }
 
-        int markerTypeToRemove = -1;
+        int flagTypeToRemove = -1;
 
-        for(int i = 0; i < dayData.markerTypeNames.Count; i++)
+        for(int i = 0; i < dayData.flagTypeNames.Count; i++)
         {
             EditorGUILayout.BeginHorizontal();
-            int selectedIndex = System.Array.IndexOf(markerTypeNames, dayData.markerTypeNames[i]);
+            int selectedIndex = System.Array.IndexOf(flagTypeNames, dayData.flagTypeNames[i]);
             if(selectedIndex < 0) selectedIndex = 0;
             EditorGUI.BeginChangeCheck();
-            int newSelected = EditorGUILayout.Popup(selectedIndex, markerTypeNames, GUILayout.Width(250));
+            int newSelected = EditorGUILayout.Popup(selectedIndex, flagTypeNames, GUILayout.Width(250));
             
             if(EditorGUI.EndChangeCheck())
             {
-                dayData.markerTypeNames[i] = markerTypeNames[newSelected];
+                dayData.flagTypeNames[i] = flagTypeNames[newSelected];
                 AutoSave();
             }
 
             if(GUILayout.Button("-", GUILayout.Width(25)))
             {
-                markerTypeToRemove = i;
+                flagTypeToRemove = i;
             }
 
             EditorGUILayout.EndHorizontal();
         }
-        if(markerTypeToRemove >= 0)
+        if(flagTypeToRemove >= 0)
         {
-            dayData.markerTypeNames.RemoveAt(markerTypeToRemove);
+            dayData.flagTypeNames.RemoveAt(flagTypeToRemove);
             AutoSave();
         }
 
-        if(GUILayout.Button("+ Add Marker Type", GUILayout.Width(140)))
+        if(GUILayout.Button("+ Add Flag Type", GUILayout.Width(140)))
         {
-            dayData.markerTypeNames.Add(markerTypeNames.Length > 0 ? markerTypeNames[0] : string.Empty);
+            dayData.flagTypeNames.Add(flagTypeNames.Length > 0 ? flagTypeNames[0] : string.Empty);
             AutoSave();
         }
     }
@@ -368,57 +368,57 @@ public class GameTemplateEditor : EditorWindow
         }
     }
 
-    private void DrawMarkerDataSection(DayData dayData)
+    private void DrawFlagDataSection(DayData dayData)
     {
-        showMarkerDataFoldout = EditorGUILayout.Foldout(showMarkerDataFoldout, "Marker Data", true);
+        showFlagDataFoldout = EditorGUILayout.Foldout(showFlagDataFoldout, "Flag Data", true);
 
-        if(showMarkerDataFoldout)
+        if(showFlagDataFoldout)
         {
             EditorGUI.indentLevel++;
 
-            if(dayData.markerData == null)
+            if(dayData.flagData == null)
             {
-                dayData.markerData = new List<MarkerData>();
+                dayData.flagData = new List<FlagData>();
             }
 
-            int markerToRemove = -1;
-            for(int i = 0; i < dayData.markerData.Count; i++)
+            int flagToRemove = -1;
+            for(int i = 0; i < dayData.flagData.Count; i++)
             {
-                var markerData = dayData.markerData[i];
+                var flagData = dayData.flagData[i];
                 EditorGUILayout.BeginVertical("box");
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Marker #" + (i + 1), EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("Flag #" + (i + 1), EditorStyles.boldLabel);
                 
                 if(GUILayout.Button("-", GUILayout.Width(25)))
                 {
-                    markerToRemove = i;
+                    flagToRemove = i;
                 }
 
                 EditorGUILayout.EndHorizontal();
-                int markerTypeIndex = System.Array.IndexOf(markerTypeNames, markerData.markerTypeName);
-                if(markerTypeIndex < 0) markerTypeIndex = 0;
+                int flagTypeIndex = System.Array.IndexOf(flagTypeNames, flagData.flagTypeName);
+                if(flagTypeIndex < 0) flagTypeIndex = 0;
                 EditorGUI.BeginChangeCheck();
-                int newMarkerTypeIndex = EditorGUILayout.Popup("Marker Type", markerTypeIndex, markerTypeNames);
+                int newFlagTypeIndex = EditorGUILayout.Popup("Flag Type", flagTypeIndex, flagTypeNames);
                 
                 if(EditorGUI.EndChangeCheck())
                 {
-                    markerData.markerTypeName = markerTypeNames[newMarkerTypeIndex];
+                    flagData.flagTypeName = flagTypeNames[newFlagTypeIndex];
                     AutoSave();
                 }
 
-                ChatLog currentLog = FindAssetByName<ChatLog>(markerData.chatLogPath);
+                ChatLog currentLog = FindAssetByName<ChatLog>(flagData.chatLogPath);
                 EditorGUI.BeginChangeCheck();
                 ChatLog newLog = (ChatLog)EditorGUILayout.ObjectField("Chat Log", currentLog, typeof(ChatLog), false);
                 
                 if(EditorGUI.EndChangeCheck())
                 {
-                    markerData.chatLogPath = newLog != null ? newLog.name : string.Empty;
+                    flagData.chatLogPath = newLog != null ? newLog.name : string.Empty;
                     AutoSave();
                 }
 
                 EditorGUI.BeginChangeCheck();
-                markerData.startIndex = EditorGUILayout.IntField("Start Index", markerData.startIndex);
-                markerData.endIndex = EditorGUILayout.IntField("End Index", markerData.endIndex);
+                flagData.startIndex = EditorGUILayout.IntField("Start Index", flagData.startIndex);
+                flagData.endIndex = EditorGUILayout.IntField("End Index", flagData.endIndex);
                 
                 if(EditorGUI.EndChangeCheck())
                 {
@@ -427,17 +427,17 @@ public class GameTemplateEditor : EditorWindow
 
                 EditorGUILayout.EndVertical();
             }
-            if(markerToRemove >= 0)
+            if(flagToRemove >= 0)
             {
-                dayData.markerData.RemoveAt(markerToRemove);
+                dayData.flagData.RemoveAt(flagToRemove);
                 AutoSave();
             }
 
-            if(GUILayout.Button("+ Add Marker Data", GUILayout.Width(140)))
+            if(GUILayout.Button("+ Add Flag Data", GUILayout.Width(140)))
             {
-                MarkerData newMd = new MarkerData();
-                newMd.markerTypeName = markerTypeNames.Length > 0 ? markerTypeNames[0] : string.Empty;
-                dayData.markerData.Add(newMd);
+                FlagData newFd = new FlagData();
+                newFd.flagTypeName = flagTypeNames.Length > 0 ? flagTypeNames[0] : string.Empty;
+                dayData.flagData.Add(newFd);
                 AutoSave();
             }
 

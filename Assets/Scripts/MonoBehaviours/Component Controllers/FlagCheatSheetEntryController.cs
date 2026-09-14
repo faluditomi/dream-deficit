@@ -2,7 +2,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine;
 
-public class MarkerCheatSheetEntryController : MonoBehaviour
+public class FlagCheatSheetEntryController : MonoBehaviour
 {
     private Image backgroundImage;
     private TMP_Text nameText;
@@ -12,13 +12,13 @@ public class MarkerCheatSheetEntryController : MonoBehaviour
     private bool isSetUp = false;
 
     #region Setup
-    public void Setup(MarkerType markerType)
+    public void Setup(FlagType flagType)
     {
         if(isSetUp || !FindElements()) return;
-        backgroundImage.color = markerType.colour;
-        nameText.text = markerType.name;
-        descriptionText.text = markerType.description;
-        keycodeText.text = "Keybind: " + markerType.keycode.ToString();
+        backgroundImage.color = flagType.colour;
+        nameText.text = flagType.name;
+        descriptionText.text = flagType.description;
+        keycodeText.text = "Keybind: " + flagType.keycode.ToString();
 
         nameText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
         descriptionText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
@@ -36,7 +36,7 @@ public class MarkerCheatSheetEntryController : MonoBehaviour
 
         if(backgroundImage == null || nameText == null || descriptionText == null || keycodeText == null)
         {
-            Debug.LogError("Setup of MarkerCheatSheetEntry failed. A necessary component wasn't found during setup.");
+            Debug.LogError("Setup of FlagCheatSheetEntry failed. A necessary component wasn't found during setup.");
             return false;
         }
 

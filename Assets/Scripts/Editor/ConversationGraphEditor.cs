@@ -37,28 +37,28 @@ public class ConversationGraphEditor : EditorWindow
     // or the window closes; never survives a domain reload (declared non-goal)
     private NodeClipboard clipboard;
 
-    // markable authoring state (ported from ChatLogEditor)
+    // flaggable authoring state (ported from ChatLogEditor)
     private string editedMessage = string.Empty;
-    private int newMarkableMarkerIndex;
+    private int newFlaggableFlagIndex;
     private int currentSelectionStart = -1;
     private int currentSelectionEnd = -1;
-    private static MarkerType[] markerTypesCache;
+    private static FlagType[] flagTypesCache;
 
-    private static MarkerType[] MarkerTypes
+    private static FlagType[] FlagTypes
     {
         get
         {
-            if(markerTypesCache == null)
+            if(flagTypesCache == null)
             {
-                markerTypesCache = typeof(Markers)
+                flagTypesCache = typeof(Flags)
                     .GetFields(BindingFlags.Public | BindingFlags.Static)
-                    .Where(field => field.FieldType == typeof(MarkerType))
-                    .Select(field => field.GetValue(null) as MarkerType)
-                    .Where(markerType => markerType != null)
+                    .Where(field => field.FieldType == typeof(FlagType))
+                    .Select(field => field.GetValue(null) as FlagType)
+                    .Where(flagType => flagType != null)
                     .ToArray();
             }
 
-            return markerTypesCache;
+            return flagTypesCache;
         }
     }
 
@@ -540,9 +540,9 @@ public class ConversationGraphEditor : EditorWindow
         {
             if(view.NodeData == null || string.IsNullOrEmpty(view.NodeGuid)) continue;
             selectedGuids.Add(view.NodeGuid);
-            // JsonUtility round-trip deep-clones the nested lists (markables, options,
+            // JsonUtility round-trip deep-clones the nested lists (flaggables, options,
             // conditions, effects) and editorPosition; ScriptableObject references
-            // (Markable.markerType) survive as instance-ID references, which resolve
+            // (Flaggable.flagType) survive as instance-ID references, which resolve
             // within the same editor session — the declared clipboard scope (design D5)
             copy.nodes.Add(JsonUtility.FromJson<ConversationNodeData>(JsonUtility.ToJson(view.NodeData)));
         }
@@ -743,21 +743,21 @@ public class ConversationGraphEditor : EditorWindow
         EditorGUI.BeginChangeCheck();
         Constants.ChatUser newUser = (Constants.ChatUser)EditorGUILayout.EnumPopup(new GUIContent("Chat User", ConversationEditorTooltips.ChatUser), bubble.chatUser);
         float newDelay = EditorGUILayout.Slider(new GUIContent("Delay Length", ConversationEditorTooltips.DelayLength), bubble.delayLength, 0f, 10f);
-        float newTyping = EditorGUILayout.Slider(new GUIContent("Typing Flag Length", ConversationEditorTooltips.TypingFlagLength), bubble.typingFlagLength, 0f, 10f);
+        float newTyping = EditorGUILayout.Slider(new GUIContent("Typing Indicator Length", ConversationEditorTooltips.TypingIndicatorLength), bubble.typingIndicatorLength, 0f, 10f);
         if(EditorGUI.EndChangeCheck())
         {
             RecordChange("Edit bubble metadata");
             bubble.chatUser = newUser;
             bubble.delayLength = newDelay;
-            bubble.typingFlagLength = newTyping;
+            bubble.typingIndicatorLength = newTyping;
             PersistGraph();
         }
 
         EditorGUILayout.Space();
         DrawMessageEditor(bubble);
         EditorGUILayout.Space();
-        DrawMarkableControls(bubble);
-        DrawMarkables(bubble);
+        DrawFlaggableControls(bubble);
+        DrawFlaggables(bubble);
     }
 
     private void DrawMessageEditor(ChatBubble bubble)
@@ -772,7 +772,7 @@ public class ConversationGraphEditor : EditorWindow
         {
             RecordChange("Edit bubble message");
             bubble.message = editedMessage;
-            bubble.SyncMarkables();
+            bubble.SyncFlaggables();
             PersistGraph();
             RefreshSelectedNodePreview();
         }
@@ -806,10 +806,10 @@ public class ConversationGraphEditor : EditorWindow
         currentSelectionEnd = end;
     }
 
-    private void DrawMarkableControls(ChatBubble bubble)
+    private void DrawFlaggableControls(ChatBubble bubble)
     {
-        EditorGUILayout.LabelField(new GUIContent("New Markable", ConversationEditorTooltips.NewMarkable), EditorStyles.boldLabel);
-        newMarkableMarkerIndex = EditorGUILayout.Popup(new GUIContent("Marker Type", ConversationEditorTooltips.MarkerTypeNew), newMarkableMarkerIndex, GetMarkerTypeLabels());
+        EditorGUILayout.LabelField(new GUIContent("New Flaggable", ConversationEditorTooltips.NewFlaggable), EditorStyles.boldLabel);
+        newFlaggableFlagIndex = EditorGUILayout.Popup(new GUIContent("Flag Type", ConversationEditorTooltips.FlagTypeNew), newFlaggableFlagIndex, GetFlagTypeLabels());
 
         string selectionDisplay = "No active selection";
         if(currentSelectionStart >= 0 && currentSelectionEnd > currentSelectionStart)
@@ -824,36 +824,36 @@ public class ConversationGraphEditor : EditorWindow
         EditorGUILayout.LabelField(new GUIContent("Current Selection", ConversationEditorTooltips.CurrentSelection), new GUIContent(selectionDisplay));
 
         EditorGUI.BeginDisabledGroup(currentSelectionStart < 0 || currentSelectionEnd <= currentSelectionStart);
-        if(GUILayout.Button("Create Markable from Selection"))
+        if(GUILayout.Button("Create Flaggable from Selection"))
         {
-            CreateMarkableFromSelection(bubble);
+            CreateFlaggableFromSelection(bubble);
         }
         EditorGUI.EndDisabledGroup();
 
-        if(GUILayout.Button("Sync all markable indexes from current message"))
+        if(GUILayout.Button("Sync all flaggable indexes from current message"))
         {
-            RecordChange("Sync markable indexes");
-            bubble.SyncMarkables();
+            RecordChange("Sync flaggable indexes");
+            bubble.SyncFlaggables();
             PersistGraph();
         }
     }
 
-    private void CreateMarkableFromSelection(ChatBubble bubble)
+    private void CreateFlaggableFromSelection(ChatBubble bubble)
     {
         if(currentSelectionStart < 0 || currentSelectionEnd <= currentSelectionStart) return;
-        if(MarkerTypes.Length == 0)
+        if(FlagTypes.Length == 0)
         {
-            Debug.LogWarning("No MarkerType assets found — cannot create a markable.");
+            Debug.LogWarning("No FlagType assets found — cannot create a flaggable.");
             return;
         }
 
         string selectedText = editedMessage.Substring(currentSelectionStart, currentSelectionEnd - currentSelectionStart);
-        MarkerType markerType = MarkerTypes[Mathf.Clamp(newMarkableMarkerIndex, 0, MarkerTypes.Length - 1)];
+        FlagType flagType = FlagTypes[Mathf.Clamp(newFlaggableFlagIndex, 0, FlagTypes.Length - 1)];
 
-        RecordChange("Add markable");
-        bubble.markables.Add(new Markable
+        RecordChange("Add flaggable");
+        bubble.flaggables.Add(new Flaggable
         {
-            markerType = markerType,
+            flagType = flagType,
             spanText = selectedText,
             occurrence = 0,
             startIndex = currentSelectionStart,
@@ -864,66 +864,66 @@ public class ConversationGraphEditor : EditorWindow
         currentSelectionStart = currentSelectionEnd = -1;
     }
 
-    private void DrawMarkables(ChatBubble bubble)
+    private void DrawFlaggables(ChatBubble bubble)
     {
-        EditorGUILayout.LabelField(new GUIContent("Markables", ConversationEditorTooltips.Markables), EditorStyles.boldLabel);
-        if(bubble.markables == null) bubble.markables = new List<Markable>();
+        EditorGUILayout.LabelField(new GUIContent("Flaggables", ConversationEditorTooltips.Flaggables), EditorStyles.boldLabel);
+        if(bubble.flaggables == null) bubble.flaggables = new List<Flaggable>();
 
-        int markableToRemove = -1;
-        for(int i = 0; i < bubble.markables.Count; i++)
+        int flaggableToRemove = -1;
+        for(int i = 0; i < bubble.flaggables.Count; i++)
         {
-            Markable markable = bubble.markables[i];
-            if(markable == null) continue;
+            Flaggable flaggable = bubble.flaggables[i];
+            if(flaggable == null) continue;
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            EditorGUILayout.LabelField(new GUIContent($"Markable {i + 1}", ConversationEditorTooltips.Markables), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(new GUIContent($"Flaggable {i + 1}", ConversationEditorTooltips.Flaggables), EditorStyles.boldLabel);
 
-            int currentMarkerIndex = GetMarkerIndex(markable.markerType);
-            int selectedMarkerIndex = EditorGUILayout.Popup(new GUIContent("Marker Type", ConversationEditorTooltips.MarkerTypeExisting), currentMarkerIndex, GetMarkerTypeLabels());
-            if(selectedMarkerIndex != currentMarkerIndex)
+            int currentFlagIndex = GetFlagIndex(flaggable.flagType);
+            int selectedFlagIndex = EditorGUILayout.Popup(new GUIContent("Flag Type", ConversationEditorTooltips.FlagTypeExisting), currentFlagIndex, GetFlagTypeLabels());
+            if(selectedFlagIndex != currentFlagIndex)
             {
-                RecordChange("Change markable type");
-                markable.markerType = MarkerTypes[selectedMarkerIndex];
+                RecordChange("Change flaggable type");
+                flaggable.flagType = FlagTypes[selectedFlagIndex];
                 PersistGraph();
             }
 
-            string newSpan = EditorGUILayout.TextField(new GUIContent("Anchor Text", ConversationEditorTooltips.AnchorText), markable.spanText);
-            if(newSpan != markable.spanText)
+            string newSpan = EditorGUILayout.TextField(new GUIContent("Anchor Text", ConversationEditorTooltips.AnchorText), flaggable.spanText);
+            if(newSpan != flaggable.spanText)
             {
-                RecordChange("Edit markable anchor text");
-                markable.spanText = newSpan;
+                RecordChange("Edit flaggable anchor text");
+                flaggable.spanText = newSpan;
                 PersistGraph();
             }
 
-            int newOccurrence = EditorGUILayout.IntField(new GUIContent("Occurrence", ConversationEditorTooltips.Occurrence), markable.occurrence);
-            if(newOccurrence != markable.occurrence)
+            int newOccurrence = EditorGUILayout.IntField(new GUIContent("Occurrence", ConversationEditorTooltips.Occurrence), flaggable.occurrence);
+            if(newOccurrence != flaggable.occurrence)
             {
-                RecordChange("Edit markable occurrence");
-                markable.occurrence = Mathf.Max(0, newOccurrence);
+                RecordChange("Edit flaggable occurrence");
+                flaggable.occurrence = Mathf.Max(0, newOccurrence);
                 PersistGraph();
             }
 
-            EditorGUILayout.LabelField(new GUIContent("Indexes", ConversationEditorTooltips.Indexes), $"{markable.startIndex} - {markable.endIndex}");
-            EditorGUILayout.LabelField(new GUIContent("Resolved Text", ConversationEditorTooltips.ResolvedText), markable.GetSelectedText(editedMessage));
+            EditorGUILayout.LabelField(new GUIContent("Indexes", ConversationEditorTooltips.Indexes), $"{flaggable.startIndex} - {flaggable.endIndex}");
+            EditorGUILayout.LabelField(new GUIContent("Resolved Text", ConversationEditorTooltips.ResolvedText), flaggable.GetSelectedText(editedMessage));
 
             if(GUILayout.Button("Re-sync indexes"))
             {
-                RecordChange("Re-sync markable indexes");
-                markable.RecalculateIndexes(editedMessage);
+                RecordChange("Re-sync flaggable indexes");
+                flaggable.RecalculateIndexes(editedMessage);
                 PersistGraph();
             }
 
             if(GUILayout.Button("Remove"))
             {
-                markableToRemove = i;
+                flaggableToRemove = i;
             }
             EditorGUILayout.EndVertical();
         }
 
-        if(markableToRemove >= 0)
+        if(flaggableToRemove >= 0)
         {
-            RecordChange("Remove markable");
-            bubble.markables.RemoveAt(markableToRemove);
+            RecordChange("Remove flaggable");
+            bubble.flaggables.RemoveAt(flaggableToRemove);
             PersistGraph();
         }
     }
@@ -1027,7 +1027,7 @@ public class ConversationGraphEditor : EditorWindow
     /// to a label rect, and the label-less value overload cannot take a GUIContent.
     /// NOTE: an empty/null stored value maps to no selection (index -1) rather than index
     /// 0. The task's literal "0 when empty" would make the caller's string-compare see
-    /// "MarkerOverload" != "" on the first repaint and silently persist it; index -1 keeps
+    /// "FlagOverload" != "" on the first repaint and silently persist it; index -1 keeps
     /// an unset value unchanged while still allowing any option to be picked.
     /// </remarks>
     private string DrawSequenceEventPopup(string currentValue, string tooltip = null, params GUILayoutOption[] options)
@@ -1086,10 +1086,10 @@ public class ConversationGraphEditor : EditorWindow
 
             switch(effect.operation)
             {
-                case ConversationEffectOperation.SetFlag:
+                case ConversationEffectOperation.SetSignal:
                 {
-                    // flags are arbitrary strings, NOT sequence events — keep free text
-                    EditorGUILayout.LabelField(new GUIContent("Flag", ConversationEditorTooltips.EffectValueFlag), GUILayout.Width(36f));
+                    // signals are arbitrary strings, NOT sequence events — keep free text
+                    EditorGUILayout.LabelField(new GUIContent("Signal", ConversationEditorTooltips.EffectValueSignal), GUILayout.Width(36f));
                     string newStringValue = EditorGUILayout.TextField(effect.stringValue);
                     if(newStringValue != effect.stringValue)
                     {
@@ -1167,10 +1167,10 @@ public class ConversationGraphEditor : EditorWindow
                     }
                     break;
                 }
-                case ConversationConditionKind.RequiredFlag:
+                case ConversationConditionKind.RequiredSignal:
                 {
-                    // flags are arbitrary strings, NOT sequence events — keep free text
-                    EditorGUILayout.LabelField(new GUIContent("Flag", ConversationEditorTooltips.ConditionValueFlag), GUILayout.Width(36f));
+                    // signals are arbitrary strings, NOT sequence events — keep free text
+                    EditorGUILayout.LabelField(new GUIContent("Signal", ConversationEditorTooltips.ConditionValueSignal), GUILayout.Width(36f));
                     string newStringValue = EditorGUILayout.TextField(clause.stringValue);
                     if(newStringValue != clause.stringValue)
                     {
@@ -1248,19 +1248,19 @@ public class ConversationGraphEditor : EditorWindow
         }
     }
 
-    private int GetMarkerIndex(MarkerType markerType)
+    private int GetFlagIndex(FlagType flagType)
     {
-        if(markerType == null) return 0;
-        for(int i = 0; i < MarkerTypes.Length; i++)
+        if(flagType == null) return 0;
+        for(int i = 0; i < FlagTypes.Length; i++)
         {
-            if(MarkerTypes[i].name == markerType.name) return i;
+            if(FlagTypes[i].name == flagType.name) return i;
         }
         return 0;
     }
 
-    private string[] GetMarkerTypeLabels()
+    private string[] GetFlagTypeLabels()
     {
-        return MarkerTypes.Select(mt => mt.name).ToArray();
+        return FlagTypes.Select(ft => ft.name).ToArray();
     }
 
     #endregion
@@ -1395,25 +1395,25 @@ public class ConversationGraphEditor : EditorWindow
     {
         public const string ChatUser = "Which chat identity posts this bubble. The player's own identity is Avner.";
         public const string DelayLength = "Seconds waited before the typing indicator appears for this bubble.";
-        public const string TypingFlagLength = "Seconds the typing indicator shows before the message posts.";
-        public const string Message = "The bubble's message text. Markables are anchored to this text; editing it re-syncs markable indexes.";
-        public const string MarkerTypeNew = "Marker type assigned to a markable created from the current text selection.";
-        public const string MarkerTypeExisting = "Marker type this markable is scored against at runtime.";
-        public const string CurrentSelection = "The text range currently selected in the message above; used to create a markable.";
-        public const string AnchorText = "Literal text the markable anchors to. Indexes are resolved by searching the message for this span.";
+        public const string TypingIndicatorLength = "Seconds the typing indicator shows before the message posts.";
+        public const string Message = "The bubble's message text. Flaggables are anchored to this text; editing it re-syncs flaggable indexes.";
+        public const string FlagTypeNew = "Flag type assigned to a flaggable created from the current text selection.";
+        public const string FlagTypeExisting = "Flag type this flaggable is scored against at runtime.";
+        public const string CurrentSelection = "The text range currently selected in the message above; used to create a flaggable.";
+        public const string AnchorText = "Literal text the flaggable anchors to. Indexes are resolved by searching the message for this span.";
         public const string Occurrence = "Which occurrence of the anchor text to use when it appears more than once (0 = first).";
-        public const string Indexes = "Character range in the message this markable currently resolves to (start - end).";
-        public const string ResolvedText = "The message substring the markable currently resolves to.";
+        public const string Indexes = "Character range in the message this flaggable currently resolves to (start - end).";
+        public const string ResolvedText = "The message substring the flaggable currently resolves to.";
         public const string BlocksDay = "While this choice is unanswered, the day cannot end — EndDay defers until the player picks an option.";
         public const string OptionPreviewText = "Text shown on the player's draft reply. May differ from the posted message.";
         public const string PostedBy = "Chat identity that posts the bubble when this option is picked — normally the player.";
         public const string PostedMessage = "Message actually posted to the log when this option is picked.";
-        public const string EffectOperation = "What happens when this option is picked: SetFlag records a string flag; RaiseEvent broadcasts a sequence event.";
-        public const string EffectValueFlag = "Flag name recorded on pick. Entry/Wait conditions can require this flag.";
+        public const string EffectOperation = "What happens when this option is picked: SetSignal records a string signal; RaiseEvent broadcasts a sequence event.";
+        public const string EffectValueSignal = "Signal name recorded on pick. Entry/Wait conditions can require this signal.";
         public const string EffectValueEvent = "Sequence event raised on pick. WorkStart starts the work clock; DayEnd ends the day (defers behind day-blocking choices).";
-        public const string ConditionKind = "Gate type: Event requires a specific sequence event; DayMin/DayMax bound the day number; RequiredFlag requires a flag.";
+        public const string ConditionKind = "Gate type: Event requires a specific sequence event; DayMin/DayMax bound the day number; RequiredSignal requires a signal.";
         public const string ConditionValueEvent = "Event type that must fire for this condition to pass.";
-        public const string ConditionValueFlag = "Flag name that must have been set for this condition to pass.";
+        public const string ConditionValueSignal = "Signal name that must have been set for this condition to pass.";
         public const string ConditionValueDay = "Day number bound (inclusive) for this condition.";
         public const string Exclusive = "When true, entries sharing a group id compete per event and exactly one is queued.";
         public const string ExclusiveGroupId = "Group id for exclusive resolution. Ignored when Exclusive is off (entry is additive).";
@@ -1421,8 +1421,8 @@ public class ConversationGraphEditor : EditorWindow
 
         // section-header tooltips (design D1: headers that describe editable content)
         public const string BubbleData = "Chat metadata applied when this bubble node plays.";
-        public const string NewMarkable = "Create a scored marker target from a text selection in the message above.";
-        public const string Markables = "Scored marker targets anchored to spans of this bubble's message.";
+        public const string NewFlaggable = "Create a scored flag target from a text selection in the message above.";
+        public const string Flaggables = "Scored flag targets anchored to spans of this bubble's message.";
         public const string ChoiceData = "Settings for this choice node.";
         public const string OptionsHeader = "One draft reply per option; the player picks one to continue the thread.";
         public const string EffectsHeader = "Effects applied to game state when this option is picked.";

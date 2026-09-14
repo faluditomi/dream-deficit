@@ -8,7 +8,7 @@ public class ConversationConditionClause
     public int intValue;
 
     // NOTE: an empty/null conditions list is always true — that is evaluated by the runner, not per-clause
-    public bool Matches(Constants.SequenceEventType? triggeredEvent, int currentDay, List<string> flags)
+    public bool Matches(Constants.SequenceEventType? triggeredEvent, int currentDay, List<string> signals)
     {
         switch(kind)
         {
@@ -19,8 +19,8 @@ public class ConversationConditionClause
                 return currentDay >= intValue;
             case ConversationConditionKind.DayMax:
                 return currentDay <= intValue;
-            case ConversationConditionKind.RequiredFlag:
-                return flags != null && flags.Contains(stringValue);
+            case ConversationConditionKind.RequiredSignal:
+                return signals != null && signals.Contains(stringValue);
             default:
                 return false;
         }

@@ -20,8 +20,8 @@ MonoBehaviour:
       chatUser: 5
       message: booogo gaaga
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -35,8 +35,8 @@ MonoBehaviour:
       chatUser: 5
       message: ....
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -50,8 +50,8 @@ MonoBehaviour:
       chatUser: 5
       message: :D
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []

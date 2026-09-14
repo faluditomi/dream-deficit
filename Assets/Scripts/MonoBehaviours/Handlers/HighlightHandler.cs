@@ -14,8 +14,8 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     private ChatLog chatLog;
     private ChatBubble chatBubble;
     private string nodeGuid;
-    private MarkerData previousHoveredMarker;
-    private MarkerData hoveredMarker;
+    private FlagData previousHoveredFlag;
+    private FlagData hoveredFlag;
 
     public bool canMark;
     private bool hasTemporaryHighlight = false;
@@ -44,68 +44,68 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         this.canMark = canMark;
     }
 
-    private List<MarkerData> GetMarkers()
+    private List<FlagData> GetFlags()
     {
-        if(string.IsNullOrEmpty(nodeGuid)) return new List<MarkerData>();
-        return MarkerManager.Instance.GetMarkersForChatBubble(chatLog, nodeGuid);
+        if(string.IsNullOrEmpty(nodeGuid)) return new List<FlagData>();
+        return FlagManager.Instance.GetFlagsForChatBubble(chatLog, nodeGuid);
     }
 
     public void OnMouseHover()
     {
         int hoveredCharIndex = GetCurrentCharIndex();
-        var markers = GetMarkers();
-        List<MarkerData> overlapping = markers.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
+        var flags = GetFlags();
+        List<FlagData> overlapping = flags.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
 
-        if(overlapping.Count == 0 && MarkerManager.Instance.activeMarkerType == null)
+        if(overlapping.Count == 0 && FlagManager.Instance.activeFlagType == null)
         {
-            overlapping = FindMarkerInBoundsArea(markers);
+            overlapping = FindFlagInBoundsArea(flags);
         }
 
-        if(overlapping.Count > 0 && MarkerManager.Instance.activeMarkerType == null)
+        if(overlapping.Count > 0 && FlagManager.Instance.activeFlagType == null)
         {
-            hoveredMarker = overlapping[overlapping.Count - 1];
+            hoveredFlag = overlapping[overlapping.Count - 1];
 
-            if(previousHoveredMarker != hoveredMarker)
+            if(previousHoveredFlag != hoveredFlag)
             {
-                currentSelectionStart = hoveredMarker.startIndex;
-                currentSelectionEnd = hoveredMarker.endIndex;
-                previousHoveredMarker = hoveredMarker;
+                currentSelectionStart = hoveredFlag.startIndex;
+                currentSelectionEnd = hoveredFlag.endIndex;
+                previousHoveredFlag = hoveredFlag;
                 Rebuild(hoverColour);
             }
         }
         else
         {
-            if(previousHoveredMarker == null) return;
-            currentSelectionStart = previousHoveredMarker.startIndex;
-            currentSelectionEnd = previousHoveredMarker.endIndex;
-            Rebuild(previousHoveredMarker.ResolvedMarkerType.colour);
-            previousHoveredMarker = hoveredMarker = null;
+            if(previousHoveredFlag == null) return;
+            currentSelectionStart = previousHoveredFlag.startIndex;
+            currentSelectionEnd = previousHoveredFlag.endIndex;
+            Rebuild(previousHoveredFlag.ResolvedFlagType.colour);
+            previousHoveredFlag = hoveredFlag = null;
         }
     }
 
-    private List<MarkerData> FindMarkerInBoundsArea(List<MarkerData> markers)
+    private List<FlagData> FindFlagInBoundsArea(List<FlagData> flags)
     {
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        List<MarkerData> markersContainingPoint = new List<MarkerData>();
+        List<FlagData> flagsContainingPoint = new List<FlagData>();
 
-        foreach(var marker in markers)
+        foreach(var flag in flags)
         {
-            if(IsPointInMarkerBounds(marker, mousePos))
+            if(IsPointInFlagBounds(flag, mousePos))
             {
-                markersContainingPoint.Add(marker);
+                flagsContainingPoint.Add(flag);
             }
         }
 
-        return markersContainingPoint;
+        return flagsContainingPoint;
     }
 
-    private bool IsPointInMarkerBounds(MarkerData marker, Vector2 point)
+    private bool IsPointInFlagBounds(FlagData flag, Vector2 point)
     {
         myText.ForceMeshUpdate();
         TMP_TextInfo textInfo = myText.textInfo;
         if(textInfo == null || textInfo.characterCount == 0) return false;
-        int start = Mathf.Max(0, marker.startIndex);
-        int end = Mathf.Min(textInfo.characterCount - 1, marker.endIndex);
+        int start = Mathf.Max(0, flag.startIndex);
+        int end = Mathf.Min(textInfo.characterCount - 1, flag.endIndex);
         if(start >= textInfo.characterCount || end < 0) return false;
         RectTransform rectTransform = myText.GetComponent<RectTransform>();
         Matrix4x4 localToWorld = rectTransform.localToWorldMatrix;
@@ -157,35 +157,35 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     public void OnMouseHeld()
     {
         currentSelectionEnd = GetClosestCharIndex();
-        var activeMarkerType = MarkerManager.Instance.activeMarkerType;
+        var activeFlagType = FlagManager.Instance.activeFlagType;
 
-        if(hoveredMarker != null && currentSelectionStart == currentSelectionEnd && activeMarkerType == null)
+        if(hoveredFlag != null && currentSelectionStart == currentSelectionEnd && activeFlagType == null)
         {
             Rebuild(hoverColour);
             return;
         }
 
-        Color highlightColour = activeMarkerType != null ? activeMarkerType.colour : activeColour;
+        Color highlightColour = activeFlagType != null ? activeFlagType.colour : activeColour;
         Rebuild(highlightColour);
     }
 
     public void OnMouseUp()
     {
-        MarkerType activeMarkerType = MarkerManager.Instance.activeMarkerType;
+        FlagType activeFlagType = FlagManager.Instance.activeFlagType;
         currentSelectionEnd = GetClosestCharIndex();
 
-        if(currentSelectionStart == currentSelectionEnd && activeMarkerType == null)
+        if(currentSelectionStart == currentSelectionEnd && activeFlagType == null)
         {
-            MarkerManager.Instance.RemoveMarker(hoveredMarker);
+            FlagManager.Instance.RemoveFlag(hoveredFlag);
             Rebuild(Color.clear);
-            hoveredMarker = previousHoveredMarker = null;
+            hoveredFlag = previousHoveredFlag = null;
         }
         else
         {
-            HighlightMouseUp(activeMarkerType);
+            HighlightMouseUp(activeFlagType);
         }
 
-        CanMarkMouseUp(activeMarkerType);
+        CanMarkMouseUp(activeFlagType);
     }
     
     public void ClearPersistentSelection()
@@ -195,10 +195,10 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         Rebuild(Color.clear);
     }
 
-    private void CanMarkMouseUp(MarkerType activeMarkerType)
+    private void CanMarkMouseUp(FlagType activeFlagType)
     {
-        if(!canMark || activeMarkerType == null) return;
-        MarkerData marker = null;
+        if(!canMark || activeFlagType == null) return;
+        FlagData flag = null;
 
         if(canMark && currentSelectionStart >= 0 && currentSelectionEnd >= 0)
         {
@@ -207,18 +207,18 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
             if(start != end)
             {
-                MarkerManager.Instance.AddMarker(chatLog, chatBubble, nodeGuid, start, end);
+                FlagManager.Instance.AddFlag(chatLog, chatBubble, nodeGuid, start, end);
             }
         }
 
         currentSelectionStart = currentSelectionEnd = -1;
-        Color newMarkerColour = marker != null ? marker.ResolvedMarkerType.colour : Color.clear;
-        Rebuild(newMarkerColour);
+        Color newFlagColour = flag != null ? flag.ResolvedFlagType.colour : Color.clear;
+        Rebuild(newFlagColour);
     }
 
-    private void HighlightMouseUp(MarkerType activeMarkerType)
+    private void HighlightMouseUp(FlagType activeFlagType)
     {
-        if(canMark && activeMarkerType != null) return;
+        if(canMark && activeFlagType != null) return;
         int start = Mathf.Min(currentSelectionStart, currentSelectionEnd);
         int end = Mathf.Max(currentSelectionStart, currentSelectionEnd);
 
@@ -258,7 +258,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         return TMP_TextUtilities.FindNearestCharacter(myText, pointerPos, cam, true);
     }
 
-    private string GetMarkedText(Color overrideColor, List<MarkerData> markers)
+    private string GetFlaggedText(Color overrideColor, List<FlagData> flags)
     {
         if(string.IsNullOrEmpty(rawText)) return rawText;
 
@@ -278,10 +278,10 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
                 markColor[i] = overrideColor;
             }
         }
-        else if(hoveredMarker != null && overrideColor == hoverColour)
+        else if(hoveredFlag != null && overrideColor == hoverColour)
         {
-            int start = Mathf.Max(0, hoveredMarker.startIndex);
-            int end = Mathf.Min(length - 1, hoveredMarker.endIndex);
+            int start = Mathf.Max(0, hoveredFlag.startIndex);
+            int end = Mathf.Min(length - 1, hoveredFlag.endIndex);
 
             for(int i = start; i <= end; i++)
             {
@@ -301,15 +301,15 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
             }
         }
 
-        foreach(var marker in markers)
+        foreach(var flag in flags)
         {
-            int start = Mathf.Max(0, marker.startIndex);
-            int end = Mathf.Min(length - 1, marker.endIndex);
+            int start = Mathf.Max(0, flag.startIndex);
+            int end = Mathf.Min(length - 1, flag.endIndex);
 
             for(int i = start; i <= end; i++)
             {
                 if(hasMark[i]) continue;
-                markColor[i] += marker.ResolvedMarkerType.colour;
+                markColor[i] += flag.ResolvedFlagType.colour;
                 hasMark[i] = true;
             }
         }
@@ -350,9 +350,9 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
     public void Rebuild(Color overrideColor)
     {
-        List<MarkerData> markers = GetMarkers();
-        if(markers == null || myText == null ||myText.text == null) return;
-        myText.text = GetMarkedText(overrideColor, markers);
+        List<FlagData> flags = GetFlags();
+        if(flags == null || myText == null ||myText.text == null) return;
+        myText.text = GetFlaggedText(overrideColor, flags);
         myText.ForceMeshUpdate();
     }
 }

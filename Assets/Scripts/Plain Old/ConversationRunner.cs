@@ -268,7 +268,7 @@ public class ConversationRunner
         {
             // pre-message delay elapsed — typing indicator phase begins
             thread.isDelayPhase = false;
-            thread.phaseTimer = Mathf.Max(0f, node.bubble != null ? node.bubble.typingFlagLength : 0f);
+            thread.phaseTimer = Mathf.Max(0f, node.bubble != null ? node.bubble.typingIndicatorLength : 0f);
             OnBubbleStarted?.Invoke(new PlayedBubbleRecord { graphName = thread.graph != null ? thread.graph.name : string.Empty, nodeGuid = node.guid });
         }
         else
@@ -499,12 +499,12 @@ public class ConversationRunner
     {
         if(conditions == null || conditions.Count == 0) return true;
         int currentDay = GameManager.Instance != null ? GameManager.Instance.CurrentDayNumber : 1;
-        List<string> flags = ConversationManager.Instance != null ? ConversationManager.Instance.Flags : null;
+        List<string> signals = ConversationManager.Instance != null ? ConversationManager.Instance.Signals : null;
 
         foreach(ConversationConditionClause clause in conditions)
         {
             if(clause == null) continue;
-            if(!clause.Matches(eventType, currentDay, flags)) return false;
+            if(!clause.Matches(eventType, currentDay, signals)) return false;
         }
 
         return true;

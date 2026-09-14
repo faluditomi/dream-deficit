@@ -6,7 +6,7 @@ public class ConversationNodeData
     // unique per node — assigned by editor tooling at creation
     public string guid;
     public ConversationNodeKind kind;
-    // used by Bubble nodes — full ChatBubble carries chatUser/message/delay/typingLength/markables
+    // used by Bubble nodes — full ChatBubble carries chatUser/message/delay/typingLength/flaggables
     public ChatBubble bubble = new ChatBubble();
     // used by Choice nodes — one entry per player draft
     public List<ConversationChoiceOptionData> options = new List<ConversationChoiceOptionData>();

@@ -20,8 +20,8 @@ MonoBehaviour:
       chatUser: 0
       message: 
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions:
@@ -44,8 +44,8 @@ MonoBehaviour:
       chatUser: 2
       message: good morning! did u see?
       delayLength: 0.4
-      typingFlagLength: 0.6
-      markables: []
+      typingIndicatorLength: 0.6
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -59,8 +59,8 @@ MonoBehaviour:
       chatUser: 0
       message: 
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options:
     - guid: e3d46c8e-1a16-4968-a654-d717ef0bd6c9
       previewText: '"we should push back, innit"'
@@ -68,8 +68,8 @@ MonoBehaviour:
         chatUser: 4
         message: we should push back on the deadline, innit
         delayLength: 0
-        typingFlagLength: 0
-        markables: []
+        typingIndicatorLength: 0
+        flaggables: []
       effects:
       - operation: 0
         stringValue: sided_pushback
@@ -80,8 +80,8 @@ MonoBehaviour:
         chatUser: 4
         message: let's just comply for now.
         delayLength: 0
-        typingFlagLength: 0
-        markables: []
+        typingIndicatorLength: 0
+        flaggables: []
       effects:
       - operation: 0
         stringValue: sided_comply
@@ -92,11 +92,11 @@ MonoBehaviour:
         chatUser: 4
         message: ok, enough. let's get to work.
         delayLength: 0
-        typingFlagLength: 0
-        markables: []
+        typingIndicatorLength: 0
+        flaggables: []
       effects:
       - operation: 1
-        stringValue: DayEnd
+        stringValue: WorkStart
         intValue: 0
     blocksDay: 1
     conditions: []
@@ -110,8 +110,8 @@ MonoBehaviour:
       chatUser: 2
       message: fair point. i'll draft a reply to the client.
       delayLength: 0.5
-      typingFlagLength: 0.7
-      markables: []
+      typingIndicatorLength: 0.7
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -125,8 +125,8 @@ MonoBehaviour:
       chatUser: 3
       message: compliance it is. boring but safe.
       delayLength: 0.5
-      typingFlagLength: 0.7
-      markables: []
+      typingIndicatorLength: 0.7
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -140,8 +140,8 @@ MonoBehaviour:
       chatUser: 2
       message: right. work mode. talk at noon.
       delayLength: 0.5
-      typingFlagLength: 0.7
-      markables: []
+      typingIndicatorLength: 0.7
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []
@@ -155,8 +155,8 @@ MonoBehaviour:
       chatUser: 0
       message: 
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions:
@@ -176,8 +176,8 @@ MonoBehaviour:
       chatUser: 0
       message: 
       delayLength: 0
-      typingFlagLength: 0
-      markables: []
+      typingIndicatorLength: 0
+      flaggables: []
     options: []
     blocksDay: 0
     conditions: []

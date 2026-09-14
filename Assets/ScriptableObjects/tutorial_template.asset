@@ -18,7 +18,7 @@ MonoBehaviour:
       dayNumber: 1
       activeAssignments: []
       unlockedChatLogNames: []
-      markerTypeNames:
+      flagTypeNames:
       - Copy Paste Spam
       - Synchronised Activity Spike
       - Persuasion Pattern
@@ -26,16 +26,16 @@ MonoBehaviour:
       - phoebe
       - mara
       - moira
-      markerData: []
+      flagData: []
   - dayNumber: 2
     dayData:
       dayNumber: 2
       activeAssignments: []
       unlockedChatLogNames: []
-      markerTypeNames:
+      flagTypeNames:
       - Copy Paste Spam
       - Synchronised Activity Spike
       - Persuasion Pattern
       - Narrative Shaping
       activeChatClientUsers: []
-      markerData: []
+      flagData: []
