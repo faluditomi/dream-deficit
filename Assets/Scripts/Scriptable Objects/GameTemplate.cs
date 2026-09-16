@@ -9,7 +9,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "GameTemplate", menuName = "Scriptable Objects/GameTemplate")]
 public class GameTemplate : ScriptableObject
 {
-    [System.Serializable] public struct DayDataEntry
+    [System.Serializable]
+    public struct DayDataEntry
     {
         public int dayNumber;
         public DayData dayData;

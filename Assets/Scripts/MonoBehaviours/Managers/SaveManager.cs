@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using static GameTemplate;
 
 public class SaveManager : Singleton<SaveManager>
 {
@@ -16,9 +17,6 @@ public class SaveManager : Singleton<SaveManager>
     private DayData currentDayData;
     private Dictionary<int, DayData> daySaveData = new Dictionary<int, DayData>();
     private string savePath;
-    /// Run-level conversation state (played history, thread cursors, signals).
-    /// Not day-scoped: threads parked on day 5 must resume on day 6.
-    public ChatRunState chatRunState;
 
     protected override void Awake()
     {
@@ -96,15 +94,14 @@ public class SaveManager : Singleton<SaveManager>
         // sync slot's day entries to runtime data before saving
         foreach(var kvp in daySaveData) UpdateSlotDayEntry(kvp.Key, kvp.Value);
 
-        List<DayDataContainer> containerList = daySaveData
-            .Select(kvp => new DayDataContainer { dayNumber = kvp.Key, dayData = kvp.Value })
+        List<DayDataEntry> containerList = daySaveData
+            .Select(kvp => new DayDataEntry { dayNumber = kvp.Key, dayData = kvp.Value })
             .ToList();
 
         string json = JsonUtility.ToJson(new SaveFileData
         {
             days = containerList,
-            runSaveData = currentRunSaveData,
-            chatRunState = ConversationManager.Instance != null ? ConversationManager.Instance.CaptureChatState() : null
+            runSaveData = currentRunSaveData
         }, true);
 
         File.WriteAllText(savePath, json);
@@ -118,7 +115,6 @@ public class SaveManager : Singleton<SaveManager>
         daySaveData.Clear();
         foreach(var entry in saveFile.days) daySaveData[entry.dayNumber] = entry.dayData;
         currentRunSaveData = saveFile.runSaveData ?? new RunData();
-        chatRunState = saveFile.chatRunState ?? new ChatRunState();
         return true;
     }
 
@@ -130,8 +126,6 @@ public class SaveManager : Singleton<SaveManager>
         activeSlot.dayEntries.Clear();
         daySaveData.Clear();
         currentRunSaveData = new RunData();
-        // a fresh save starts with no conversation history, no parked threads, no signals
-        chatRunState = new ChatRunState();
 
         foreach(var entry in template.dayEntries)
         {
@@ -203,17 +197,9 @@ public class SaveManager : Singleton<SaveManager>
     #endregion
 
     [System.Serializable]
-    private class DayDataContainer
-    {
-        public int dayNumber;
-        public DayData dayData;
-    }
-
-    [System.Serializable]
     private class SaveFileData
     {
-        public List<DayDataContainer> days;
+        public List<DayDataEntry> days;
         public RunData runSaveData;
-        public ChatRunState chatRunState;
     }
 }

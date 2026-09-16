@@ -42,10 +42,3 @@ public class LogChatState
     public List<ConversationThreadState> threads = new List<ConversationThreadState>();
     public List<ConversationEntryActivation> activations = new List<ConversationEntryActivation>();
 }
-
-[System.Serializable]
-public class ChatRunState
-{
-    public List<string> signals = new List<string>();
-    public List<LogChatState> logs = new List<LogChatState>();
-}

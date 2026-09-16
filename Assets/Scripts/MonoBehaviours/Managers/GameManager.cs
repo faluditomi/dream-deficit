@@ -52,10 +52,6 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
     {
         currentDayTime = dayLengthInSeconds;
         UpdateTimeText();
-        // NOTE: restore run-level chat state BEFORE the day's windows are built, so chat log controllers render the restored history during setup,
-        //       and so runners are reused (never recreated) and windows stay subscribed to them. OnDayChanged then guarantees a runner exists for
-        //       every active log before DayStart fires — otherwise the event reaches an empty runner set and conversations never start.
-        ConversationManager.Instance?.RestoreChatState(SaveManager.Instance.chatRunState);
         SaveManager.Instance.LoadDay(currentDayNumber);
         ConversationManager.Instance?.OnDayChanged();
         dayStartEventChannel.Raise();

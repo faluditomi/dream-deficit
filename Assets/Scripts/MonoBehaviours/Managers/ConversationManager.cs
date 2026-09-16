@@ -5,7 +5,7 @@ using UnityEngine;
 /// Owns one ConversationRunner per chat log. A tickable singleton that
 /// bridges sequence events into entry evaluation, holds run-level signals, applies
 /// choice effects, and snapshots/restores run-level chat state for the save file.
-public class ConversationManager : Singleton<ConversationManager>
+public class ConversationManager : Singleton<ConversationManager>, IRunLoadable, IRunSavable
 {
     private readonly Dictionary<ChatLog, ConversationRunner> runners = new Dictionary<ChatLog, ConversationRunner>();
     private readonly List<string> signals = new List<string>();
@@ -37,6 +37,46 @@ public class ConversationManager : Singleton<ConversationManager>
     private void Update()
     {
         foreach(ConversationRunner runner in runners.Values) runner.Tick(Time.deltaTime);
+    }
+
+    /// Replaces all runtime chat state from a loaded save. Existing runner instances are
+    /// REUSED rather than recreated, so chat log windows that subscribed to them stay wired.
+    public void LoadFromRunData(RunData runData)
+    {
+        signals.Clear();
+        if(runData.chatSignals != null) signals.AddRange(runData.chatSignals);
+        hadDayBlockingChoice = false;
+        if(runData.chatLogs == null) return;
+
+        foreach(LogChatState logState in runData.chatLogs)
+        {
+            if(logState == null || string.IsNullOrEmpty(logState.logName)) continue;
+            ChatLog chatLog = AddressableManager.Instance.RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + logState.logName);
+
+            if(chatLog == null)
+            {
+                Debug.LogWarning($"ConversationManager: could not resolve ChatLog '{logState.logName}' while restoring chat state. Skipping.");
+                continue;
+            }
+
+            GetRunnerForLog(chatLog)?.RestoreState(logState.history, logState.threads, logState.activations);
+        }
+    }
+
+    public void SaveToRunData(RunData runData)
+    {
+        if(signals != null) runData.chatSignals = signals;
+        runData.chatLogs = new List<LogChatState>();
+
+        foreach(KeyValuePair<ChatLog, ConversationRunner> pair in runners)
+        {
+            if(pair.Key == null || pair.Value == null) continue;
+            LogChatState logState = new LogChatState { logName = pair.Key.logName };
+            logState.history.AddRange(pair.Value.history);
+            logState.threads.AddRange(pair.Value.CaptureThreadStates());
+            logState.activations.AddRange(pair.Value.CaptureActivations());
+            runData.chatLogs.Add(logState);
+        }
     }
 
     #region Runner Access
@@ -159,56 +199,6 @@ public class ConversationManager : Singleton<ConversationManager>
                     break;
             }
         }
-    }
-
-    #endregion
-
-    #region Save State
-
-    /// Replaces all runtime chat state from a loaded save. Existing runner instances are
-    /// REUSED rather than recreated, so chat log windows that subscribed to them stay wired.
-    public void RestoreChatState(ChatRunState state)
-    {
-        if(state == null) return;
-        signals.Clear();
-        if(state.signals != null) signals.AddRange(state.signals);
-        hadDayBlockingChoice = false;
-        if(state.logs == null) return;
-
-        foreach(LogChatState logState in state.logs)
-        {
-            if(logState == null || string.IsNullOrEmpty(logState.logName)) continue;
-
-            ChatLog chatLog = AddressableManager.Instance != null
-                ? AddressableManager.Instance.RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + logState.logName)
-                : null;
-
-            if(chatLog == null)
-            {
-                Debug.LogWarning($"ConversationManager: could not resolve ChatLog '{logState.logName}' while restoring chat state. Skipping.");
-                continue;
-            }
-
-            GetRunnerForLog(chatLog)?.RestoreState(logState.history, logState.threads, logState.activations);
-        }
-    }
-
-    public ChatRunState CaptureChatState()
-    {
-        ChatRunState state = new ChatRunState();
-        if(signals != null) state.signals.AddRange(signals);
-
-        foreach(KeyValuePair<ChatLog, ConversationRunner> pair in runners)
-        {
-            if(pair.Key == null || pair.Value == null) continue;
-            LogChatState logState = new LogChatState { logName = pair.Key.logName };
-            logState.history.AddRange(pair.Value.history);
-            logState.threads.AddRange(pair.Value.CaptureThreadStates());
-            logState.activations.AddRange(pair.Value.CaptureActivations());
-            state.logs.Add(logState);
-        }
-
-        return state;
     }
 
     #endregion
