@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ChatLogManager : Singleton<ChatLogManager>, ILoadable, ISavable
+public class ChatLogManager : Singleton<ChatLogManager>, IDayLoadable, IDaySavable
 {
     private ChatClientController chatClientController;
     private GameObject chatLogPrefab;

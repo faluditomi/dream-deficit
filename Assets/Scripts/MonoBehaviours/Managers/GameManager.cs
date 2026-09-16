@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameManager : Singleton<GameManager>
+public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
 {
     private SequenceEventChannel dayStartEventChannel;
     private SequenceEventChannel workEndEventChannel;
@@ -12,25 +12,12 @@ public class GameManager : Singleton<GameManager>
     [Range(0, 24)] public float dayEndTime = 17f;
     public float dayLengthInSeconds = 60f;
     private float currentDayTime = 0f;
+    public int currentDayNumber = 0;
     public bool isDayPassing = false;
     // NOTE: set while EndDay is deferred behind an unresolved day-blocking choice.
     //       Guards EndDay against re-entry so EndOfDaybehaviour can never be started twice.
     private bool isEndDayDeferred = false;
     [HideInInspector] public Transform focusedWindow;
-
-    public int CurrentDayNumber
-    {
-        get => SaveManager.Instance != null && SaveManager.Instance.activeSlot != null
-            ? SaveManager.Instance.activeSlot.currentDayNumber
-            : 1;
-        set
-        {
-            if(SaveManager.Instance != null && SaveManager.Instance.activeSlot != null)
-            {
-                SaveManager.Instance.activeSlot.currentDayNumber = value;
-            }
-        }
-    }
 
     protected override void Awake()
     {
@@ -51,6 +38,16 @@ public class GameManager : Singleton<GameManager>
         StartDay();
     }
 
+    public void LoadFromRunData(RunData runData)
+    {
+        currentDayNumber = runData.currentDayNumber;
+    }
+
+    public void SaveToRunData(RunData runData)
+    {
+        runData.currentDayNumber = currentDayNumber;
+    }
+
     public void StartDay()
     {
         currentDayTime = dayLengthInSeconds;
@@ -59,7 +56,7 @@ public class GameManager : Singleton<GameManager>
         //       and so runners are reused (never recreated) and windows stay subscribed to them. OnDayChanged then guarantees a runner exists for
         //       every active log before DayStart fires — otherwise the event reaches an empty runner set and conversations never start.
         ConversationManager.Instance?.RestoreChatState(SaveManager.Instance.chatRunState);
-        SaveManager.Instance.LoadDay(CurrentDayNumber);
+        SaveManager.Instance.LoadDay(currentDayNumber);
         ConversationManager.Instance?.OnDayChanged();
         dayStartEventChannel.Raise();
     }
@@ -150,10 +147,10 @@ public class GameManager : Singleton<GameManager>
     #region Coroutines
     private IEnumerator EndOfDaybehaviour()
     {
-        SaveManager.Instance.SaveDay(CurrentDayNumber);
+        SaveManager.Instance.SaveDay(currentDayNumber);
         Scene oldScene = SceneManager.GetActiveScene();
-        string dreamSceneName = Constants.SceneNames.DreamPrefix + CurrentDayNumber;
-        CurrentDayNumber++;
+        string dreamSceneName = Constants.SceneNames.DreamPrefix + currentDayNumber;
+        currentDayNumber++;
         AsyncOperation sceneLoadOperation = SceneManager.LoadSceneAsync(dreamSceneName, LoadSceneMode.Additive);
         sceneLoadOperation.allowSceneActivation = false;
         // TODO: do stuff like screen turning off animation and stuff

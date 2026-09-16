@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
-public class FlagManager : Singleton<FlagManager>, ILoadable, ISavable
+public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
 {
     private GameObject flagIndicatorPrefab;
     private Transform uiCanvas;
@@ -72,7 +72,7 @@ public class FlagManager : Singleton<FlagManager>, ILoadable, ISavable
             chatLog,
             start,
             end,
-            GameManager.Instance.CurrentDayNumber,
+            GameManager.Instance.currentDayNumber,
             CalculateFlagAccuracy(chatBubble, start, end),
             nodeGuid
         );

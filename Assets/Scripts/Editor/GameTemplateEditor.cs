@@ -9,7 +9,6 @@ public class GameTemplateEditor : EditorWindow
     private Vector2 scrollPosition;
     private int selectedDayIndex = -1;
     private ReorderableList dayReorderableList;
-    private bool showFlagDataFoldout = false;
 
     private string[] flagTypeNames;
 

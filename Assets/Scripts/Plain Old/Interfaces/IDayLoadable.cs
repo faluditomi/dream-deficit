@@ -1,4 +1,4 @@
-public interface ILoadable
+public interface IDayLoadable
 {
     public void LoadFromDayData(DayData dayData);
 }

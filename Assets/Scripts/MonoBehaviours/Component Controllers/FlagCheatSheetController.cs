@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class FlagCheatSheetController : BaseWindowController, ILoadable
+public class FlagCheatSheetController : BaseWindowController, IDayLoadable
 {
     private GameObject flagCheatSheetEntryPrefab;
     private Transform flagEntryContainer;

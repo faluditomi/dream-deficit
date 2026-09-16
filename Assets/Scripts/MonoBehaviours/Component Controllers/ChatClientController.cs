@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class ChatClientController : BaseWindowController, ILoadable
+public class ChatClientController : BaseWindowController, IDayLoadable
 {
     [HideInInspector] public ChatLogController myChatLogController;
     private GameObject chatUserEntryPrefab;

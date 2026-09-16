@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class AssignmentDocketController : BaseWindowController, ILoadable
+public class AssignmentDocketController : BaseWindowController, IDayLoadable
 {
     private GameObject assignmentEntryPrefab;
     private Transform content;

@@ -8,10 +8,13 @@ public class SaveManager : Singleton<SaveManager>
 {
     // TODO: once we have a menu, we have to create a save slot picker/creator. for now, we just assign the slot brute force.
     public SaveSlot activeSlot;
+    private List<IDaySavable> daySavables = new List<IDaySavable>();
+    private List<IDayLoadable> dayLoadables = new List<IDayLoadable>();
+    private List<IRunSavable> runSavables = new List<IRunSavable>();
+    private List<IRunLoadable> runLoadables = new List<IRunLoadable>();
+    private RunData currentRunSaveData;
     private DayData currentDayData;
-    private List<ISavable> savables = new List<ISavable>();
-    private List<ILoadable> loadables = new List<ILoadable>();
-    private Dictionary<int, DayData> runtimeSaveData = new Dictionary<int, DayData>();
+    private Dictionary<int, DayData> daySaveData = new Dictionary<int, DayData>();
     private string savePath;
     /// Run-level conversation state (played history, thread cursors, signals).
     /// Not day-scoped: threads parked on day 5 must resume on day 6.
@@ -25,33 +28,14 @@ public class SaveManager : Singleton<SaveManager>
         if(!LoadGame()) InitializeFromTemplate();
     }
 
-    public void AddSavable(ISavable iSavable)
-    {
-        savables.Add(iSavable);
-    }
-
-    public void AddLoadable(ILoadable iLoadable)
-    {
-        loadables.Add(iLoadable);
-        if(currentDayData != null) iLoadable.LoadFromDayData(currentDayData);
-    }
-
-    public void RemoveSavable(ISavable iSavable)
-    {
-        savables.Remove(iSavable);
-    }
-
-    public void RemoveLoadable(ILoadable iLoadable)
-    {
-        loadables.Remove(iLoadable);
-    }
-
     public void SaveDay(int dayNumber)
     {
-        DayData dayData = runtimeSaveData[dayNumber];
-        foreach(var savable in savables) savable.SaveToDayData(dayData);
-        runtimeSaveData[dayNumber] = dayData;
+        DayData dayData = daySaveData[dayNumber];
+        foreach(var savable in daySavables) savable.SaveToDayData(dayData);
+        foreach(var savable in runSavables) savable.SaveToRunData(currentRunSaveData);
+        daySaveData[dayNumber] = dayData;
         UpdateSlotDayEntry(dayNumber, dayData);
+        activeSlot.runData = currentRunSaveData;
         SaveGame();
     }
 
@@ -76,13 +60,14 @@ public class SaveManager : Singleton<SaveManager>
             return;
         }
 
-        foreach(var loadable in loadables) loadable.LoadFromDayData(currentDayData);
+        foreach(var loadable in dayLoadables) loadable.LoadFromDayData(currentDayData);
+        foreach(var loadable in runLoadables) loadable.LoadFromRunData(currentRunSaveData);
     }
 
     private DayData GetDayData(int dayNumber)
     {
         // first check runtime data (loaded from JSON)
-        if(runtimeSaveData.ContainsKey(dayNumber)) return runtimeSaveData[dayNumber];
+        if(daySaveData.ContainsKey(dayNumber)) return daySaveData[dayNumber];
 
         // then check slot's own day entries
         if(activeSlot != null)
@@ -109,15 +94,16 @@ public class SaveManager : Singleton<SaveManager>
     public void SaveGame()
     {
         // sync slot's day entries to runtime data before saving
-        foreach(var kvp in runtimeSaveData) UpdateSlotDayEntry(kvp.Key, kvp.Value);
+        foreach(var kvp in daySaveData) UpdateSlotDayEntry(kvp.Key, kvp.Value);
 
-        List<DayDataContainer> containerList = runtimeSaveData
+        List<DayDataContainer> containerList = daySaveData
             .Select(kvp => new DayDataContainer { dayNumber = kvp.Key, dayData = kvp.Value })
             .ToList();
 
         string json = JsonUtility.ToJson(new SaveFileData
         {
             days = containerList,
+            runSaveData = currentRunSaveData,
             chatRunState = ConversationManager.Instance != null ? ConversationManager.Instance.CaptureChatState() : null
         }, true);
 
@@ -129,8 +115,9 @@ public class SaveManager : Singleton<SaveManager>
         if(!File.Exists(savePath)) return false;
         string json = File.ReadAllText(savePath);
         SaveFileData saveFile = JsonUtility.FromJson<SaveFileData>(json);
-        runtimeSaveData.Clear();
-        foreach(var entry in saveFile.days) runtimeSaveData[entry.dayNumber] = entry.dayData;
+        daySaveData.Clear();
+        foreach(var entry in saveFile.days) daySaveData[entry.dayNumber] = entry.dayData;
+        currentRunSaveData = saveFile.runSaveData ?? new RunData();
         chatRunState = saveFile.chatRunState ?? new ChatRunState();
         return true;
     }
@@ -141,7 +128,8 @@ public class SaveManager : Singleton<SaveManager>
         if(template == null) return;
         // copy template day entries into slot's own day entries
         activeSlot.dayEntries.Clear();
-        runtimeSaveData.Clear();
+        daySaveData.Clear();
+        currentRunSaveData = new RunData();
         // a fresh save starts with no conversation history, no parked threads, no signals
         chatRunState = new ChatRunState();
 
@@ -151,25 +139,68 @@ public class SaveManager : Singleton<SaveManager>
             // template asset, and so the slot/runtime don't share one DayData instance
             DayData cloned = JsonUtility.FromJson<DayData>(JsonUtility.ToJson(entry.dayData));
             activeSlot.dayEntries.Add(new GameTemplate.DayDataEntry { dayNumber = entry.dayNumber, dayData = cloned });
-            runtimeSaveData[entry.dayNumber] = cloned;
+            daySaveData[entry.dayNumber] = cloned;
         }
 
         #if UNITY_EDITOR
         EditorUtility.SetDirty(activeSlot);
         #endif
 
-        if(runtimeSaveData.Count > 0)
-        {
-            SaveGame();
-        }
+        if(daySaveData.Count > 0) SaveGame();
     }
 
     public bool HasSaveForDay(int dayNumber)
     {
-        return runtimeSaveData.ContainsKey(dayNumber) ||
+        return daySaveData.ContainsKey(dayNumber) ||
             (activeSlot != null && activeSlot.dayEntries.Any(e => e.dayNumber == dayNumber)) ||
             (activeSlot != null && activeSlot.template != null && activeSlot.template.HasDay(dayNumber));
     }
+
+    #region SaveLoad Subscription
+
+    public void AddDaySavable(IDaySavable iSavable)
+    {
+        daySavables.Add(iSavable);
+    }
+
+    public void AddDayLoadable(IDayLoadable iLoadable)
+    {
+        dayLoadables.Add(iLoadable);
+        if(currentDayData != null) iLoadable.LoadFromDayData(currentDayData);
+    }
+
+    public void RemoveDaySavable(IDaySavable iSavable)
+    {
+        daySavables.Remove(iSavable);
+    }
+
+    public void RemoveDayLoadable(IDayLoadable iLoadable)
+    {
+        dayLoadables.Remove(iLoadable);
+    }
+
+    public void AddRunSavable(IRunSavable iSavable)
+    {
+        runSavables.Add(iSavable);
+    }
+
+    public void AddRunLoadable(IRunLoadable iLoadable)
+    {
+        runLoadables.Add(iLoadable);
+        if(currentDayData != null) iLoadable.LoadFromRunData(currentRunSaveData);
+    }
+
+    public void RemoveRunSavable(IRunSavable iSavable)
+    {
+        runSavables.Remove(iSavable);
+    }
+
+    public void RemoveRunLoadable(IRunLoadable iLoadable)
+    {
+        runLoadables.Remove(iLoadable);
+    }
+
+    #endregion
 
     [System.Serializable]
     private class DayDataContainer
@@ -182,6 +213,7 @@ public class SaveManager : Singleton<SaveManager>
     private class SaveFileData
     {
         public List<DayDataContainer> days;
+        public RunData runSaveData;
         public ChatRunState chatRunState;
     }
 }

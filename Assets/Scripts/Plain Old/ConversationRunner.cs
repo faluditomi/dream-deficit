@@ -124,13 +124,13 @@ public class ConversationRunner
     public void ExpireStaleActivations()
     {
         if(activations.Count == 0) return;
-        int currentDay = GameManager.Instance.CurrentDayNumber;
+        int currentDay = GameManager.Instance.currentDayNumber;
         activations.RemoveAll(activation => activation == null || activation.dayNumber != currentDay);
     }
 
     private bool HasActivation(string graphName, string nodeGuid, Constants.SequenceEventType eventType)
     {
-        int currentDay = GameManager.Instance.CurrentDayNumber;
+        int currentDay = GameManager.Instance.currentDayNumber;
 
         foreach(ConversationEntryActivation activation in activations)
         {
@@ -150,7 +150,7 @@ public class ConversationRunner
         if(string.IsNullOrEmpty(graphName) || string.IsNullOrEmpty(nodeGuid)) return;
         if(HasActivation(graphName, nodeGuid, eventType)) return;
 
-        int currentDay = GameManager.Instance != null ? GameManager.Instance.CurrentDayNumber : 1;
+        int currentDay = GameManager.Instance != null ? GameManager.Instance.currentDayNumber : 1;
         activations.Add(new ConversationEntryActivation
         {
             graphName = graphName,
@@ -498,7 +498,7 @@ public class ConversationRunner
     private bool ConditionsMatch(List<ConversationConditionClause> conditions, Constants.SequenceEventType? eventType)
     {
         if(conditions == null || conditions.Count == 0) return true;
-        int currentDay = GameManager.Instance != null ? GameManager.Instance.CurrentDayNumber : 1;
+        int currentDay = GameManager.Instance != null ? GameManager.Instance.currentDayNumber : 1;
         List<string> signals = ConversationManager.Instance != null ? ConversationManager.Instance.Signals : null;
 
         foreach(ConversationConditionClause clause in conditions)
