@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
+public abstract class Singleton<T> : SaveLoadBehaviour where T : MonoBehaviour
 {
     private static T _instance;
     private static Transform _systemsRoot;

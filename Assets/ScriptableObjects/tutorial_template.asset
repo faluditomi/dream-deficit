@@ -16,7 +16,9 @@ MonoBehaviour:
   - dayNumber: 1
     dayData:
       dayNumber: 1
-      activeAssignments: []
+      activeAssignments:
+      - logName: test_assignment
+        isBonus: 1
       unlockedChatLogNames: []
       flagTypeNames:
       - Copy Paste Spam

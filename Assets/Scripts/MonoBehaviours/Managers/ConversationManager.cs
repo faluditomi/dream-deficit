@@ -111,7 +111,7 @@ public class ConversationManager : Singleton<ConversationManager>
     /// so sequence events always reach them even when no window has been opened yet.
     private void EnsureRunnersForActiveLogs()
     {
-        DayData dayData = SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber);
+        DayData dayData = SaveManager.Instance.GetCurrentDayData();
         foreach(ChatLog chatLog in dayData.GetActiveAssignments()) GetRunnerForLog(chatLog);
 
         foreach(ChatUser chatUser in dayData.GetActiveChatClientUsers())

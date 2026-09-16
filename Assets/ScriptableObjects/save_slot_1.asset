@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SaveSlot
   slotName: Slot 1
   template: {fileID: 11400000, guid: 3196e0e5350f75f4fa48370e40655a13, type: 2}
-  currentDayNumber: 2
+  currentDayNumber: 1
   dayEntries:
   - dayNumber: 1
     dayData:

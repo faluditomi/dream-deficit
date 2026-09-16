@@ -204,11 +204,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         {
             int start = Mathf.Min(currentSelectionStart, currentSelectionEnd);
             int end = Mathf.Max(currentSelectionStart, currentSelectionEnd);
-
-            if(start != end)
-            {
-                FlagManager.Instance.AddFlag(chatLog, chatBubble, nodeGuid, start, end);
-            }
+            if(start != end) FlagManager.Instance.AddFlag(chatLog, chatBubble, nodeGuid, start, end);
         }
 
         currentSelectionStart = currentSelectionEnd = -1;

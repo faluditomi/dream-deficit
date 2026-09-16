@@ -8,6 +8,7 @@ public class SaveManager : Singleton<SaveManager>
 {
     // TODO: once we have a menu, we have to create a save slot picker/creator. for now, we just assign the slot brute force.
     public SaveSlot activeSlot;
+    private DayData currentDayData;
     private List<ISavable> savables = new List<ISavable>();
     private List<ILoadable> loadables = new List<ILoadable>();
     private Dictionary<int, DayData> runtimeSaveData = new Dictionary<int, DayData>();
@@ -24,25 +25,31 @@ public class SaveManager : Singleton<SaveManager>
         if(!LoadGame()) InitializeFromTemplate();
     }
 
-    private void RegisterSavables()
+    public void AddSavable(ISavable iSavable)
     {
-        savables = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).OfType<ISavable>().ToList();
+        savables.Add(iSavable);
     }
 
-    private void RegisterLoadables()
+    public void AddLoadable(ILoadable iLoadable)
     {
-        loadables = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).OfType<ILoadable>().ToList();
+        loadables.Add(iLoadable);
+        if(currentDayData != null) iLoadable.LoadFromDayData(currentDayData);
+    }
+
+    public void RemoveSavable(ISavable iSavable)
+    {
+        savables.Remove(iSavable);
+    }
+
+    public void RemoveLoadable(ILoadable iLoadable)
+    {
+        loadables.Remove(iLoadable);
     }
 
     public void SaveDay(int dayNumber)
     {
         DayData dayData = runtimeSaveData[dayNumber];
-
-        foreach(var savable in savables)
-        {
-            savable.SaveToDayData(dayData);
-        }
-
+        foreach(var savable in savables) savable.SaveToDayData(dayData);
         runtimeSaveData[dayNumber] = dayData;
         UpdateSlotDayEntry(dayNumber, dayData);
         SaveGame();
@@ -61,20 +68,18 @@ public class SaveManager : Singleton<SaveManager>
 
     public void LoadDay(int dayNumber)
     {
-        RegisterSavables();
-        RegisterLoadables();
-        DayData dayData = GetDayData(dayNumber);
+        currentDayData = GetDayData(dayNumber);
 
-        if(dayData == null)
+        if(currentDayData == null)
         {
             Debug.LogWarning($"No save data found for day {dayNumber}.");
             return;
         }
 
-        foreach(var loadable in loadables) loadable.LoadFromDayData(dayData);
+        foreach(var loadable in loadables) loadable.LoadFromDayData(currentDayData);
     }
 
-    public DayData GetDayData(int dayNumber)
+    private DayData GetDayData(int dayNumber)
     {
         // first check runtime data (loaded from JSON)
         if(runtimeSaveData.ContainsKey(dayNumber)) return runtimeSaveData[dayNumber];
@@ -94,6 +99,11 @@ public class SaveManager : Singleton<SaveManager>
         }
 
         return null;
+    }
+
+    public DayData GetCurrentDayData()
+    {
+        return currentDayData;
     }
 
     public void SaveGame()
@@ -154,20 +164,11 @@ public class SaveManager : Singleton<SaveManager>
         }
     }
 
-    public List<FlagData> GetSavedFlagsForChatLog(ChatLog chatLog)
-    {
-        DayData currentDayData = GetDayData(GameManager.Instance.CurrentDayNumber);
-        if(currentDayData == null) return new List<FlagData>();
-        List<FlagData> allFlags = currentDayData.GetFlagData();
-        if(allFlags == null) return new List<FlagData>();
-        return allFlags.Where(m => m.ResolvedChatLog == chatLog).ToList();
-    }
-
     public bool HasSaveForDay(int dayNumber)
     {
         return runtimeSaveData.ContainsKey(dayNumber) ||
-               (activeSlot != null && activeSlot.dayEntries.Any(e => e.dayNumber == dayNumber)) ||
-               (activeSlot != null && activeSlot.template != null && activeSlot.template.HasDay(dayNumber));
+            (activeSlot != null && activeSlot.dayEntries.Any(e => e.dayNumber == dayNumber)) ||
+            (activeSlot != null && activeSlot.template != null && activeSlot.template.HasDay(dayNumber));
     }
 
     [System.Serializable]

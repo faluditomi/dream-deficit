@@ -513,7 +513,7 @@ public class ConversationRunner
     private bool IsLogLocked()
     {
         if(log == null || SaveManager.Instance == null || GameManager.Instance == null) return false;
-        DayData dayData = SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber);
+        DayData dayData = SaveManager.Instance.GetCurrentDayData();
         return dayData != null && dayData.IsLogLocked(log.logName);
     }
 

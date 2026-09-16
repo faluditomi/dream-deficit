@@ -40,9 +40,7 @@ public class AssignmentEntryController : MonoBehaviour
         // otherwise hide the lock panel directly so the data is revealed regardless
         if(animator != null && HasUnlockTrigger()) animator.SetTrigger(Constants.AnimationTriggers.UnlockAssignmentEntry);
         else lockPanel.SetActive(false);
-        // record the unlock on the runtime day data
-        DayData dayData = SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber);
-        dayData?.UnlockLog(myChatLog.logName);
+        ChatLogManager.Instance.UnlockChatLog(myChatLog);
         isLocked = false;
         myChatLogController.Open();
     }

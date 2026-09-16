@@ -1,18 +1,37 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ChatLogManager : Singleton<ChatLogManager>
+public class ChatLogManager : Singleton<ChatLogManager>, ILoadable, ISavable
 {
     private ChatClientController chatClientController;
     private GameObject chatLogPrefab;
     private Transform windowContainer;
     private Dictionary<ChatLog, ChatLogController> chatLogControllerCache = new Dictionary<ChatLog, ChatLogController>();
+    private List<ChatLog> unlockedChatLogs = new List<ChatLog>();
 
     protected override void Awake()
     {
         base.Awake();
         chatLogPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.ChatLog);
         windowContainer = FindFirstObjectByType<Canvas>().transform.Find(Constants.GameObjectNames.WindowContainer);
+    }
+
+    public void LoadFromDayData(DayData dayData)
+    {
+        unlockedChatLogs = new List<ChatLog>();
+
+        dayData.unlockedChatLogNames.ForEach(chatLogName =>
+        {
+            ChatLog chatLog = AddressableManager.Instance.RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + chatLogName);
+            if(chatLog != null) unlockedChatLogs.Add(chatLog);
+        });
+    }
+
+    public void SaveToDayData(DayData dayData)
+    {
+        List<string> unlockedChatLogNames = new List<string>();
+        unlockedChatLogs.ForEach(chatLog => unlockedChatLogNames.Add(chatLog.name));
+        dayData.unlockedChatLogNames = unlockedChatLogNames;
     }
 
     public ChatLogController InstantiateChatLog(ChatLog chatLog, Transform initialiser, bool needsTopBar = true, Transform parent = null)
@@ -43,6 +62,11 @@ public class ChatLogManager : Singleton<ChatLogManager>
 
             return chatLogController;
         }
+    }
+
+    public void UnlockChatLog(ChatLog chatLog)
+    {
+        if(!unlockedChatLogs.Contains(chatLog)) unlockedChatLogs.Add(chatLog);
     }
 
     public ChatLogController GetChatLogControllerByLogName(string chatLogName)

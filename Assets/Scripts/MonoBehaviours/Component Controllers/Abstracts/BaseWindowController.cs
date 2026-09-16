@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public abstract class BaseWindowController : MonoBehaviour
+public abstract class BaseWindowController : SaveLoadBehaviour
 {
     private TopBarHandler topBarHandler;
     protected GameObject windowGameObject;

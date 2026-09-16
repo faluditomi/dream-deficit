@@ -21,7 +21,7 @@ public class FlagCheatSheetController : BaseWindowController, ILoadable
     // TODO: and simply are getting the flag types from the DayData instead
     public void LoadFromDayData(DayData dayData)
     {
-        List<FlagType> activeFlags = SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber).GetFlagTypes();
+        List<FlagType> activeFlags = SaveManager.Instance.GetCurrentDayData().GetFlagTypes();
 
         foreach(Transform child in flagEntryContainer)
         {

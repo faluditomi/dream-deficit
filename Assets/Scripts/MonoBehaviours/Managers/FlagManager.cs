@@ -4,14 +4,14 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
-public class FlagManager : Singleton<FlagManager>, ILoadable
+public class FlagManager : Singleton<FlagManager>, ILoadable, ISavable
 {
     private GameObject flagIndicatorPrefab;
     private Transform uiCanvas;
     private List<FlagData> placedFlags = new List<FlagData>();
+    public List<FlagType> activeFlagTypeCache = new List<FlagType>();
     private Dictionary<FlagType, FlagIndicatorController> activeFlagIndicators = new Dictionary<FlagType, FlagIndicatorController>();
     private InputAction flagHoldAction;
-    public List<FlagType> activeFlagTypeCache = new List<FlagType>();
     // non-serialized is needed, because otherwise activeFlagType wouldn't be null on startup, which messes up multiple systems
     [System.NonSerialized] public FlagType activeFlagType;
     private SequenceEventChannel flagOverloadSequenceEventChannel;
@@ -26,6 +26,18 @@ public class FlagManager : Singleton<FlagManager>, ILoadable
         flagOverloadSequenceEventChannel = AddressableManager.Instance
             .RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.FlagOverload);
         uiCanvas = FindFirstObjectByType<Canvas>().transform;
+    }
+
+    public void LoadFromDayData(DayData dayData)
+    {
+        activeFlagTypeCache.Clear();
+        activeFlagTypeCache.AddRange(dayData.GetFlagTypes());
+        SetActiveFlagTypes();
+    }
+
+    public void SaveToDayData(DayData dayData)
+    {
+        dayData.flagData = placedFlags;
     }
 
     public void OnKeyDown(Key key)
@@ -48,15 +60,6 @@ public class FlagManager : Singleton<FlagManager>, ILoadable
         {
             activeFlagIndicators[activeFlagType].SetRaised(false);
             activeFlagType = null;
-        }
-    }
-
-    public void AddFlagsInstantly(List<FlagData> flagDataList)
-    {
-        foreach(FlagData flagData in flagDataList)
-        {
-            flagData.accuracy = CalculateFlagAccuracy(flagData.ResolvedChatBubble, flagData.startIndex, flagData.endIndex);
-            placedFlags.Add(flagData);
         }
     }
 
@@ -117,10 +120,8 @@ public class FlagManager : Singleton<FlagManager>, ILoadable
         placedFlags.Remove(flagData);
     }
 
-    public void SetActiveFlagTypes(List<FlagType> flagTypes)
+    public void SetActiveFlagTypes()
     {
-        activeFlagTypeCache = flagTypes;
-
         if(activeFlagType != null && activeFlagTypeCache.Count > 0)
         {
             activeFlagIndicators.Values.ToList().ForEach(mf => Destroy(mf.gameObject));
@@ -187,12 +188,5 @@ public class FlagManager : Singleton<FlagManager>, ILoadable
         flags.ForEach(m => totalAccuracy += m.accuracy);
 
         return totalAccuracy / flags.Count;
-    }
-
-    public void LoadFromDayData(DayData dayData)
-    {
-        List<FlagType> flagTypes = dayData.GetFlagTypes();
-        SetActiveFlagTypes(flagTypes);
-        placedFlags = dayData.GetFlagData();
     }
 }

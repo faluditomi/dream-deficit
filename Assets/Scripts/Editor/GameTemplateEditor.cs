@@ -221,7 +221,6 @@ public class GameTemplateEditor : EditorWindow
         EditorGUILayout.Space(10);
         DrawChatClientUsersSection(dayData);
         EditorGUILayout.Space(10);
-        DrawFlagDataSection(dayData);
     }
 
     private void DrawChatLogSection(DayData dayData)
@@ -365,83 +364,6 @@ public class GameTemplateEditor : EditorWindow
         {
             dayData.activeChatClientUsers.Add(string.Empty);
             AutoSave();
-        }
-    }
-
-    private void DrawFlagDataSection(DayData dayData)
-    {
-        showFlagDataFoldout = EditorGUILayout.Foldout(showFlagDataFoldout, "Flag Data", true);
-
-        if(showFlagDataFoldout)
-        {
-            EditorGUI.indentLevel++;
-
-            if(dayData.flagData == null)
-            {
-                dayData.flagData = new List<FlagData>();
-            }
-
-            int flagToRemove = -1;
-            for(int i = 0; i < dayData.flagData.Count; i++)
-            {
-                var flagData = dayData.flagData[i];
-                EditorGUILayout.BeginVertical("box");
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Flag #" + (i + 1), EditorStyles.boldLabel);
-                
-                if(GUILayout.Button("-", GUILayout.Width(25)))
-                {
-                    flagToRemove = i;
-                }
-
-                EditorGUILayout.EndHorizontal();
-                int flagTypeIndex = System.Array.IndexOf(flagTypeNames, flagData.flagTypeName);
-                if(flagTypeIndex < 0) flagTypeIndex = 0;
-                EditorGUI.BeginChangeCheck();
-                int newFlagTypeIndex = EditorGUILayout.Popup("Flag Type", flagTypeIndex, flagTypeNames);
-                
-                if(EditorGUI.EndChangeCheck())
-                {
-                    flagData.flagTypeName = flagTypeNames[newFlagTypeIndex];
-                    AutoSave();
-                }
-
-                ChatLog currentLog = FindAssetByName<ChatLog>(flagData.chatLogPath);
-                EditorGUI.BeginChangeCheck();
-                ChatLog newLog = (ChatLog)EditorGUILayout.ObjectField("Chat Log", currentLog, typeof(ChatLog), false);
-                
-                if(EditorGUI.EndChangeCheck())
-                {
-                    flagData.chatLogPath = newLog != null ? newLog.name : string.Empty;
-                    AutoSave();
-                }
-
-                EditorGUI.BeginChangeCheck();
-                flagData.startIndex = EditorGUILayout.IntField("Start Index", flagData.startIndex);
-                flagData.endIndex = EditorGUILayout.IntField("End Index", flagData.endIndex);
-                
-                if(EditorGUI.EndChangeCheck())
-                {
-                    AutoSave();
-                }
-
-                EditorGUILayout.EndVertical();
-            }
-            if(flagToRemove >= 0)
-            {
-                dayData.flagData.RemoveAt(flagToRemove);
-                AutoSave();
-            }
-
-            if(GUILayout.Button("+ Add Flag Data", GUILayout.Width(140)))
-            {
-                FlagData newFd = new FlagData();
-                newFd.flagTypeName = flagTypeNames.Length > 0 ? flagTypeNames[0] : string.Empty;
-                dayData.flagData.Add(newFd);
-                AutoSave();
-            }
-
-            EditorGUI.indentLevel--;
         }
     }
 

@@ -60,23 +60,18 @@ public class ChatLogController : BaseWindowController
             foreach(PlayedBubbleRecord record in runner.history)
             {
                 ChatBubble bubble = myChatLog.ResolvePlayedBubble(record);
+
                 if(bubble == null)
                 {
                     Debug.LogWarning($"ChatLogController: could not resolve played bubble '{record.graphName}/{record.nodeGuid}' in log '{myChatLog.logName}'. Skipping.");
                     continue;
                 }
+                
                 InstantiateBubble(bubble, record.nodeGuid);
             }
         }
 
-        List<FlagData> savedFlags = SaveManager.Instance.GetSavedFlagsForChatLog(myChatLog);
-        if(savedFlags.Count > 0) FlagManager.Instance.AddFlagsInstantly(savedFlags);
-
-        foreach(HighlightHandler highlightHandler in GetComponentsInChildren<HighlightHandler>())
-        {
-            highlightHandler.Rebuild(Color.clear);
-        }
-
+        foreach(HighlightHandler highlightHandler in GetComponentsInChildren<HighlightHandler>()) highlightHandler.Rebuild(Color.clear);
         // NOTE: an unanswered choice stays pending in the runner and re-presents its drafts on display (spec: re-present on next display)
         if(runner != null && runner.HasPendingChoice) OnRunnerChoicePresented();
     }
@@ -96,14 +91,11 @@ public class ChatLogController : BaseWindowController
     private void OnRunnerBubblePlayed(PlayedBubbleRecord record)
     {
         if(record == null) return;
-
         typingIdicator.SetActive(false);
         ChatBubble bubble = myChatLog.ResolvePlayedBubble(record);
         if(bubble == null) return;
-
         InstantiateBubble(bubble, record.nodeGuid);
         OnNewMessageEvent?.Invoke(bubble.message);
-
         if(!ChatLogManager.Instance.IsChatLogInFocus(this)) unreadMessages++;
     }
 
@@ -111,7 +103,6 @@ public class ChatLogController : BaseWindowController
     {
         if(UserChatResponseOptionPrefab == null) return;
         if(runner == null || runner.PendingChoiceNode == null || runner.PendingChoiceNode.options == null) return;
-
         ClearDrafts();
 
         foreach(ConversationChoiceOptionData option in runner.PendingChoiceNode.options)

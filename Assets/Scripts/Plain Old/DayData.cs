@@ -54,12 +54,6 @@ public class DayData
         return IsLogBonus(logName) && !IsLogUnlocked(logName);
     }
 
-    public void UnlockLog(string logName)
-    {
-        if(unlockedChatLogNames == null) unlockedChatLogNames = new List<string>();
-        if(!unlockedChatLogNames.Contains(logName)) unlockedChatLogNames.Add(logName);
-    }
-
     public List<ChatUser> GetActiveChatClientUsers()
     {
         if(activeChatClientUsers == null) activeChatClientUsers = new List<string>();

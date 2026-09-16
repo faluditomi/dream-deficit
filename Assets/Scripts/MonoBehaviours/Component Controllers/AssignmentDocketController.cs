@@ -18,7 +18,7 @@ public class AssignmentDocketController : BaseWindowController, ILoadable
 
     public void LoadFromDayData(DayData dayData)
     {
-        List<ResolvedChatLogEntry> activeEntries = SaveManager.Instance.GetDayData(GameManager.Instance.CurrentDayNumber).GetActiveChatLogEntries();
+        List<ResolvedChatLogEntry> activeEntries = SaveManager.Instance.GetCurrentDayData().GetActiveChatLogEntries();
 
         foreach(Transform child in content)
         {
