@@ -30,14 +30,16 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
 
     public void LoadFromDayData(DayData dayData)
     {
+        activeFlagType = null;
         activeFlagTypeCache.Clear();
+        placedFlags.Clear();
         activeFlagTypeCache.AddRange(dayData.GetFlagTypes());
         SetActiveFlagTypes();
     }
 
     public void SaveToDayData(DayData dayData)
     {
-        dayData.flagData = placedFlags;
+        dayData.flagData = placedFlags.ToList();
     }
 
     public void OnKeyDown(Key key)
@@ -122,7 +124,7 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
 
     public void SetActiveFlagTypes()
     {
-        if(activeFlagType != null && activeFlagTypeCache.Count > 0)
+        if(activeFlagTypeCache.Count > 0)
         {
             activeFlagIndicators.Values.ToList().ForEach(mf => Destroy(mf.gameObject));
             activeFlagIndicators.Clear();
@@ -169,7 +171,7 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
         if(chatLog == null || string.IsNullOrEmpty(nodeGuid)) return new List<FlagData>();
 
         return placedFlags.Where(m =>
-            m.chatLogPath == chatLog.logName &&
+            m.chatLogPath == chatLog.name &&
             m.nodeGuid == nodeGuid).ToList();
     }
 
@@ -179,7 +181,7 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
     /// </summary>
     public float EvaluateChatLogAccuracy(ChatLog chatLog)
     {
-        List<FlagData> flags = placedFlags.Where(m => m.chatLogPath == chatLog.logName).ToList();
+        List<FlagData> flags = placedFlags.Where(m => m.chatLogPath == chatLog.name).ToList();
         if(flags.Count == 0) return 0;
         float totalAccuracy = 0;
         // NOTE: for now, duplicate flags for a single flaggable are not removed, since if i'm correct,

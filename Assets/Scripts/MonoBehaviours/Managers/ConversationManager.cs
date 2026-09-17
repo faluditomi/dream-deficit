@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// Owns one ConversationRunner per chat log. A tickable singleton that
@@ -50,12 +51,12 @@ public class ConversationManager : Singleton<ConversationManager>, IRunLoadable,
 
         foreach(LogChatState logState in runData.chatLogs)
         {
-            if(logState == null || string.IsNullOrEmpty(logState.logName)) continue;
-            ChatLog chatLog = AddressableManager.Instance.RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + logState.logName);
+            if(logState == null || string.IsNullOrEmpty(logState.chatLogPath)) continue;
+            ChatLog chatLog = AddressableManager.Instance.RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + logState.chatLogPath);
 
             if(chatLog == null)
             {
-                Debug.LogWarning($"ConversationManager: could not resolve ChatLog '{logState.logName}' while restoring chat state. Skipping.");
+                Debug.LogWarning($"ConversationManager: could not resolve ChatLog '{logState.chatLogPath}' while restoring chat state. Skipping.");
                 continue;
             }
 
@@ -65,13 +66,13 @@ public class ConversationManager : Singleton<ConversationManager>, IRunLoadable,
 
     public void SaveToRunData(RunData runData)
     {
-        if(signals != null) runData.chatSignals = signals;
+        if(signals != null) runData.chatSignals = signals.ToList();
         runData.chatLogs = new List<LogChatState>();
 
         foreach(KeyValuePair<ChatLog, ConversationRunner> pair in runners)
         {
             if(pair.Key == null || pair.Value == null) continue;
-            LogChatState logState = new LogChatState { logName = pair.Key.logName };
+            LogChatState logState = new LogChatState { chatLogPath = pair.Key.name };
             logState.history.AddRange(pair.Value.history);
             logState.threads.AddRange(pair.Value.CaptureThreadStates());
             logState.activations.AddRange(pair.Value.CaptureActivations());

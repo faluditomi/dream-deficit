@@ -37,7 +37,7 @@ public class ConversationEntryActivation
 [System.Serializable]
 public class LogChatState
 {
-    public string logName;
+    public string chatLogPath;
     public List<PlayedBubbleRecord> history = new List<PlayedBubbleRecord>();
     public List<ConversationThreadState> threads = new List<ConversationThreadState>();
     public List<ConversationEntryActivation> activations = new List<ConversationEntryActivation>();

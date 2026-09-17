@@ -24,8 +24,11 @@ This project uses OpenSpec (spec-driven development). Planning artifacts live in
 2. **NEVER regenerate .csproj files** - Unity handles these automatically
 3. **All prefabs and data are loaded via Addressables** - use `AddressableManager.Instance.RetrieveAddressable<T>(address)` not `Resources.Load`
 4. **Managers use Singleton pattern** - access via `GameManager.Instance`, `SaveManager.Instance`, etc.
-5. **Save system uses JSON serialization** via `JsonUtility.ToJson/FromJson` - fields must be serializable
-6. **AddressableManager uses synchronous loading** (`WaitForCompletion()`) - this is intentional but flagged as TODO for async migration
+5. **Save system uses JSON serialization** via `JsonUtility.ToJson/FromJson` - fields must be serializable. State is split into two scopes: **day-scoped** (`DayData`, via `IDaySavable`/`IDayLoadable`) and **run-scoped** (`RunData`, via `IRunSavable`/`IRunLoadable`). Never put run-level state in `DayData` or day-level state in `RunData`
+6. **Never scene-scan for savables/loadables** - registration is automatic through `SaveLoadBehaviour.OnEnable/OnDisable`. Do not use `FindObjectsByType` to build a save registry
+7. **Save methods must copy, never alias** - `SaveToDayData`/`SaveToRunData` must assign a *copy* of the owned collection (e.g. `dayData.flagData = placedFlags.ToList()`). Assigning the live list makes save data and runtime state the same object, so the next load's `Clear()` wipes both
+8. **Only persistent singletons may own day/run slices** - a slice owner that is not alive at save time silently drops its data. Transient windows may be `IDayLoadable` (view-only) but must never be `IDaySavable`/`IRunSavable`
+9. **AddressableManager uses synchronous loading** (`WaitForCompletion()`) - this is intentional but flagged as TODO for async migration
 
 ## Architecture
 
@@ -35,23 +38,25 @@ Scripts/
 ├── MonoBehaviours/
 │   ├── Managers/          # Core singletons (GameManager, SaveManager, FlagManager, AddressableManager,
 │   │                      #   HighlightManager, ConversationManager, ChatLogManager, SequenceEventManager, UIFocusManager)
-│   │                      # ConversationRunner also lives here but is a PLAIN C# class, not a MonoBehaviour
 │   ├── Component Controllers/  # Prefab/UI controllers (ChatBubbleController, ChatLogController, ChatClientController, FlagIndicatorController, etc.)
+│   │   └── Abstracts/     # BaseWindowController (draggable window base), DreamController
 │   ├── Handlers/          # Input/event handlers (DragHandler, HighlightHandler, PointerHandler, TopBarHandler)
-│   ├── BaseWindowController.cs   # Base class for draggable window UI
+│   ├── SaveLoadBehaviour.cs      # Auto-registers/unregisters IDay*/IRun* implementers (base of Singleton<T> and BaseWindowController)
 │   ├── NoDragScrollRect.cs       # Custom scroll rect behavior
-│   └── Singleton.cs              # Generic singleton base class
+│   └── Singleton.cs              # Generic singleton base class; derives from SaveLoadBehaviour
 ├── Plain Old/             # POCOs, data classes, and interfaces
-│   ├── Interfaces/        # IHighlightable, ILoadable, ISavable
-│   └── (data classes)     # ChatBubble, DayData, FlagData, FlagType, Constants, plus conversation data
-│                          #   (ConversationNodeData/EdgeData, ConversationGraphEnums, ConversationConditionClause, ConversationEffectData)
+│   ├── Interfaces/        # IHighlightable, IDaySavable, IDayLoadable, IRunSavable, IRunLoadable
+│   ├── ConversationRunner.cs     # PLAIN C# class (NOT a MonoBehaviour) - conversation playback engine
+│   └── (data classes)     # ChatBubble, DayData, RunData, FlagData, FlagType, Flaggable, ChatLogEntry, Constants,
+│                          #   plus conversation data (ConversationNodeData, ConversationGraphEnums,
+│                          #   ConversationConditionClause, ConversationEffectData, ConversationChatState)
 ├── Scriptable Objects/    # ScriptableObject definitions
-│   ├── ChatBubbleSequence.cs     # Sequence of chat bubbles for dialogue
 │   ├── ChatLog.cs                # Collection of chat messages (links to related ConversationGraphs)
 │   ├── ChatUser.cs               # Chat user definition
 │   ├── ConversationGraph.cs      # Node/edge graph of conversation flow (Entry/Bubble/Choice/Wait/End)
-│   ├── GameTemplate.cs           # Game run template (tutorial, full game)
-│   └── SaveSlot.cs               # Save slot with day entries
+│   ├── SequenceEventChannel.cs   # Broadcasts SequenceEventType events to ConversationManager
+│   ├── GameTemplate.cs           # Game run template (tutorial, full game); also defines DayDataEntry
+│   └── SaveSlot.cs               # Save slot: links to a GameTemplate, holds RunData + day entries
 ├── Editor/              # Custom editor scripts (ConversationGraphEditor, ConversationNodeView, GameTemplateEditor)
 └── Dev Hacks/           # Development utilities (FrameRateCap)
 ```
@@ -61,14 +66,14 @@ Scripts/
 #### Day Progression System
 - Game runs in days (Day 1, Day 2, ...)
 - `GameManager` controls day time: configurable start/end hours, day length in seconds
-- `TriggerDayTimePassing()` starts the day clock, `EndDay()` saves and advances
-- Days have associated `DayData` containing flags, active chat logs, etc.
+- `TriggerDayTimePassing()` starts the day clock; `EndDay()` saves and advances
+- The current day number lives in run scope (`RunData.currentDayNumber`, surfaced as `GameManager.currentDayNumber`), NOT in `DayData` or `SaveSlot`. `EndOfDaybehaviour` increments it *before* calling `SaveDay`, so the persisted run data points at the day about to be played
+- Days have associated `DayData` containing flags, active chat logs, unlock state, etc.
 
 #### Chat System
 - `ChatLog` (ScriptableObject) contains ordered `ChatBubble` messages
-- `ChatBubbleSequence` defines sequences of bubbles for dialogue playback
-- `ChatLogController` runs bubble sequences with typing indicators
-- Chat logs are Addressable assets loaded at runtime
+- `ChatLogController` renders played bubbles from its `ConversationRunner` history, with typing indicators
+- Chat logs are Addressable assets loaded at runtime. The Addressable key is the ChatLog asset **`name`** (e.g. `chat_log/test_assignment`), which is also what `ChatLogEntry.logName` stores — `ChatLog.logName` is display text and is NOT an Addressable key
 
 #### Conversation Graph System
 - `ConversationGraph` (ScriptableObject): nodes (`Entry`, `Bubble`, `Choice`, `Wait`, `End`) + a flat edge list; assets live under `Assets/ScriptableObjects/ConversationGraphs/<character>/`
@@ -83,26 +88,39 @@ Scripts/
 - Flags scored by accuracy (overlap with `Flaggable` targets, excess penalty)
 - `FlagType` (plain serializable data class) defines flag properties including keycode
 - Flags displayed as on-screen indicators (`FlagIndicatorController`); conversation narrative state is a signal
+- Placed flags are recorded **per day** into `DayData.flagData` via `FlagManager.SaveToDayData`, so a run keeps a history of what was flagged on each day
 
 #### Save System
-- `SaveManager` persists game state to JSON in `Application.persistentDataPath`
-- Uses `ISavable`/`ILoadable` interfaces for component registration
-- `SaveSlot` (ScriptableObject) links to a `GameTemplate` and stores day entries
-- `GameTemplate` defines the full game structure (days, chat sequences)
+Two explicit scopes, each with its own save/load interface pair:
+
+| Scope | Data class | Interfaces | Stored as |
+|---|---|---|---|
+| Day | `DayData` | `IDaySavable` / `IDayLoadable` | one entry per day in `SaveFileData.days` |
+| Run | `RunData` | `IRunSavable` / `IRunLoadable` | `SaveFileData.runSaveData` (single object) |
+
+- **Registration is automatic.** `SaveLoadBehaviour.OnEnable`/`OnDisable` subscribe/unsubscribe whatever `IDay*`/`IRun*` interfaces the component implements. `Singleton<T>` and `BaseWindowController` both derive from it, so managers and windows get registration for free. Never scene-scan with `FindObjectsByType`
+- **Late hydration.** `AddDayLoadable`/`AddRunLoadable` immediately call `LoadFromDayData`/`LoadFromRunData` on the newcomer if that scope is already loaded, so lazily-instantiated windows still receive data
+- **Slice ownership.** Only persistent singletons own slices: `FlagManager` → `DayData.flagData`, `ChatLogManager` → `DayData.unlockedChatLogNames`, `ConversationManager` → `RunData.chatLogs`/`chatSignals`, `GameManager` → `RunData.currentDayNumber`. Transient windows are `IDayLoadable`-only (view-only)
+- **Copy, never alias** — save methods assign a copy of the owned collection, otherwise the next load's `Clear()` wipes both
+- **Load order:** `LoadGame()` restores run scope (so runners hold history before windows are built) → `LoadDay()` restores day scope → `ConversationManager.OnDayChanged()` → DayStart event
+- Persistence is JSON in `Application.persistentDataPath` (`save_{slotName}.json`) via `JsonUtility`. `SaveSlot`/`GameTemplate` are authoring assets; the JSON file is the runtime store
 - New saves initialize from template; subsequent saves merge runtime data
 
 ### Data Flow
 ```
 GameTemplate → SaveSlot (initialization) → JSON save file (runtime)
                 ↓
-           DayData per day (flags, chat logs, state)
-                ↓
-           ISavable components save → DayData
-           ILoadable components load ← DayData
+        day scope                        run scope
+   DayData per day                   RunData (currentDayNumber,
+   (flags, active logs,              chatSignals, chatLogs)
+    unlocks, flag types)                    ↓
+        ↓                          IRunSavable → SaveToRunData
+  IDaySavable → SaveToDayData       IRunLoadable ← LoadFromRunData
+  IDayLoadable ← LoadFromDayData
 ```
 
 ## Current State
-- **Single scene:** `v1 prototye.unity` (note the typo in filename)
+- **Scenes:** `Assets/Scenes/v1_prototye.unity` (desktop/play scene — note the typo in the filename), `Assets/Scenes/tutorial_demo.unity`, `Assets/Dreams/TestDream/dream_scene_day_1.unity`
 - **Core systems implemented:** Day progression, chat display, flag placement, save/load, conversation graph playback
 - **TODOs in codebase:**
   - Save slot picker/creator menu (currently brute-force assigned)

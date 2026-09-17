@@ -30,7 +30,7 @@ public class FlagData
     )
     {
         flagTypeName = flagType?.name ?? string.Empty;
-        chatLogPath = chatLog?.logName ?? string.Empty;
+        chatLogPath = chatLog?.name ?? string.Empty;
         this.nodeGuid = nodeGuid;
         this.startIndex = startIndex;
         this.endIndex = endIndex;

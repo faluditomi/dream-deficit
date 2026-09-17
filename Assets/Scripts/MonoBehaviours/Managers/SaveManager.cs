@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using static GameTemplate;
 
@@ -9,20 +8,36 @@ public class SaveManager : Singleton<SaveManager>
 {
     // TODO: once we have a menu, we have to create a save slot picker/creator. for now, we just assign the slot brute force.
     public SaveSlot activeSlot;
-    private List<IDaySavable> daySavables = new List<IDaySavable>();
-    private List<IDayLoadable> dayLoadables = new List<IDayLoadable>();
-    private List<IRunSavable> runSavables = new List<IRunSavable>();
-    private List<IRunLoadable> runLoadables = new List<IRunLoadable>();
-    private RunData currentRunSaveData;
-    private DayData currentDayData;
-    private Dictionary<int, DayData> daySaveData = new Dictionary<int, DayData>();
+    // Registration state is static so subscribing never goes through Singleton.Instance. Instance auto-creates a SaveManager when
+    // none exists, and returns null while the application is quitting, which made OnDisable throw a NullReferenceException on exit.
+    private static readonly List<IDaySavable> daySavables = new List<IDaySavable>();
+    private static readonly List<IDayLoadable> dayLoadables = new List<IDayLoadable>();
+    private static readonly List<IRunSavable> runSavables = new List<IRunSavable>();
+    private static readonly List<IRunLoadable> runLoadables = new List<IRunLoadable>();
+    private static RunData currentRunData;
+    private static DayData currentDayData;
+    private readonly Dictionary<int, DayData> daySaveData = new Dictionary<int, DayData>();
     private string savePath;
+
+    // NOTE: clears registration state when entering play mode with "Enter Play Mode Options"
+    //       domain reload disabled, otherwise stale references survive between play sessions.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        daySavables.Clear();
+        dayLoadables.Clear();
+        runSavables.Clear();
+        runLoadables.Clear();
+        currentRunData = null;
+        currentDayData = null;
+    }
 
     protected override void Awake()
     {
         base.Awake();
         if(activeSlot == null) return;
         savePath = Path.Combine(Application.persistentDataPath, $"save_{activeSlot.slotName}.json");
+        // TODO: this will have to be called when we select a save slot in the menu
         if(!LoadGame()) InitializeFromTemplate();
     }
 
@@ -30,10 +45,9 @@ public class SaveManager : Singleton<SaveManager>
     {
         DayData dayData = daySaveData[dayNumber];
         foreach(var savable in daySavables) savable.SaveToDayData(dayData);
-        foreach(var savable in runSavables) savable.SaveToRunData(currentRunSaveData);
+        foreach(var savable in runSavables) savable.SaveToRunData(currentRunData);
         daySaveData[dayNumber] = dayData;
         UpdateSlotDayEntry(dayNumber, dayData);
-        activeSlot.runData = currentRunSaveData;
         SaveGame();
     }
 
@@ -43,9 +57,6 @@ public class SaveManager : Singleton<SaveManager>
         int index = activeSlot.dayEntries.FindIndex(e => e.dayNumber == dayNumber);
         if(index >= 0) activeSlot.dayEntries[index] = new GameTemplate.DayDataEntry { dayNumber = dayNumber, dayData = dayData };
         else activeSlot.dayEntries.Add(new GameTemplate.DayDataEntry { dayNumber = dayNumber, dayData = dayData });
-        #if UNITY_EDITOR
-        EditorUtility.SetDirty(activeSlot);
-        #endif
     }
 
     public void LoadDay(int dayNumber)
@@ -59,7 +70,6 @@ public class SaveManager : Singleton<SaveManager>
         }
 
         foreach(var loadable in dayLoadables) loadable.LoadFromDayData(currentDayData);
-        foreach(var loadable in runLoadables) loadable.LoadFromRunData(currentRunSaveData);
     }
 
     private DayData GetDayData(int dayNumber)
@@ -101,7 +111,7 @@ public class SaveManager : Singleton<SaveManager>
         string json = JsonUtility.ToJson(new SaveFileData
         {
             days = containerList,
-            runSaveData = currentRunSaveData
+            runSaveData = currentRunData
         }, true);
 
         File.WriteAllText(savePath, json);
@@ -114,18 +124,26 @@ public class SaveManager : Singleton<SaveManager>
         SaveFileData saveFile = JsonUtility.FromJson<SaveFileData>(json);
         daySaveData.Clear();
         foreach(var entry in saveFile.days) daySaveData[entry.dayNumber] = entry.dayData;
-        currentRunSaveData = saveFile.runSaveData ?? new RunData();
+        currentRunData = saveFile.runSaveData ?? new RunData();
+        foreach(var loadable in runLoadables) loadable.LoadFromRunData(currentRunData);
         return true;
     }
 
     private void InitializeFromTemplate()
     {
         var template = activeSlot.template;
-        if(template == null) return;
+
+        if(template == null) 
+        {
+            Debug.LogError("No save file present. Tried initialising from scratch, but received no Template.");
+            return;
+        }
+
         // copy template day entries into slot's own day entries
         activeSlot.dayEntries.Clear();
         daySaveData.Clear();
-        currentRunSaveData = new RunData();
+        currentRunData = new RunData();
+        foreach(var loadable in runLoadables) loadable.LoadFromRunData(currentRunData);
 
         foreach(var entry in template.dayEntries)
         {
@@ -135,10 +153,6 @@ public class SaveManager : Singleton<SaveManager>
             activeSlot.dayEntries.Add(new GameTemplate.DayDataEntry { dayNumber = entry.dayNumber, dayData = cloned });
             daySaveData[entry.dayNumber] = cloned;
         }
-
-        #if UNITY_EDITOR
-        EditorUtility.SetDirty(activeSlot);
-        #endif
 
         if(daySaveData.Count > 0) SaveGame();
     }
@@ -152,46 +166,50 @@ public class SaveManager : Singleton<SaveManager>
 
     #region SaveLoad Subscription
 
-    public void AddDaySavable(IDaySavable iSavable)
+    public static void AddDaySavable(IDaySavable iSavable)
     {
+        if(iSavable == null || daySavables.Contains(iSavable)) return;
         daySavables.Add(iSavable);
     }
 
-    public void AddDayLoadable(IDayLoadable iLoadable)
+    public static void AddDayLoadable(IDayLoadable iLoadable)
     {
+        if(iLoadable == null || dayLoadables.Contains(iLoadable)) return;
         dayLoadables.Add(iLoadable);
         if(currentDayData != null) iLoadable.LoadFromDayData(currentDayData);
     }
 
-    public void RemoveDaySavable(IDaySavable iSavable)
+    public static void RemoveDaySavable(IDaySavable iSavable)
     {
-        daySavables.Remove(iSavable);
+        if(iSavable != null) daySavables.Remove(iSavable);
     }
 
-    public void RemoveDayLoadable(IDayLoadable iLoadable)
+    public static void RemoveDayLoadable(IDayLoadable iLoadable)
     {
-        dayLoadables.Remove(iLoadable);
+        if(iLoadable != null) dayLoadables.Remove(iLoadable);
     }
 
-    public void AddRunSavable(IRunSavable iSavable)
+    public static void AddRunSavable(IRunSavable iSavable)
     {
+        if(iSavable == null || runSavables.Contains(iSavable)) return;
         runSavables.Add(iSavable);
     }
 
-    public void AddRunLoadable(IRunLoadable iLoadable)
+    public static void AddRunLoadable(IRunLoadable iLoadable)
     {
+        if(iLoadable == null || runLoadables.Contains(iLoadable)) return;
         runLoadables.Add(iLoadable);
-        if(currentDayData != null) iLoadable.LoadFromRunData(currentRunSaveData);
+        if(currentRunData != null) iLoadable.LoadFromRunData(currentRunData);
     }
 
-    public void RemoveRunSavable(IRunSavable iSavable)
+    public static void RemoveRunSavable(IRunSavable iSavable)
     {
-        runSavables.Remove(iSavable);
+        if(iSavable != null) runSavables.Remove(iSavable);
     }
 
-    public void RemoveRunLoadable(IRunLoadable iLoadable)
+    public static void RemoveRunLoadable(IRunLoadable iLoadable)
     {
-        runLoadables.Remove(iLoadable);
+        if(iLoadable != null) runLoadables.Remove(iLoadable);
     }
 
     #endregion

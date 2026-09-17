@@ -18,13 +18,13 @@ public class DayData
         if(activeAssignments == null) activeAssignments = new List<ChatLogEntry>();
 
         return activeAssignments
-            .Where(entry => entry != null && !string.IsNullOrEmpty(entry.logName))
+            .Where(entry => entry != null && !string.IsNullOrEmpty(entry.chatLogPath))
             .Select(entry => new ResolvedChatLogEntry
             {
                 chatLog = AddressableManager.Instance.RetrieveAddressable<ChatLog>(
-                    Constants.AddressablePrefixes.ChatLog + entry.logName),
+                    Constants.AddressablePrefixes.ChatLog + entry.chatLogPath),
                 isBonus = entry.isBonus,
-                isUnlocked = IsLogUnlocked(entry.logName)
+                isUnlocked = IsLogUnlocked(entry.chatLogPath)
             })
             .Where(entry => entry.chatLog != null)
             .ToList();
@@ -37,21 +37,21 @@ public class DayData
             .ToList();
     }
 
-    public bool IsLogBonus(string logName)
+    public bool IsLogBonus(string chatLogPath)
     {
         if(activeAssignments == null) return false;
-        ChatLogEntry entry = activeAssignments.Find(e => e != null && e.logName == logName);
+        ChatLogEntry entry = activeAssignments.Find(e => e != null && e.chatLogPath == chatLogPath);
         return entry != null && entry.isBonus;
     }
 
-    public bool IsLogUnlocked(string logName)
+    public bool IsLogUnlocked(string chatLogPath)
     {
-        return unlockedChatLogNames != null && unlockedChatLogNames.Contains(logName);
+        return unlockedChatLogNames != null && unlockedChatLogNames.Contains(chatLogPath);
     }
 
-    public bool IsLogLocked(string logName)
+    public bool IsLogLocked(string chatLogPath)
     {
-        return IsLogBonus(logName) && !IsLogUnlocked(logName);
+        return IsLogBonus(chatLogPath) && !IsLogUnlocked(chatLogPath);
     }
 
     public List<ChatUser> GetActiveChatClientUsers()

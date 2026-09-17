@@ -31,8 +31,6 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
     {
         dayStartEventChannel = AddressableManager.Instance.RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.DayStart);
         workEndEventChannel = AddressableManager.Instance.RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.WorkEnd);
-        // TODO: this will have to be called when we select a save slot in the menu
-        SaveManager.Instance.LoadGame();
         ConversationManager.Instance.OnSequenceEventRaised += OnSequenceEventRaised;
         // TODO: this will also have to be called from elsewhere
         StartDay();
@@ -143,10 +141,10 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
     #region Coroutines
     private IEnumerator EndOfDaybehaviour()
     {
-        SaveManager.Instance.SaveDay(currentDayNumber);
-        Scene oldScene = SceneManager.GetActiveScene();
-        string dreamSceneName = Constants.SceneNames.DreamPrefix + currentDayNumber;
         currentDayNumber++;
+        SaveManager.Instance.SaveDay(currentDayNumber - 1);
+        Scene oldScene = SceneManager.GetActiveScene();
+        string dreamSceneName = Constants.SceneNames.DreamPrefix + (currentDayNumber - 1);
         AsyncOperation sceneLoadOperation = SceneManager.LoadSceneAsync(dreamSceneName, LoadSceneMode.Additive);
         sceneLoadOperation.allowSceneActivation = false;
         // TODO: do stuff like screen turning off animation and stuff

@@ -77,7 +77,7 @@ public static class Constants
     public static class SceneNames
     {
         public const string DreamPrefix = "dream_scene_day_";
-        public const string Desktop = "v1 prototye";
+        public const string Desktop = "tutorial_demo";
     }
 
     public static class WindowAndFileNames

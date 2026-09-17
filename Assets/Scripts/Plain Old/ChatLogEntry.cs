@@ -1,7 +1,7 @@
 [System.Serializable]
 public class ChatLogEntry
 {
-    public string logName;
+    public string chatLogPath;
     public bool isBonus;
 }
 

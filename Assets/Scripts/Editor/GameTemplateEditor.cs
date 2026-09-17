@@ -156,9 +156,8 @@ public class GameTemplateEditor : EditorWindow
 
         if(entry.dayData != null)
         {
-            int flagCount = entry.dayData.flagData != null ? entry.dayData.flagData.Count : 0;
             int chatLogCount = entry.dayData.activeAssignments != null ? entry.dayData.activeAssignments.Count : 0;
-            text += " - " + chatLogCount + " logs, " + flagCount + " flags";
+            text += " - " + chatLogCount + " logs";
         }
         else
         {
@@ -237,13 +236,13 @@ public class GameTemplateEditor : EditorWindow
         {
             ChatLogEntry entry = dayData.activeAssignments[i];
             EditorGUILayout.BeginHorizontal();
-            ChatLog currentLog = FindAssetByName<ChatLog>(entry.logName);
+            ChatLog currentLog = FindAssetByName<ChatLog>(entry.chatLogPath);
             EditorGUI.BeginChangeCheck();
             ChatLog newLog = (ChatLog)EditorGUILayout.ObjectField(currentLog, typeof(ChatLog), false);
            
             if(EditorGUI.EndChangeCheck())
             {
-                entry.logName = newLog != null ? newLog.name : string.Empty;
+                entry.chatLogPath = newLog != null ? newLog.name : string.Empty;
                 AutoSave();
             }
 
@@ -272,7 +271,7 @@ public class GameTemplateEditor : EditorWindow
 
         if(GUILayout.Button("+ Add Chat Log", GUILayout.Width(120)))
         {
-            dayData.activeAssignments.Add(new ChatLogEntry { logName = string.Empty, isBonus = false });
+            dayData.activeAssignments.Add(new ChatLogEntry { chatLogPath = string.Empty, isBonus = false });
             AutoSave();
         }
     }

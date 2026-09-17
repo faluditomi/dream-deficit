@@ -17,7 +17,7 @@ MonoBehaviour:
     dayData:
       dayNumber: 1
       activeAssignments:
-      - logName: test_assignment
+      - chatLogPath: test_assignment
         isBonus: 1
       unlockedChatLogNames: []
       flagTypeNames:
