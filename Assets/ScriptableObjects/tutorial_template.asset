@@ -22,22 +22,10 @@ MonoBehaviour:
       unlockedChatLogNames: []
       flagTypeNames:
       - Copy Paste Spam
-      - Synchronised Activity Spike
       - Persuasion Pattern
+      - Synchronised Activity Spike
       activeChatClientUsers:
       - phoebe
       - mara
       - moira
-      flagData: []
-  - dayNumber: 2
-    dayData:
-      dayNumber: 2
-      activeAssignments: []
-      unlockedChatLogNames: []
-      flagTypeNames:
-      - Copy Paste Spam
-      - Synchronised Activity Spike
-      - Persuasion Pattern
-      - Narrative Shaping
-      activeChatClientUsers: []
       flagData: []

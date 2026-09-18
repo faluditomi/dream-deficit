@@ -157,7 +157,7 @@ public class GameTemplateEditor : EditorWindow
         if(entry.dayData != null)
         {
             int chatLogCount = entry.dayData.activeAssignments != null ? entry.dayData.activeAssignments.Count : 0;
-            text += " - " + chatLogCount + " logs";
+            text += " - " + chatLogCount + " assignments";
         }
         else
         {

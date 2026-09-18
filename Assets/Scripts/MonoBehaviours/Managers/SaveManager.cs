@@ -19,8 +19,8 @@ public class SaveManager : Singleton<SaveManager>
     private readonly Dictionary<int, DayData> daySaveData = new Dictionary<int, DayData>();
     private string savePath;
 
-    // NOTE: clears registration state when entering play mode with "Enter Play Mode Options"
-    //       domain reload disabled, otherwise stale references survive between play sessions.
+    // clears registration state when entering play mode with "Enter Play Mode Options" domain reload disabled,
+    // otherwise stale references survive between play sessions.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStaticState()
     {
@@ -36,7 +36,7 @@ public class SaveManager : Singleton<SaveManager>
     {
         base.Awake();
         if(activeSlot == null) return;
-        savePath = Path.Combine(Application.persistentDataPath, $"save_{activeSlot.slotName}.json");
+        savePath = Path.Combine(Application.persistentDataPath, $"{activeSlot.name}.json");
         // TODO: this will have to be called when we select a save slot in the menu
         if(!LoadGame()) InitializeFromTemplate();
     }
@@ -44,19 +44,11 @@ public class SaveManager : Singleton<SaveManager>
     public void SaveDay(int dayNumber)
     {
         DayData dayData = daySaveData[dayNumber];
-        foreach(var savable in daySavables) savable.SaveToDayData(dayData);
-        foreach(var savable in runSavables) savable.SaveToRunData(currentRunData);
-        daySaveData[dayNumber] = dayData;
-        UpdateSlotDayEntry(dayNumber, dayData);
+        // snapshot: savables can be registered/unregistered from inside these callbacks
+        // (e.g. a lazily auto-created singleton registering in OnEnable)
+        foreach(var savable in daySavables.ToArray()) savable.SaveToDayData(dayData);
+        foreach(var savable in runSavables.ToArray()) savable.SaveToRunData(currentRunData);
         SaveGame();
-    }
-
-    private void UpdateSlotDayEntry(int dayNumber, DayData dayData)
-    {
-        if (activeSlot == null) return;
-        int index = activeSlot.dayEntries.FindIndex(e => e.dayNumber == dayNumber);
-        if(index >= 0) activeSlot.dayEntries[index] = new GameTemplate.DayDataEntry { dayNumber = dayNumber, dayData = dayData };
-        else activeSlot.dayEntries.Add(new GameTemplate.DayDataEntry { dayNumber = dayNumber, dayData = dayData });
     }
 
     public void LoadDay(int dayNumber)
@@ -69,7 +61,9 @@ public class SaveManager : Singleton<SaveManager>
             return;
         }
 
-        foreach(var loadable in dayLoadables) loadable.LoadFromDayData(currentDayData);
+        // snapshot: LoadFromDayData can instantiate windows, and a lazily auto-created singleton
+        // registers itself in OnEnable, which would otherwise mutate the list mid-enumeration
+        foreach(var loadable in dayLoadables.ToArray()) loadable.LoadFromDayData(currentDayData);
     }
 
     private DayData GetDayData(int dayNumber)
@@ -77,14 +71,7 @@ public class SaveManager : Singleton<SaveManager>
         // first check runtime data (loaded from JSON)
         if(daySaveData.ContainsKey(dayNumber)) return daySaveData[dayNumber];
 
-        // then check slot's own day entries
-        if(activeSlot != null)
-        {
-            var slotEntry = activeSlot.dayEntries.Find(e => e.dayNumber == dayNumber);
-            if(slotEntry.dayData != null) return slotEntry.dayData;
-        }
-
-        // finally fall back to template data
+        // then fall back to template data
         if(activeSlot != null && activeSlot.template != null)
         {
             DayData templateData = activeSlot.template.GetDayData(dayNumber);
@@ -101,9 +88,6 @@ public class SaveManager : Singleton<SaveManager>
 
     public void SaveGame()
     {
-        // sync slot's day entries to runtime data before saving
-        foreach(var kvp in daySaveData) UpdateSlotDayEntry(kvp.Key, kvp.Value);
-
         List<DayDataEntry> containerList = daySaveData
             .Select(kvp => new DayDataEntry { dayNumber = kvp.Key, dayData = kvp.Value })
             .ToList();
@@ -125,7 +109,7 @@ public class SaveManager : Singleton<SaveManager>
         daySaveData.Clear();
         foreach(var entry in saveFile.days) daySaveData[entry.dayNumber] = entry.dayData;
         currentRunData = saveFile.runSaveData ?? new RunData();
-        foreach(var loadable in runLoadables) loadable.LoadFromRunData(currentRunData);
+        foreach(var loadable in runLoadables.ToArray()) loadable.LoadFromRunData(currentRunData);
         return true;
     }
 
@@ -139,18 +123,14 @@ public class SaveManager : Singleton<SaveManager>
             return;
         }
 
-        // copy template day entries into slot's own day entries
-        activeSlot.dayEntries.Clear();
         daySaveData.Clear();
         currentRunData = new RunData();
-        foreach(var loadable in runLoadables) loadable.LoadFromRunData(currentRunData);
+        foreach(var loadable in runLoadables.ToArray()) loadable.LoadFromRunData(currentRunData);
 
         foreach(var entry in template.dayEntries)
         {
-            // deep-copy so runtime mutations (e.g. unlock state) don't leak back into the
-            // template asset, and so the slot/runtime don't share one DayData instance
+            // deep-copy so runtime mutations (e.g. unlock state) don't leak back into the template asset
             DayData cloned = JsonUtility.FromJson<DayData>(JsonUtility.ToJson(entry.dayData));
-            activeSlot.dayEntries.Add(new GameTemplate.DayDataEntry { dayNumber = entry.dayNumber, dayData = cloned });
             daySaveData[entry.dayNumber] = cloned;
         }
 
@@ -160,7 +140,6 @@ public class SaveManager : Singleton<SaveManager>
     public bool HasSaveForDay(int dayNumber)
     {
         return daySaveData.ContainsKey(dayNumber) ||
-            (activeSlot != null && activeSlot.dayEntries.Any(e => e.dayNumber == dayNumber)) ||
             (activeSlot != null && activeSlot.template != null && activeSlot.template.HasDay(dayNumber));
     }
 

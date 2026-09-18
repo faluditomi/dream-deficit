@@ -56,7 +56,7 @@ Scripts/
 │   ├── ConversationGraph.cs      # Node/edge graph of conversation flow (Entry/Bubble/Choice/Wait/End)
 │   ├── SequenceEventChannel.cs   # Broadcasts SequenceEventType events to ConversationManager
 │   ├── GameTemplate.cs           # Game run template (tutorial, full game); also defines DayDataEntry
-│   └── SaveSlot.cs               # Save slot: links to a GameTemplate, holds RunData + day entries
+│   └── SaveSlot.cs               # Save slot identity: slotName + GameTemplate (holds NO runtime state)
 ├── Editor/              # Custom editor scripts (ConversationGraphEditor, ConversationNodeView, GameTemplateEditor)
 └── Dev Hacks/           # Development utilities (FrameRateCap)
 ```
@@ -103,7 +103,7 @@ Two explicit scopes, each with its own save/load interface pair:
 - **Slice ownership.** Only persistent singletons own slices: `FlagManager` → `DayData.flagData`, `ChatLogManager` → `DayData.unlockedChatLogNames`, `ConversationManager` → `RunData.chatLogs`/`chatSignals`, `GameManager` → `RunData.currentDayNumber`. Transient windows are `IDayLoadable`-only (view-only)
 - **Copy, never alias** — save methods assign a copy of the owned collection, otherwise the next load's `Clear()` wipes both
 - **Load order:** `LoadGame()` restores run scope (so runners hold history before windows are built) → `LoadDay()` restores day scope → `ConversationManager.OnDayChanged()` → DayStart event
-- Persistence is JSON in `Application.persistentDataPath` (`save_{slotName}.json`) via `JsonUtility`. `SaveSlot`/`GameTemplate` are authoring assets; the JSON file is the runtime store
+- Persistence is JSON in `Application.persistentDataPath` (`save_{slotName}.json`) via `JsonUtility`. That file is the **only** runtime store — `SaveSlot` holds just `slotName` + `template` (identity), and `GameTemplate` holds authored day data. Never add runtime state fields to either asset; `slotName` is what keys the save file, so no path/asset reference to the JSON is needed
 - New saves initialize from template; subsequent saves merge runtime data
 
 ### Data Flow
