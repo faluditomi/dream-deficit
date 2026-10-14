@@ -1,12 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// NOTE: this manager is an event bridge — sequence channels broadcast event
-///       types and every conversation runner evaluates its own entries for them.
+/// This manager is an event bridge — sequence channels broadcast event types and every conversation runner evaluates its own entries for them.
 public class SequenceEventManager : Singleton<SequenceEventManager>
 {
     private Dictionary<SequenceEventChannel, EventChannelMetadata> eventChannelsWithMetadata = new();
+    // One stored delegate per channel so OnDestroy can actually unsubscribe.
+    private readonly Dictionary<SequenceEventChannel, Action<Constants.SequenceEventType>> channelSubscriptions = new();
 
     protected override void Awake()
     {
@@ -25,13 +27,22 @@ public class SequenceEventManager : Singleton<SequenceEventManager>
             );
 
             eventChannelsWithMetadata.Add(channel, metadata);
-            channel.OnSequenceEvent += (eventType) => OnSequenceEvent(channel, eventType);
+
+            Action<Constants.SequenceEventType> handler = eventType => OnSequenceEvent(channel, eventType);
+            channelSubscriptions[channel] = handler;
+            channel.OnSequenceEvent += handler;
         }
     }
 
     private void OnDestroy()
     {
-        foreach(SequenceEventChannel channel in eventChannelsWithMetadata.Keys) channel.OnSequenceEvent -= (eventType) => OnSequenceEvent(channel, eventType);
+        foreach(KeyValuePair<SequenceEventChannel, Action<Constants.SequenceEventType>> subscription in channelSubscriptions)
+        {
+            if(subscription.Key == null) continue;
+            subscription.Key.OnSequenceEvent -= subscription.Value;
+        }
+
+        channelSubscriptions.Clear();
     }
 
     private void OnSequenceEvent(SequenceEventChannel channel, Constants.SequenceEventType eventType)
@@ -39,8 +50,7 @@ public class SequenceEventManager : Singleton<SequenceEventManager>
         EventChannelMetadata metadata = eventChannelsWithMetadata[channel];
         if(metadata != null && SpamProtectionCheck(metadata)) return;
 
-        // NOTE: this manager is now an event bridge: on a raise it forwards the event
-        //       type to the ConversationManager, which asks every runner to evaluate its entries.
+        // On an event raise, we forwards the event type to the ConversationManager, which asks every runner to evaluate its entries.
         if(ConversationManager.Instance == null)
         {
             Debug.LogWarning($"SequenceEventManager: ConversationManager is not initialized yet, sequence event '{eventType}' was dropped.");

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -10,30 +11,20 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
     private TMP_Text timeText;
     [Range(0, 24)] public float dayStartTime = 8f;
     [Range(0, 24)] public float dayEndTime = 17f;
-    public float dayLengthInSeconds = 60f;
+    public float dayLengthInSeconds = 5f;
     private float currentDayTime = 0f;
-    public int currentDayNumber = 0;
-    public bool isDayPassing = false;
-    // NOTE: set while EndDay is deferred behind an unresolved day-blocking choice.
-    //       Guards EndDay against re-entry so EndOfDaybehaviour can never be started twice.
+    [HideInInspector] public int currentDayNumber = 0;
+    [HideInInspector] public bool isDayPassing = false;
+    // Set while EndDay is deferred behind an unresolved day-blocking choice.
+    // Guards EndDay against re-entry so EndOfDaybehaviour can never be started twice.
     private bool isEndDayDeferred = false;
     [HideInInspector] public Transform focusedWindow;
-
-    protected override void Awake()
-    {
-        base.Awake();
-        timeText = GameObject.Find(Constants.GameObjectNames.Clock)
-            .transform.Find(Constants.GameObjectNames.Time)
-            .GetComponent<TMP_Text>();
-    }
 
     private void Start()
     {
         dayStartEventChannel = AddressableManager.Instance.RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.DayStart);
         workEndEventChannel = AddressableManager.Instance.RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.WorkEnd);
         ConversationManager.Instance.OnSequenceEventRaised += OnSequenceEventRaised;
-        // TODO: this will also have to be called from elsewhere
-        StartDay();
     }
 
     public void LoadFromRunData(RunData runData)
@@ -46,13 +37,48 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
         runData.currentDayNumber = currentDayNumber;
     }
 
+    public void StartGame()
+    {
+        switch(SaveManager.Instance.GetCurrentRunData().daySaveState)
+        {
+            case DaySaveState.DreamStart:
+                StartCoroutine(LoadSceneBehaviour(Constants.SceneNames.DreamPrefix + (currentDayNumber - 1)));
+                break;
+
+            case DaySaveState.DayStart:
+                StartCoroutine(LoadSceneBehaviour(Constants.SceneNames.Desktop, () => {
+                    StartDay();
+                }));
+                break;
+
+            case DaySaveState.WorkEnd:
+                // TODO: this needs us to be able to replace all the markers and all states as they were.
+                StartCoroutine(LoadSceneBehaviour(Constants.SceneNames.Desktop, () =>
+                {
+                    SaveManager.Instance.LoadDay(currentDayNumber);
+                    SetupGameObjectDependencies();
+                    TriggerEndOfDayTimePassing();
+                }));
+                break;
+        }
+    }
+
+    public void SetupGameObjectDependencies()
+    {
+        timeText = GameObject.Find(Constants.GameObjectNames.Clock)
+            .transform.Find(Constants.GameObjectNames.Time)
+            .GetComponent<TMP_Text>();
+        UpdateTimeText();
+    }
+
     public void StartDay()
     {
-        currentDayTime = dayLengthInSeconds;
-        UpdateTimeText();
         SaveManager.Instance.LoadDay(currentDayNumber);
+        currentDayTime = dayLengthInSeconds;
+        SetupGameObjectDependencies();
         ConversationManager.Instance?.OnDayChanged();
         dayStartEventChannel.Raise();
+        Debug.Log("Raised: Day Start Event");
     }
 
     public void TriggerDayTimePassing()
@@ -70,6 +96,7 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
             if(currentDayTime <= 0)
             {
                 TriggerEndOfDayTimePassing();
+                SaveManager.Instance.SaveDay(currentDayNumber, DaySaveState.WorkEnd);
             }
         }
     }
@@ -79,7 +106,12 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
         isDayPassing = false;
         currentDayTime = dayLengthInSeconds;
         timeText.text = FormatTime(dayEndTime);
-        if(workEndEventChannel != null) workEndEventChannel.Raise();
+
+        if(workEndEventChannel != null) 
+        {
+            workEndEventChannel.Raise();
+            Debug.Log("Raised: Work End Event");
+        }
     }
     
     private void OnSequenceEventRaised(Constants.SequenceEventType eventType)
@@ -98,8 +130,8 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
 
     public void EndDay()
     {
-        // NOTE: the day does not end while any day-blocking choice is unresolved. Defer and
-        //       retry once ConversationManager reports that the blocking choice has been cleared.
+        // The day does not end while any day-blocking choice is unresolved. Defer and
+        // retry once ConversationManager reports that the blocking choice has been cleared.
         if(isEndDayDeferred) return;
 
         if(ConversationManager.Instance.HasUnresolvedDayBlockingChoice)
@@ -108,8 +140,12 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
             ConversationManager.Instance.OnDayBlockingChoiceResolved += OnDayBlockingChoiceResolved;
             return;
         }
-
-        StartCoroutine(EndOfDaybehaviour());
+ 
+        currentDayNumber++;
+        SaveManager.Instance.SaveDay(currentDayNumber - 1, DaySaveState.DreamStart);
+        string dreamSceneName = Constants.SceneNames.DreamPrefix + (currentDayNumber - 1);
+        // TODO: do stuff like screen turning off animation and stuff
+        StartCoroutine(LoadSceneBehaviour(dreamSceneName));
     }
 
     private void OnDayBlockingChoiceResolved()
@@ -131,32 +167,23 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
         int totalMinutes = Mathf.RoundToInt(hourOfDay * 60f);
         totalMinutes = Mathf.RoundToInt(totalMinutes / 10f) * 10;
         totalMinutes = Mathf.Clamp(totalMinutes, 0, 23 * 60 + 59);
-
         int hours = totalMinutes / 60;
         int minutes = totalMinutes % 60;
-
         return $"{hours:D2} : {minutes:D2}";
     }
 
     #region Coroutines
-    private IEnumerator EndOfDaybehaviour()
+    private IEnumerator LoadSceneBehaviour(string sceneName, Action codeToRunAfter = null)
     {
-        currentDayNumber++;
-        SaveManager.Instance.SaveDay(currentDayNumber - 1);
         Scene oldScene = SceneManager.GetActiveScene();
-        string dreamSceneName = Constants.SceneNames.DreamPrefix + (currentDayNumber - 1);
-        AsyncOperation sceneLoadOperation = SceneManager.LoadSceneAsync(dreamSceneName, LoadSceneMode.Additive);
+        AsyncOperation sceneLoadOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         sceneLoadOperation.allowSceneActivation = false;
-        // TODO: do stuff like screen turning off animation and stuff
-
         yield return new WaitUntil(() => sceneLoadOperation.progress >= 0.9f);
-
         sceneLoadOperation.allowSceneActivation = true;
-
         yield return new WaitUntil(() => sceneLoadOperation.isDone);
-        
-        SceneManager.SetActiveScene(SceneManager.GetSceneByName(dreamSceneName));
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneName));
         SceneManager.UnloadSceneAsync(oldScene);
+        codeToRunAfter?.Invoke();
     }
     #endregion
 }

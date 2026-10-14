@@ -3,11 +3,11 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.SceneManagement;
 
 public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
 {
     private GameObject flagIndicatorPrefab;
-    private Transform uiCanvas;
     private List<FlagData> placedFlags = new List<FlagData>();
     public List<FlagType> activeFlagTypeCache = new List<FlagType>();
     private Dictionary<FlagType, FlagIndicatorController> activeFlagIndicators = new Dictionary<FlagType, FlagIndicatorController>();
@@ -25,7 +25,20 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
             .RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.FlagIndicator);
         flagOverloadSequenceEventChannel = AddressableManager.Instance
             .RetrieveAddressable<SequenceEventChannel>(Constants.SequenceEventChannels.FlagOverload);
-        uiCanvas = FindFirstObjectByType<Canvas>().transform;
+    }
+
+    private Transform ResolveUiCanvas()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+
+        foreach(GameObject root in activeScene.GetRootGameObjects())
+        {
+            Canvas canvas = root.GetComponentInChildren<Canvas>(true);
+            if(canvas != null) return canvas.transform;
+        }
+
+        Canvas fallback = FindFirstObjectByType<Canvas>(FindObjectsInactive.Exclude);
+        return fallback != null ? fallback.transform : null;
     }
 
     public void LoadFromDayData(DayData dayData)
@@ -48,19 +61,18 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
 
         if(activeFlagType != null)
         {
-            activeFlagIndicators[activeFlagType].SetRaised(false);
+            activeFlagIndicators[activeFlagType].SetLowered(true);
             activeFlagType = null;
         }
 
         activeFlagType = activeFlagTypeCache.Find(mt => mt.keycode == key);
-
-        if(activeFlagType != null) activeFlagIndicators[activeFlagType].SetRaised(true);
+        if(activeFlagType != null) activeFlagIndicators[activeFlagType].SetLowered(false);
     }
     public void OnKeyUp(Key key)
     {
         if(activeFlagType != null && activeFlagType.keycode == key)
         {
-            activeFlagIndicators[activeFlagType].SetRaised(false);
+            activeFlagIndicators[activeFlagType].SetLowered(true);
             activeFlagType = null;
         }
     }
@@ -113,18 +125,21 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
         if(overloadThreshold <= GetFlagsForChatBubble(chatLog, nodeGuid).Count)
         {
             flagOverloadSequenceEventChannel.Raise();
+            Debug.Log("Raised: Flag Overload Sequence Event");
         }
     }
 
     public void RemoveFlag(FlagData flagData)
     {
         if(!GameManager.Instance.isDayPassing) return;
-        placedFlags.Remove(flagData);
+        if(flagData != null) flagData.isRemoved = true;
     }
 
     public void SetActiveFlagTypes()
     {
-        if(activeFlagTypeCache.Count > 0)
+        activeFlagType = null;
+
+        if(activeFlagIndicators.Count > 0)
         {
             activeFlagIndicators.Values.ToList().ForEach(mf => Destroy(mf.gameObject));
             activeFlagIndicators.Clear();
@@ -137,6 +152,7 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
         }
 
         flagHoldAction = new InputAction(type: InputActionType.PassThrough);
+        
         flagHoldAction.performed += ctx =>
         {
             if(ctx.control is not KeyControl keyControl) return;
@@ -152,7 +168,8 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
             }
         };
 
-        float flagIndicatorOffset = Screen.width / (activeFlagTypeCache.Count + 1);
+        Transform uiCanvas = ResolveUiCanvas();
+        float flagIndicatorOffset = Screen.currentResolution.width / (activeFlagTypeCache.Count + 1);
 
         foreach(FlagType flagType in activeFlagTypeCache)
         {
@@ -170,18 +187,16 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
     {
         if(chatLog == null || string.IsNullOrEmpty(nodeGuid)) return new List<FlagData>();
 
-        return placedFlags.Where(m =>
-            m.chatLogPath == chatLog.name &&
-            m.nodeGuid == nodeGuid).ToList();
+        return placedFlags.Where(m => m.chatLogPath == chatLog.name && m.nodeGuid == nodeGuid && !m.isRemoved).ToList();
     }
 
     /// <summary>
     /// Accrues and returns the accuracy of the total flags placed on the chat log.
     /// Returns 0 if no flags are present.
     /// </summary>
-    public float EvaluateChatLogAccuracy(ChatLog chatLog)
+    public float CalculateChatLogAccuracy(ChatLog chatLog)
     {
-        List<FlagData> flags = placedFlags.Where(m => m.chatLogPath == chatLog.name).ToList();
+        List<FlagData> flags = placedFlags.Where(m => m.chatLogPath == chatLog.name && !m.isRemoved).ToList();
         if(flags.Count == 0) return 0;
         float totalAccuracy = 0;
         // NOTE: for now, duplicate flags for a single flaggable are not removed, since if i'm correct,

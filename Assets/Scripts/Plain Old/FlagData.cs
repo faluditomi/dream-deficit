@@ -12,6 +12,7 @@ public class FlagData
     public int endIndex;
     public int dayNumber;
     public float accuracy;
+    public bool isRemoved;
 
     // Resolved properties (computed on demand)
     public FlagType ResolvedFlagType => ResolveFlagType();
@@ -40,6 +41,9 @@ public class FlagData
 
     // Parameterless constructor for deserialization
     public FlagData() { }
+
+    public bool MatchesType(Flaggable flaggable) =>
+        flaggable?.flagType != null && flagTypeName == flaggable.flagType.name;
 
     private FlagType ResolveFlagType()
     {

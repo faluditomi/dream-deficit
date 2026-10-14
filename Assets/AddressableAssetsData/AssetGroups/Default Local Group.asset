@@ -69,11 +69,6 @@ MonoBehaviour:
     m_SerializedLabels:
     - Prefab
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 577b67ff4a5012443bfb97c8cce9ac7e
-    m_Address: scenes/desktop
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 64c6597e16e80714c8968ce798a79b47
     m_Address: prefabs/chat_client_user_entry
     m_ReadOnly: 0

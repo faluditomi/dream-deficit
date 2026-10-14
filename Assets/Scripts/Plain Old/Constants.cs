@@ -78,6 +78,7 @@ public static class Constants
     {
         public const string DreamPrefix = "dream_scene_day_";
         public const string Desktop = "tutorial_demo";
+        public const string MainMenu = "main_menu";
     }
 
     public static class WindowAndFileNames
@@ -109,8 +110,6 @@ public static class Constants
         DayEnd = 2,
         WorkStart = 3,
         WorkEnd = 4,
-        // NOTE: metadata fallback only (SequenceEventManager), never serialized into
-        //       channel assets or graph assets (event values are stored as names).
         Default = 5
     }
     #endregion

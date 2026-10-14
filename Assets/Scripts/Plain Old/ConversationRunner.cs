@@ -29,6 +29,10 @@ public class ConversationRunner
     public readonly List<PlayedBubbleRecord> history = new List<PlayedBubbleRecord>();
     private readonly List<ConversationEntryActivation> activations = new List<ConversationEntryActivation>();
     private readonly List<Thread> parkedThreads = new List<Thread>();
+    // Wait threads whose condition was already satisfied but could not resume because the log
+    // was busy at that instant. Drained by Tick once the log is free, so a one-shot event that
+    // fired while another thread was playing cannot strand the wait permanently.
+    private readonly List<Thread> pendingResume = new List<Thread>();
     private readonly Queue<QueuedEntry> entryQueue = new Queue<QueuedEntry>();
     // the playing thread or the thread parked at a choice — a pending choice occupies the log, parked wait threads do not
     private Thread activeThread;
@@ -149,8 +153,8 @@ public class ConversationRunner
     {
         if(string.IsNullOrEmpty(graphName) || string.IsNullOrEmpty(nodeGuid)) return;
         if(HasActivation(graphName, nodeGuid, eventType)) return;
-
         int currentDay = GameManager.Instance != null ? GameManager.Instance.currentDayNumber : 1;
+
         activations.Add(new ConversationEntryActivation
         {
             graphName = graphName,
@@ -173,11 +177,14 @@ public class ConversationRunner
             if(activation.dayNumber != candidate.dayNumber) continue;
             return true;
         }
+
         return false;
     }
 
     /// Re-checks threads parked at wait nodes. Locked logs never resume parked threads. The triggering 
     /// event type is passed through so a wait gated on a specific event can only resume when that event fires.
+    /// A wait whose condition is already satisfied while the log is busy is queued instead of dropped, and
+    /// is resumed as soon as the log becomes free (see TryResumePending).
     public void ReevaluateParkedThreads(Constants.SequenceEventType? eventType = null)
     {
         if(IsLogLocked()) return;
@@ -194,12 +201,54 @@ public class ConversationRunner
                 continue;
             }
 
-            if(!ConditionsMatch(waitNode.conditions, eventType)) continue;
-            if(activeThread != null) continue; // log is busy — re-check on the next event/day change
+            // Match either the event that just fired or any event already raised today. The latter
+            // covers a wait reached after its gating event fired (ordering can't be guaranteed for
+            // a thread that is mid-walk when the event arrives).
+            if(!ConditionsMatch(waitNode.conditions, eventType) && !WaitConditionsSatisfied(waitNode.conditions)) continue;
+
+            if(activeThread != null)
+            {
+                // log is busy — remember it and resume once the log is free, otherwise a
+                // one-shot event would strand this wait forever
+                QueuePendingResume(thread);
+                continue;
+            }
+
             parkedThreads.RemoveAt(i);
             activeThread = thread;
+            thread.playState = ThreadPlayState.Playing;
             AdvanceToNext(thread);
             ProcessCurrentNode();
+        }
+    }
+
+    private void QueuePendingResume(Thread thread)
+    {
+        if(thread == null || pendingResume.Contains(thread)) return;
+        pendingResume.Add(thread);
+    }
+
+    /// Resumes at most one satisfied wait per call, only while no thread is active. Called from
+    /// Tick so the resume happens on a clean stack rather than re-entrantly inside event dispatch.
+    private void TryResumePending()
+    {
+        if(activeThread != null) return;
+
+        while(pendingResume.Count > 0)
+        {
+            Thread thread = pendingResume[pendingResume.Count - 1];
+            pendingResume.RemoveAt(pendingResume.Count - 1);
+            if(thread == null || !parkedThreads.Contains(thread)) continue;
+            if(thread.currentNode == null || thread.currentNode.kind != ConversationNodeKind.Wait) continue;
+            // re-verify: the day or signals may have changed since it was queued
+            if(!WaitConditionsSatisfied(thread.currentNode.conditions)) continue;
+
+            parkedThreads.Remove(thread);
+            activeThread = thread;
+            thread.playState = ThreadPlayState.Playing;
+            AdvanceToNext(thread);
+            ProcessCurrentNode();
+            return;
         }
     }
 
@@ -257,6 +306,7 @@ public class ConversationRunner
 
     public void Tick(float deltaTime)
     {
+        TryResumePending();
         if(activeThread == null || activeThread.playState != ThreadPlayState.Playing) return;
         Thread thread = activeThread;
         ConversationNodeData node = thread.currentNode;
@@ -310,7 +360,9 @@ public class ConversationRunner
                 break;
 
             case ConversationNodeKind.Wait:
-                if(ConditionsMatch(node.conditions, null))
+                // A wait opens immediately if its non-event conditions are met and every event it
+                // requires has already been raised today; otherwise it parks until a matching raise.
+                if(WaitConditionsSatisfied(node.conditions))
                 {
                     AdvanceToNext(thread);
                     ProcessCurrentNode();
@@ -379,6 +431,7 @@ public class ConversationRunner
     {
         history.Clear();
         parkedThreads.Clear();
+        pendingResume.Clear();
         activeThread = null;
         while(entryQueue.Count > 0) entryQueue.Dequeue();
         activations.Clear();
@@ -505,6 +558,36 @@ public class ConversationRunner
         {
             if(clause == null) continue;
             if(!clause.Matches(eventType, currentDay, signals)) return false;
+        }
+
+        return true;
+    }
+
+    /// Condition check used to open a Wait node. Non-event clauses are evaluated against the
+    /// current day/signals; an Event clause is satisfied when that event has already been raised
+    /// on the current day (latched by ConversationManager). This keeps a "wait until X" node from
+    /// being permanently stranded when X fired while the log was busy or just before the wait was
+    /// reached. An empty condition list is always satisfied, matching ConditionsMatch.
+    private bool WaitConditionsSatisfied(List<ConversationConditionClause> conditions)
+    {
+        if(conditions == null || conditions.Count == 0) return true;
+        int currentDay = GameManager.Instance != null ? GameManager.Instance.currentDayNumber : 1;
+        List<string> signals = ConversationManager.Instance != null ? ConversationManager.Instance.Signals : null;
+
+        foreach(ConversationConditionClause clause in conditions)
+        {
+            if(clause == null) continue;
+
+            if(clause.kind == ConversationConditionKind.Event)
+            {
+                if(ConversationManager.Instance == null) return false;
+                if(!System.Enum.TryParse(clause.stringValue, true, out Constants.SequenceEventType eventType)) return false;
+                if(!ConversationManager.Instance.HasEventBeenRaisedThisDay(eventType)) return false;
+            }
+            else if(!clause.Matches(null, currentDay, signals))
+            {
+                return false;
+            }
         }
 
         return true;

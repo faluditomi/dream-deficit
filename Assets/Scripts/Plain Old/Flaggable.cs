@@ -48,4 +48,10 @@ public class Flaggable
     {
         return !string.IsNullOrEmpty(message) && startIndex >= 0 && endIndex >= startIndex && endIndex < message.Length;
     }
+
+    public bool Overlaps(int start, int end) =>
+        startIndex <= end && endIndex >= start;
+
+    public bool IsCoveredBy(int start, int end) =>
+        start <= startIndex && end >= endIndex;
 }

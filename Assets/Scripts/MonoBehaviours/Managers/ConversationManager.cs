@@ -12,6 +12,35 @@ public class ConversationManager : Singleton<ConversationManager>, IRunLoadable,
     private readonly List<string> signals = new List<string>();
     private bool hadDayBlockingChoice = false;
     public List<string> Signals => signals;
+    // Events already raised during the current day. A momentary raise can be missed by a wait
+    // that is parked just after it fires, or that is parked while the log is busy; latching the
+    // raises for the day lets such a wait still open instead of being stranded forever.
+    private readonly HashSet<Constants.SequenceEventType> eventsRaisedThisDay = new HashSet<Constants.SequenceEventType>();
+    private int eventsRaisedDayNumber = int.MinValue;
+
+    /// True while the given event has been raised at least once on the current day. Used by
+    /// event-gated wait nodes so a raise that the log was too busy to consume is not lost.
+    public bool HasEventBeenRaisedThisDay(Constants.SequenceEventType eventType)
+    {
+        return eventsRaisedDayNumber == CurrentDayNumber() && eventsRaisedThisDay.Contains(eventType);
+    }
+
+    private void RecordEventRaised(Constants.SequenceEventType eventType)
+    {
+        int currentDay = CurrentDayNumber();
+        if(eventsRaisedDayNumber != currentDay)
+        {
+            eventsRaisedThisDay.Clear();
+            eventsRaisedDayNumber = currentDay;
+        }
+
+        eventsRaisedThisDay.Add(eventType);
+    }
+
+    private static int CurrentDayNumber()
+    {
+        return GameManager.Instance != null ? GameManager.Instance.currentDayNumber : 1;
+    }
 
     public bool HasUnresolvedDayBlockingChoice
     {
@@ -124,6 +153,8 @@ public class ConversationManager : Singleton<ConversationManager>, IRunLoadable,
     /// subscriber acts on the event.
     public void OnSequenceEvent(Constants.SequenceEventType eventType)
     {
+        RecordEventRaised(eventType);
+
         foreach(ConversationRunner runner in runners.Values)
         {
             if(runner == null) continue;
@@ -138,6 +169,10 @@ public class ConversationManager : Singleton<ConversationManager>, IRunLoadable,
     /// one-shot entry activation guards for earlier days expire, then day-gated parked waits re-check.
     public void OnDayChanged()
     {
+        // a new day starts with no raises latched — an event-gated wait must observe this
+        // day's raise, not a raise from a previous day
+        eventsRaisedThisDay.Clear();
+        eventsRaisedDayNumber = CurrentDayNumber();
         EnsureRunnersForActiveLogs();
 
         foreach(ConversationRunner runner in runners.Values)

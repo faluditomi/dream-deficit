@@ -41,9 +41,10 @@ public class SaveManager : Singleton<SaveManager>
         if(!LoadGame()) InitializeFromTemplate();
     }
 
-    public void SaveDay(int dayNumber)
+    public void SaveDay(int dayNumber, DaySaveState daySaveState)
     {
         DayData dayData = daySaveData[dayNumber];
+        currentRunData.daySaveState = daySaveState;
         // snapshot: savables can be registered/unregistered from inside these callbacks
         // (e.g. a lazily auto-created singleton registering in OnEnable)
         foreach(var savable in daySavables.ToArray()) savable.SaveToDayData(dayData);
@@ -84,6 +85,11 @@ public class SaveManager : Singleton<SaveManager>
     public DayData GetCurrentDayData()
     {
         return currentDayData;
+    }
+
+    public RunData GetCurrentRunData()
+    {
+        return currentRunData;
     }
 
     public void SaveGame()

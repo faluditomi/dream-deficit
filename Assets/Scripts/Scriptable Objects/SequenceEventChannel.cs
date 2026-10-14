@@ -13,6 +13,4 @@ public class SequenceEventChannel : ScriptableObject
     {
         OnSequenceEvent?.Invoke(eventType);
     }
-
-    private void OnDisable() => OnSequenceEvent = null;
 }

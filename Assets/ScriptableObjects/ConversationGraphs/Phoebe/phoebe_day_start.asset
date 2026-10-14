@@ -74,6 +74,9 @@ MonoBehaviour:
       - operation: 0
         stringValue: sided_pushback
         intValue: 0
+      - operation: 1
+        stringValue: WorkStart
+        intValue: 0
     - guid: c27152dc-a3a0-49d2-b53a-462cffc72f6b
       previewText: '"let''s just comply"'
       postedBubble:
@@ -85,6 +88,9 @@ MonoBehaviour:
       effects:
       - operation: 0
         stringValue: sided_comply
+        intValue: 0
+      - operation: 1
+        stringValue: WorkStart
         intValue: 0
     - guid: 2357f4dc-b2a6-454c-9ef2-539f18182d15
       previewText: "\"enough \u2014 let's work\""
@@ -122,7 +128,7 @@ MonoBehaviour:
   - guid: 8bf1ac4f-1fd2-4f1b-9fbd-16c374f36d16
     kind: 0
     bubble:
-      chatUser: 3
+      chatUser: 2
       message: compliance it is. boring but safe.
       delayLength: 0.5
       typingIndicatorLength: 0.7
@@ -138,7 +144,7 @@ MonoBehaviour:
     kind: 0
     bubble:
       chatUser: 2
-      message: right. work mode. talk at noon.
+      message: right. work mode. talk later.
       delayLength: 0.5
       typingIndicatorLength: 0.7
       flaggables: []
@@ -160,11 +166,8 @@ MonoBehaviour:
     options: []
     blocksDay: 0
     conditions:
-    - kind: 1
-      stringValue: 
-      intValue: 2
     - kind: 0
-      stringValue: DayStart
+      stringValue: WorkEnd
       intValue: 0
     exclusive: 0
     exclusiveGroupId: 
@@ -184,7 +187,103 @@ MonoBehaviour:
     exclusive: 0
     exclusiveGroupId: 
     isRepeatable: 0
-    editorPosition: {x: 1160, y: 180}
+    editorPosition: {x: 2560, y: 40}
+  - guid: 50f00893-adbe-4607-b2de-02f5de4a14a8
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: so, ready for today's eval?
+      delayLength: 1
+      typingIndicatorLength: 0.7
+      flaggables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 1440, y: 40}
+  - guid: aca5a4c0-048f-44c4-8cd4-de7f5a0e00c5
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: it is as follows
+      delayLength: 0.8
+      typingIndicatorLength: 0.5
+      flaggables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 1720, y: 40}
+  - guid: 47ddc0d4-00bc-4594-a76a-7268901be7a5
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: 'Accuracy = <accuracy>
+
+        Precision = <precision>
+
+        PolicyIq
+        = <policyIq>
+
+        Ambition = <ambition>
+
+        Efficiency = <efficiency>
+
+        Consistency
+        = <consistency>'
+      delayLength: 1.2
+      typingIndicatorLength: 2
+      flaggables: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 2000, y: 40}
+  - guid: d93c23f0-5772-4445-9197-edbc999270e9
+    kind: 1
+    bubble:
+      chatUser: 0
+      message: 
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables: []
+    options:
+    - guid: 1829a818-e44c-436f-a958-d3329a0ff63d
+      previewText: fuck
+      postedBubble:
+        chatUser: 4
+        message: well, i'm fucekd, aren't i...
+        delayLength: 0
+        typingIndicatorLength: 0
+        flaggables: []
+      effects:
+      - operation: 1
+        stringValue: DayEnd
+        intValue: 0
+    - guid: 945260ed-759a-44b5-83d8-f79d508cf13e
+      previewText: how's that?
+      postedBubble:
+        chatUser: 4
+        message: how's that then? i don't know what these numbers do
+        delayLength: 0
+        typingIndicatorLength: 0
+        flaggables: []
+      effects:
+      - operation: 1
+        stringValue: DayEnd
+        intValue: 0
+    blocksDay: 1
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 2280, y: 40}
   edges:
   - fromNodeGuid: 5eb9923e-d266-41f5-b577-c389808354fe
     fromOptionGuid: 
@@ -201,15 +300,30 @@ MonoBehaviour:
   - fromNodeGuid: aa58b1d6-812f-4646-b5ec-cbca8dea8e24
     fromOptionGuid: 2357f4dc-b2a6-454c-9ef2-539f18182d15
     toNodeGuid: 2e50598a-d8c3-42aa-85af-defd1d0d6458
-  - fromNodeGuid: 71e724dc-98a8-4765-8140-76a6fea0303c
-    fromOptionGuid: 
-    toNodeGuid: 36d8d70d-a3f7-427f-8935-6666cb3ab15e
-  - fromNodeGuid: 8bf1ac4f-1fd2-4f1b-9fbd-16c374f36d16
-    fromOptionGuid: 
-    toNodeGuid: 36d8d70d-a3f7-427f-8935-6666cb3ab15e
   - fromNodeGuid: 2e50598a-d8c3-42aa-85af-defd1d0d6458
     fromOptionGuid: 
     toNodeGuid: fff1567e-3fef-4a83-b2fa-7c4f4b4f5b63
+  - fromNodeGuid: 8bf1ac4f-1fd2-4f1b-9fbd-16c374f36d16
+    fromOptionGuid: 
+    toNodeGuid: 2e50598a-d8c3-42aa-85af-defd1d0d6458
+  - fromNodeGuid: 71e724dc-98a8-4765-8140-76a6fea0303c
+    fromOptionGuid: 
+    toNodeGuid: 2e50598a-d8c3-42aa-85af-defd1d0d6458
   - fromNodeGuid: fff1567e-3fef-4a83-b2fa-7c4f4b4f5b63
     fromOptionGuid: 
+    toNodeGuid: 50f00893-adbe-4607-b2de-02f5de4a14a8
+  - fromNodeGuid: 50f00893-adbe-4607-b2de-02f5de4a14a8
+    fromOptionGuid: 
+    toNodeGuid: aca5a4c0-048f-44c4-8cd4-de7f5a0e00c5
+  - fromNodeGuid: aca5a4c0-048f-44c4-8cd4-de7f5a0e00c5
+    fromOptionGuid: 
+    toNodeGuid: 47ddc0d4-00bc-4594-a76a-7268901be7a5
+  - fromNodeGuid: 47ddc0d4-00bc-4594-a76a-7268901be7a5
+    fromOptionGuid: 
+    toNodeGuid: d93c23f0-5772-4445-9197-edbc999270e9
+  - fromNodeGuid: d93c23f0-5772-4445-9197-edbc999270e9
+    fromOptionGuid: 1829a818-e44c-436f-a958-d3329a0ff63d
+    toNodeGuid: 36d8d70d-a3f7-427f-8935-6666cb3ab15e
+  - fromNodeGuid: d93c23f0-5772-4445-9197-edbc999270e9
+    fromOptionGuid: 945260ed-759a-44b5-83d8-f79d508cf13e
     toNodeGuid: 36d8d70d-a3f7-427f-8935-6666cb3ab15e

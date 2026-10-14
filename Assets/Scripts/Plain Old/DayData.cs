@@ -37,6 +37,13 @@ public class DayData
             .ToList();
     }
 
+    public List<ResolvedChatLogEntry> GetGradeableAssignments()
+    {
+        return GetActiveChatLogEntries()
+            .Where(entry => !entry.isBonus || entry.isUnlocked)
+            .ToList();
+    }
+
     public bool IsLogBonus(string chatLogPath)
     {
         if(activeAssignments == null) return false;
