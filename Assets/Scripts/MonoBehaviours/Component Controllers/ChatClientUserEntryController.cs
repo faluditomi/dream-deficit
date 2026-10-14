@@ -28,7 +28,11 @@ public class ChatClientUserEntryController : MonoBehaviour
             myChatLogController.Open();
         });
 
-        myChatLogController.OnNewMessageEvent += UpdateMessagePreview;
+        myChatLogController.OnNewMessageEvent += (message) => {
+            UpdateMessagePreview(message);
+            transform.SetAsFirstSibling();
+        };
+
         myChatLogController.OnGainedFocusEvent += OpenMessagePreview;
     }
 
@@ -36,7 +40,7 @@ public class ChatClientUserEntryController : MonoBehaviour
     {
         lastMessageText.text = message;
 
-        if(UIFocusManager.Instance.focusedWindow != myChatLogController && chatClientController.myChatLogController != myChatLogController)
+        if(!ChatLogManager.Instance.IsChatLogInFocus(myChatLogController))
         {
             lastMessageText.fontStyle = FontStyles.Bold;
             lastMessageText.color = Color.white;

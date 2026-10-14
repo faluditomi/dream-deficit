@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ChatLogManager : Singleton<ChatLogManager>, IDayLoadable, IDaySavable
 {
@@ -13,7 +14,20 @@ public class ChatLogManager : Singleton<ChatLogManager>, IDayLoadable, IDaySavab
     {
         base.Awake();
         chatLogPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.ChatLog);
-        windowContainer = FindFirstObjectByType<Canvas>().transform.Find(Constants.GameObjectNames.WindowContainer);
+    }
+
+    private Transform ResolveWindowContainer()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+
+        foreach(GameObject root in activeScene.GetRootGameObjects())
+        {
+            Canvas canvas = root.GetComponentInChildren<Canvas>(true);
+            if(canvas != null) return canvas.transform.Find(Constants.GameObjectNames.WindowContainer);
+        }
+
+        Transform fallback = FindFirstObjectByType<Canvas>(FindObjectsInactive.Exclude).transform.Find(Constants.GameObjectNames.WindowContainer);
+        return fallback != null ? fallback : null;
     }
 
     public void LoadFromDayData(DayData dayData)
@@ -48,7 +62,7 @@ public class ChatLogManager : Singleton<ChatLogManager>, IDayLoadable, IDaySavab
         }
         else
         {
-            Transform container = parent != null ? parent : windowContainer;
+            Transform container = parent != null ? parent : ResolveWindowContainer();
             ChatLogController chatLogController = Instantiate(chatLogPrefab, container).GetComponent<ChatLogController>();
             chatLogController.Setup(chatLog, needsTopBar);
             if(needsTopBar) chatLogController.GetComponent<TopBarHandler>().Close();

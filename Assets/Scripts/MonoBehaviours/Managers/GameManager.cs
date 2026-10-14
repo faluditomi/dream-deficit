@@ -52,7 +52,9 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
                 break;
 
             case DaySaveState.WorkEnd:
-                // TODO: this needs us to be able to replace all the markers and all states as they were.
+                // TODO: stuff to reset to saved state:
+                //          - placed flags
+                //          - chat notifications / unread messages, chat client user ordering, etc.
                 StartCoroutine(LoadSceneBehaviour(Constants.SceneNames.Desktop, () =>
                 {
                     SaveManager.Instance.LoadDay(currentDayNumber);

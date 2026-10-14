@@ -25,6 +25,7 @@ public class ChatClientController : BaseWindowController, IDayLoadable
     {
         List<ChatUser> activeEntries = SaveManager.Instance.GetCurrentDayData().GetActiveChatClientUsers();
         foreach(Transform child in content) Destroy(child.gameObject);
+        ChatClientUserEntryController supervisorEntryInstance = null;
         
         foreach(ChatUser chatUser in activeEntries)
         {
@@ -37,6 +38,7 @@ public class ChatClientController : BaseWindowController, IDayLoadable
             }
 
             ChatClientUserEntryController entryInstance = Instantiate(chatUserEntryPrefab, content).GetComponent<ChatClientUserEntryController>();
+            if(chatUser.name == Constants.ChatUser.Phoebe.ToString().ToLower()) supervisorEntryInstance = entryInstance;
             string lastMessage = GetLastDeliveredMessage(chatLog);
             entryInstance.Setup(chatUser, chatLog, lastMessage, chatWindowHolder);
         }
@@ -44,8 +46,8 @@ public class ChatClientController : BaseWindowController, IDayLoadable
         // NOTE: this may not be the cleanest way to do it, but we have to make the default, top chat user
         if(activeEntries.Find(chatUserScriptable => chatUserScriptable.chatUser.Equals(Constants.ChatUser.Phoebe)) != null)
         {
-            BringUserToTopAndOpenLog(AddressableManager
-                .Instance
+            BringUserToTopAndOpenLog(supervisorEntryInstance,
+                AddressableManager.Instance
                 .RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + Constants.ChatUser.Phoebe.ToString().ToLower()));
         }
 
@@ -61,10 +63,11 @@ public class ChatClientController : BaseWindowController, IDayLoadable
         myInitialiser = initialiser;
     }
 
-    public void BringUserToTopAndOpenLog(ChatLog chatLog)
+    public void BringUserToTopAndOpenLog(ChatClientUserEntryController entryController, ChatLog chatLog)
     {
         ChatLogController chatLogController = ChatLogManager.Instance.GetChatLogControllerByLogName(chatLog.name);
         if(chatLogController == null) return;
+        entryController.transform.SetAsFirstSibling();
         myChatLogController = chatLogController;
         myChatLogController.transform.SetAsLastSibling();
         myChatLogController.Open();
