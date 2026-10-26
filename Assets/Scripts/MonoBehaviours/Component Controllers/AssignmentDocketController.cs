@@ -12,7 +12,7 @@ public class AssignmentDocketController : BaseWindowController, IDayLoadable
     {
         assignmentEntryPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.AssignmentEntry);
         content = GetComponentInChildren<ContentSizeFitter>().transform;
-        SetupBaseWindow(Constants.WindowAndFileNames.AssignmentDocket.ToString());
+        SetupBaseWindow(Constants.WindowAndFileNames.AssignmentDocket);
         GetComponent<TopBarHandler>().Close();
     }
 

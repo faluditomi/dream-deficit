@@ -29,6 +29,8 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         myText = GetComponent<TMP_Text>();
         rawText = myText.text;
         myText.richText = true;
+        FlagManager.Instance.OnNewFlagPlaced += flagData => Rebuild(flagData.ResolvedFlagType.colour);
+        FlagManager.Instance.OnFlagRemoved += flagData => Rebuild(Color.clear);
     }
 
     public void SetupOnlyHighlight()
@@ -177,7 +179,6 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         if(currentSelectionStart == currentSelectionEnd && activeFlagType == null)
         {
             FlagManager.Instance.RemoveFlag(hoveredFlag);
-            Rebuild(Color.clear);
             hoveredFlag = previousHoveredFlag = null;
         }
         else
@@ -209,7 +210,6 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
         currentSelectionStart = currentSelectionEnd = -1;
         Color newFlagColour = flag != null ? flag.ResolvedFlagType.colour : Color.clear;
-        Rebuild(newFlagColour);
     }
 
     private void HighlightMouseUp(FlagType activeFlagType)

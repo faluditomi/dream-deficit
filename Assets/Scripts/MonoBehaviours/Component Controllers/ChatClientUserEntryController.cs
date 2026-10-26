@@ -7,8 +7,10 @@ public class ChatClientUserEntryController : MonoBehaviour
     private Image profilePictureImage;
     private TMP_Text usernameText;
     private TMP_Text lastMessageText;
-    private ChatLogController myChatLogController;
     private ChatClientController chatClientController;
+    private ChatLogController myChatLogController;
+    public ChatUser myChatUser { get; private set; }
+    public bool isUnopened { get; private set; } = false;
 
     public void Setup(ChatUser chatUser, ChatLog chatLog, string lastMessage, Transform container)
     {
@@ -16,8 +18,9 @@ public class ChatClientUserEntryController : MonoBehaviour
         profilePictureImage = transform.Find(Constants.GameObjectNames.ProfilePicture).GetComponent<Image>();
         usernameText = transform.Find(Constants.GameObjectNames.Username).GetComponent<TMP_Text>();
         lastMessageText = transform.Find(Constants.GameObjectNames.LastMessage).GetComponent<TMP_Text>();
-        profilePictureImage.sprite = chatUser.profilePicture;
-        usernameText.text = chatUser.username;
+        myChatUser = chatUser;
+        profilePictureImage.sprite = myChatUser.profilePicture;
+        usernameText.text = myChatUser.username;
         lastMessageText.text = lastMessage;
         usernameText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
         lastMessageText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
@@ -38,6 +41,7 @@ public class ChatClientUserEntryController : MonoBehaviour
 
     private void UpdateMessagePreview(string message)
     {
+        isUnopened = true;
         lastMessageText.text = message;
 
         if(!ChatLogManager.Instance.IsChatLogInFocus(myChatLogController))
@@ -47,8 +51,16 @@ public class ChatClientUserEntryController : MonoBehaviour
         }
     }
 
+    public void MarkCurrentMessageAsUnopened()
+    {
+        isUnopened = true;
+        lastMessageText.fontStyle = FontStyles.Bold;
+        lastMessageText.color = Color.white;
+    }
+
     private void OpenMessagePreview(GameObject focusedWindow, int unreadMessages)
     {
+        isUnopened = false;
         lastMessageText.fontStyle = FontStyles.Normal;
         lastMessageText.color = Color.gray;
     }

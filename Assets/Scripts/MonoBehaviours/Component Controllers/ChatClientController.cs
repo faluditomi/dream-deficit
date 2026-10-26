@@ -1,76 +1,83 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ChatClientController : BaseWindowController, IDayLoadable
 {
-    [HideInInspector] public ChatLogController myChatLogController;
+    public ChatLogController myChatLogController { get; set; }
+    public Transform userListContent { get; private set; }
+    private Dictionary<ChatUser, ChatClientUserEntryController> userEntryControllers = new Dictionary<ChatUser, ChatClientUserEntryController>();
     private GameObject chatUserEntryPrefab;
-    private Transform content;
     private Transform chatWindowHolder;
-    private Transform myInitialiser;
+    private MessageNotificationController myInitialiserMessageNotificationController;
 
     private void Awake()
     {
-        myChatLogController = GetComponentInChildren<ChatLogController>();
         chatUserEntryPrefab = AddressableManager.Instance.RetrieveAddressable<GameObject>(Constants.AddressablePrefabs.ChatClientUserEntry);
-        content = transform.Find(Constants.GameObjectNames.UserListWindow).Find(Constants.GameObjectNames.Viewport).Find(Constants.GameObjectNames.Content);
+        userListContent = transform.Find(Constants.GameObjectNames.UserListWindow).Find(Constants.GameObjectNames.Viewport).Find(Constants.GameObjectNames.Content);
         chatWindowHolder = transform.Find(Constants.GameObjectNames.ChatWindowHolder);
         SetupBaseWindow(Constants.WindowAndFileNames.ChatClient);
         GetComponent<TopBarHandler>().Close();
-        OnGainedFocusEvent += (focusedWindow, unreadMessages) => myChatLogController.OnGainedFocus();
+        OnGainedFocusEvent += (focusedWindow, unreadMessages) => { if(myChatLogController != null) myChatLogController.OnGainedFocus(); };
     }
 
     public void LoadFromDayData(DayData dayData)
     {
         List<ChatUser> activeEntries = SaveManager.Instance.GetCurrentDayData().GetActiveChatClientUsers();
-        foreach(Transform child in content) Destroy(child.gameObject);
+        userEntryControllers.Clear();
+        foreach(Transform child in userListContent) Destroy(child.gameObject);
         ChatClientUserEntryController supervisorEntryInstance = null;
         
         foreach(ChatUser chatUser in activeEntries)
         {
             ChatLog chatLog = AddressableManager.Instance.RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + chatUser.name.ToString().ToLower());
-
+            
             if(chatLog == null)
             {
                 Debug.LogError($"ChatClientController: could not resolve ChatLog for chat user '{chatUser.name}'. Skipping entry.");
                 continue;
             }
 
-            ChatClientUserEntryController entryInstance = Instantiate(chatUserEntryPrefab, content).GetComponent<ChatClientUserEntryController>();
+            ChatClientUserEntryController entryInstance = Instantiate(chatUserEntryPrefab, userListContent).GetComponent<ChatClientUserEntryController>();
+            userEntryControllers.Add(chatUser, entryInstance);
             if(chatUser.name == Constants.ChatUser.Phoebe.ToString().ToLower()) supervisorEntryInstance = entryInstance;
             string lastMessage = GetLastDeliveredMessage(chatLog);
             entryInstance.Setup(chatUser, chatLog, lastMessage, chatWindowHolder);
+
+            if(myChatLogController == null) myChatLogController = ChatLogManager.Instance.GetChatLogController(chatLog);
         }
 
-        // NOTE: this may not be the cleanest way to do it, but we have to make the default, top chat user
-        if(activeEntries.Find(chatUserScriptable => chatUserScriptable.chatUser.Equals(Constants.ChatUser.Phoebe)) != null)
+        if(myChatLogController != null) myChatLogController.Open();
+
+        if(myInitialiserMessageNotificationController != null)
         {
-            BringUserToTopAndOpenLog(supervisorEntryInstance,
-                AddressableManager.Instance
-                .RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + Constants.ChatUser.Phoebe.ToString().ToLower()));
+            myInitialiserMessageNotificationController.Setup(chatWindowHolder.GetComponentsInChildren<ChatLogController>().ToList());
+        }
+    }
+
+    public void ResetNotificationState(ChatClientStateSave chatClientStateSave)
+    {
+        int globalChatNotificationCounter = 0;
+
+        foreach(ChatUserState chatUserState in chatClientStateSave.reversedOrderChatUserStates)
+        {
+            Debug.Log(chatUserState.ResolvedChatUser.name + " - " + chatUserState.isLastMessageUnread);
+            if(!userEntryControllers.ContainsKey(chatUserState.ResolvedChatUser)) return;
+            ChatClientUserEntryController userEntryController = userEntryControllers[chatUserState.ResolvedChatUser];
+            userEntryController.transform.SetAsFirstSibling();
+            if(chatUserState.isLastMessageUnread) userEntryController.MarkCurrentMessageAsUnopened();
+            userEntryController.transform.GetComponentInChildren<MessageNotificationController>().SetNotificationCount(chatUserState.unreadMessageCount);
+            globalChatNotificationCounter += chatUserState.unreadMessageCount;
         }
 
-        
-        if(myInitialiser.GetComponentInChildren<MessageNotificationController>() != null)
-        {
-            myInitialiser.GetComponentInChildren<MessageNotificationController>().Setup(chatWindowHolder.GetComponentsInChildren<ChatLogController>().ToList());
-        }
+        myInitialiserMessageNotificationController.SetNotificationCount(globalChatNotificationCounter);
     }
 
     public override void WindowSpecificSetup(Transform initialiser)
     {
-        myInitialiser = initialiser;
-    }
-
-    public void BringUserToTopAndOpenLog(ChatClientUserEntryController entryController, ChatLog chatLog)
-    {
-        ChatLogController chatLogController = ChatLogManager.Instance.GetChatLogControllerByLogName(chatLog.name);
-        if(chatLogController == null) return;
-        entryController.transform.SetAsFirstSibling();
-        myChatLogController = chatLogController;
-        myChatLogController.transform.SetAsLastSibling();
-        myChatLogController.Open();
+        if(initialiser == null) return;
+        myInitialiserMessageNotificationController = initialiser.GetComponentInChildren<MessageNotificationController>();
     }
 
     private string GetLastDeliveredMessage(ChatLog chatLog)

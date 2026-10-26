@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -12,6 +14,8 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
     public List<FlagType> activeFlagTypeCache = new List<FlagType>();
     private Dictionary<FlagType, FlagIndicatorController> activeFlagIndicators = new Dictionary<FlagType, FlagIndicatorController>();
     private InputAction flagHoldAction;
+    public event Action<FlagData> OnNewFlagPlaced;
+    public event Action<FlagData> OnFlagRemoved;
     // non-serialized is needed, because otherwise activeFlagType wouldn't be null on startup, which messes up multiple systems
     [System.NonSerialized] public FlagType activeFlagType;
     private SequenceEventChannel flagOverloadSequenceEventChannel;
@@ -48,6 +52,7 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
         placedFlags.Clear();
         activeFlagTypeCache.AddRange(dayData.GetFlagTypes());
         SetActiveFlagTypes();
+        dayData.flagData.ForEach(flagData => PrePopulateFlag(flagData));
     }
 
     public void SaveToDayData(DayData dayData)
@@ -92,7 +97,15 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
         );
 
         placedFlags.Add(flagData);
+        OnNewFlagPlaced?.Invoke(flagData);
         FlagOverloadEventCheck(chatLog, chatBubble, nodeGuid);
+    }
+
+    public void PrePopulateFlag(FlagData flagData)
+    {
+        placedFlags.Add(flagData);
+        if(!flagData.isRemoved) OnNewFlagPlaced?.Invoke(flagData);
+
     }
 
     private float CalculateFlagAccuracy(ChatBubble chatBubble, int start, int end)
@@ -133,6 +146,7 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
     {
         if(!GameManager.Instance.isDayPassing) return;
         if(flagData != null) flagData.isRemoved = true;
+        OnFlagRemoved?.Invoke(flagData);
     }
 
     public void SetActiveFlagTypes()
@@ -141,7 +155,7 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
 
         if(activeFlagIndicators.Count > 0)
         {
-            activeFlagIndicators.Values.ToList().ForEach(mf => Destroy(mf.gameObject));
+            activeFlagIndicators.Values.ToList().ForEach(indicator => { if(indicator != null) Destroy(indicator.gameObject); });
             activeFlagIndicators.Clear();
         }
 
@@ -169,7 +183,7 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
         };
 
         Transform uiCanvas = ResolveUiCanvas();
-        float flagIndicatorOffset = Screen.currentResolution.width / (activeFlagTypeCache.Count + 1);
+        float flagIndicatorOffset = uiCanvas.GetComponent<RectTransform>().rect.width / (activeFlagTypeCache.Count + 1);
 
         foreach(FlagType flagType in activeFlagTypeCache)
         {

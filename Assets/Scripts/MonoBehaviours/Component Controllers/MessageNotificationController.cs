@@ -10,7 +10,7 @@ public class MessageNotificationController : MonoBehaviour
     [HideInInspector] public List<ChatLogController> myChatLogControllers;
     private TextMeshProUGUI unreadMessageCounter;
     private Image notificationBackground;
-    private int unreadMessageCount = 0;
+    public int unreadMessageCount { get; private set; } = 0;
 
     // We can provide multiple chat log controllers, in case we want the notification counter to keep track of more logs at once.
     public void Setup(List<ChatLogController> chatLogControllers)
@@ -60,6 +60,23 @@ public class MessageNotificationController : MonoBehaviour
         {
             notificationBackground.enabled = false;
             unreadMessageCounter.gameObject.SetActive(false);
+        }
+    }
+
+    public void SetNotificationCount(int notificationCount)
+    {
+        unreadMessageCount = notificationCount;
+        unreadMessageCounter.text = unreadMessageCount.ToString();
+
+        if(unreadMessageCount <= 0)
+        {
+            notificationBackground.enabled = false;
+            unreadMessageCounter.gameObject.SetActive(false);
+        }
+        else if(!unreadMessageCounter.gameObject.activeSelf)
+        {
+            notificationBackground.enabled = true;
+            unreadMessageCounter.gameObject.SetActive(true);
         }
     }
 }

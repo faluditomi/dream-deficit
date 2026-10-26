@@ -26,6 +26,22 @@ MonoBehaviour:
       - Synchronised Activity Spike
       activeChatClientUsers:
       - phoebe
-      - mara
       - moira
+      flagData: []
+  - dayNumber: 2
+    dayData:
+      dayNumber: 2
+      activeAssignments:
+      - chatLogPath: test_assignment
+        isBonus: 0
+      unlockedChatLogNames: []
+      flagTypeNames:
+      - Copy Paste Spam
+      - Synchronised Activity Spike
+      - Persuasion Pattern
+      - Narrative Shaping
+      activeChatClientUsers:
+      - phoebe
+      - moira
+      - mara
       flagData: []
