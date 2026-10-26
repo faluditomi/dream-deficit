@@ -5,6 +5,7 @@ public static class Constants
     {
         public const string ChatUser = "chat_user/";
         public const string ChatLog = "chat_log/";
+        public const string DoubleMarker = "double_marker/";
         public const string ConversationGraph = "conversation_graph/";
         public const string EventChannel = "sequence_event_channel/";
         public const string Prefab = "prefabs/";

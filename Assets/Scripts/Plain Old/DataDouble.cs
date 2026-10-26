@@ -7,10 +7,20 @@ public class DataDouble
     public bool isModeratorProfile;
     public bool isClientProfile;
 
+    // read access for serialization; the snapshot DTOs are built by DoublesManager
+    public IEnumerable<DoubleMarker> MarkerKeys => markers.Keys;
+
     public DataDouble(bool isModeratorProfile, bool isClientProfile)
     {
         this.isModeratorProfile = isModeratorProfile;
         this.isClientProfile = isClientProfile;
+    }
+
+    // used when rebuilding a DataDouble from save data
+    public void SetMarker(DoubleMarker marker, int baseline, int score)
+    {
+        if(marker == null) return;
+        markers[marker] = new MarkerMetaData(baseline, score);
     }
 
     public bool IsMarkerInRed(DoubleMarker marker)

@@ -62,9 +62,10 @@ public class ChatClientController : BaseWindowController, IDayLoadable
 
         foreach(ChatUserState chatUserState in chatClientStateSave.reversedOrderChatUserStates)
         {
-            Debug.Log(chatUserState.ResolvedChatUser.name + " - " + chatUserState.isLastMessageUnread);
-            if(!userEntryControllers.ContainsKey(chatUserState.ResolvedChatUser)) return;
-            ChatClientUserEntryController userEntryController = userEntryControllers[chatUserState.ResolvedChatUser];
+            if(string.IsNullOrEmpty(chatUserState.chatUserName)) continue;
+            ChatUser chatUser = AddressableManager.Instance.RetrieveAddressable<ChatUser>(Constants.AddressablePrefixes.ChatUser + chatUserState.chatUserName.ToLower());
+            if(!userEntryControllers.ContainsKey(chatUser)) continue;
+            ChatClientUserEntryController userEntryController = userEntryControllers[chatUser];
             userEntryController.transform.SetAsFirstSibling();
             if(chatUserState.isLastMessageUnread) userEntryController.MarkCurrentMessageAsUnopened();
             userEntryController.transform.GetComponentInChildren<MessageNotificationController>().SetNotificationCount(chatUserState.unreadMessageCount);

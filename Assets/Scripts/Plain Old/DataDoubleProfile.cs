@@ -6,9 +6,19 @@ public class DataDoubleProfile
     private Dictionary<int, DataDouble> dailyDoubles = new Dictionary<int, DataDouble>();
     private DataDouble globalDouble;
 
+    // read access for serialization; the snapshot DTOs are built by DoublesManager
+    public IEnumerable<KeyValuePair<int, DataDouble>> DailyDoubles => dailyDoubles;
+
     public DataDoubleProfile(DataDouble globalDouble)
     {
         this.globalDouble = globalDouble;
+    }
+
+    // used when rebuilding a DataDoubleProfile from save data
+    public void AddDailyDouble(int day, DataDouble dataDouble)
+    {
+        if(dataDouble == null) return;
+        dailyDoubles[day] = dataDouble;
     }
 
     public DataDouble GetDataDoubleForDay(int day)

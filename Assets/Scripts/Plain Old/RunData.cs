@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 
 [System.Serializable]
@@ -7,25 +6,9 @@ public class RunData
     public int currentDayNumber = 1;
     public List<string> chatSignals = new List<string>();
     public List<LogChatState> chatLogs = new List<LogChatState>();
-    public Dictionary<string, DataDoubleProfile> dataDoubleProfiles = new Dictionary<string, DataDoubleProfile>();
+    public List<DataDoubleProfileEntry> dataDoubleProfiles = new List<DataDoubleProfileEntry>();
     public DaySaveState daySaveState = DaySaveState.DayStart;
     public ChatClientStateSave chatClientStateSave;
-    public Dictionary<ChatUser, DataDoubleProfile> ResolvedDataDoubleProfiles => GetDataDoubleProfiles();
-
-    private Dictionary<ChatUser, DataDoubleProfile> GetDataDoubleProfiles()
-    {
-        if(dataDoubleProfiles == null || dataDoubleProfiles.Count <= 0) return null;
-        Dictionary<ChatUser, DataDoubleProfile> resolvedDataDoulbeProfiles = new Dictionary<ChatUser, DataDoubleProfile>();
-
-        foreach(KeyValuePair<string, DataDoubleProfile> dataDoubleProfile in dataDoubleProfiles)
-        {
-            if(string.IsNullOrEmpty(dataDoubleProfile.Key)) continue;
-            ChatUser chatUser = AddressableManager.Instance.RetrieveAddressable<ChatUser>(Constants.AddressablePrefixes.ChatUser + dataDoubleProfile.Key.ToLower());
-            resolvedDataDoulbeProfiles.Add(chatUser, dataDoubleProfile.Value);
-        }
-
-        return resolvedDataDoulbeProfiles;
-    }
 }
 
 public enum DaySaveState
@@ -47,12 +30,43 @@ public class ChatUserState
     public string chatUserName;
     public bool isLastMessageUnread;
     public int unreadMessageCount;
-    public ChatUser ResolvedChatUser => GetChatUser();
+}
 
-    private ChatUser GetChatUser()
-    {
-        if(string.IsNullOrEmpty(chatUserName)) return null;
-        ChatUser chatUser = AddressableManager.Instance.RetrieveAddressable<ChatUser>(Constants.AddressablePrefixes.ChatUser + chatUserName.ToLower());
-        return chatUser;
-    }
+// Serialization DTOs for the runtime DataDoubleProfile/DataDouble models. Those models hold dictionaries,
+// ScriptableObject keys and no parameterless constructors, so they cannot be serialized by Unity/JsonUtility.
+// DoublesManager converts between these DTOs and the runtime models.
+
+[System.Serializable]
+public class DataDoubleProfileEntry
+{
+    // asset name, resolved through Constants.AddressablePrefixes.ChatUser on load
+    public string chatUserName;
+    public DataDoubleSave global = new DataDoubleSave();
+    public List<DataDoubleDaySave> daily = new List<DataDoubleDaySave>();
+}
+
+[System.Serializable]
+public class DataDoubleDaySave
+{
+    public int day;
+    public DataDoubleSave dataDouble = new DataDoubleSave();
+}
+
+[System.Serializable]
+public class DataDoubleSave
+{
+    public bool isModeratorProfile;
+    public bool isClientProfile;
+    public List<MarkerEntry> markers = new List<MarkerEntry>();
+}
+
+[System.Serializable]
+public class MarkerEntry
+{
+    // asset name, resolved through Constants.AddressablePrefixes.DoubleMarker on load
+    public string markerName;
+    // kept for inspection and as a fallback if markers are ever resolved without the asset
+    public DoubleMarkerType markerType;
+    public int baseline;
+    public int score;
 }

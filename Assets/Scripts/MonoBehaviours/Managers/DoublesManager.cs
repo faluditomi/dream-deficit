@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 // TODO: need some logic to dynamically set baselines and profile types (client/moderator) for each marker for the next day
 //          - should utilise the flags in the Conversation Graph system
@@ -24,13 +25,38 @@ public class DoublesManager : Singleton<DoublesManager>, IDayLoadable, IRunLoada
 
     public void LoadFromRunData(RunData runData)
     {
-        userProfiles = runData.dataDoubleProfiles.ToDictionary(profile => profile.Key, profile => profile.Value);
+        userProfiles = new Dictionary<ChatUser, DataDoubleProfile>();
+
+        if(runData.dataDoubleProfiles != null)
+        {
+            foreach(DataDoubleProfileEntry entry in runData.dataDoubleProfiles)
+            {
+                if(entry == null || string.IsNullOrEmpty(entry.chatUserName)) continue;
+
+                ChatUser chatUser = AddressableManager.Instance.RetrieveAddressable<ChatUser>(Constants.AddressablePrefixes.ChatUser + entry.chatUserName.ToLower());
+
+                if(chatUser == null)
+                {
+                    Debug.LogWarning($"DoublesManager: could not resolve ChatUser '{entry.chatUserName}'. Skipping profile.");
+                    continue;
+                }
+
+                userProfiles[chatUser] = ToDataDoubleProfile(entry);
+            }
+        }
+
         SeedPlayerProfile();
     }
 
     public void SaveToRunData(RunData runData)
     {
-        runData.dataDoubleProfiles = userProfiles.ToDictionary(profile => profile.Key, profile => profile.Value);
+        runData.dataDoubleProfiles = new List<DataDoubleProfileEntry>();
+
+        foreach(KeyValuePair<ChatUser, DataDoubleProfile> userProfile in userProfiles)
+        {
+            if(userProfile.Key == null || userProfile.Value == null) continue;
+            runData.dataDoubleProfiles.Add(ToProfileEntry(userProfile.Key.name, userProfile.Value));
+        }
     }
 
     private void GenerateDoublesAndUpdateProfiles()
@@ -42,8 +68,8 @@ public class DoublesManager : Singleton<DoublesManager>, IDayLoadable, IRunLoada
 
     public DataDoubleProfile GetDoubleProfileForUser(ChatUser user)
     {
-        if(!userProfiles.ContainsKey(user)) return null;
-        return userProfiles[user];
+        if(userProfiles.ContainsKey(user)) return userProfiles[user];
+        return null;
     }
 
     private void SeedPlayerProfile()
@@ -58,4 +84,84 @@ public class DoublesManager : Singleton<DoublesManager>, IDayLoadable, IRunLoada
             userProfiles.Add(playerChatUser, playerDataDoubleProfile);
         }
     }
+
+    #region Serialization conversion
+    private static DataDoubleProfileEntry ToProfileEntry(string chatUserName, DataDoubleProfile dataDoubleProfile)
+    {
+        DataDoubleProfileEntry entry = new DataDoubleProfileEntry();
+        entry.chatUserName = chatUserName;
+        entry.global = ToDataDoubleSave(dataDoubleProfile.GetGlobalDataDouble());
+
+        foreach(KeyValuePair<int, DataDouble> dailyDouble in dataDoubleProfile.DailyDoubles)
+        {
+            entry.daily.Add(new DataDoubleDaySave
+            {
+                day = dailyDouble.Key,
+                dataDouble = ToDataDoubleSave(dailyDouble.Value)
+            });
+        }
+
+        return entry;
+    }
+
+    private static DataDoubleSave ToDataDoubleSave(DataDouble dataDouble)
+    {
+        DataDoubleSave save = new DataDoubleSave();
+        if(dataDouble == null) return save;
+        save.isModeratorProfile = dataDouble.isModeratorProfile;
+        save.isClientProfile = dataDouble.isClientProfile;
+
+        foreach(DoubleMarker marker in dataDouble.MarkerKeys)
+        {
+            if(marker == null) continue;
+
+            save.markers.Add(new MarkerEntry
+            {
+                markerName = marker.name,
+                markerType = marker.markerType,
+                baseline = dataDouble.GetMarkerBaseline(marker),
+                score = dataDouble.GetMarkerScore(marker)
+            });
+        }
+
+        return save;
+    }
+
+    private static DataDoubleProfile ToDataDoubleProfile(DataDoubleProfileEntry entry)
+    {
+        DataDoubleProfile dataDoubleProfile = new DataDoubleProfile(ToDataDouble(entry.global));
+        if(entry.daily == null) return dataDoubleProfile;
+
+        foreach(DataDoubleDaySave dailyDouble in entry.daily)
+        {
+            if(dailyDouble == null || dailyDouble.dataDouble == null) continue;
+            dataDoubleProfile.AddDailyDouble(dailyDouble.day, ToDataDouble(dailyDouble.dataDouble));
+        }
+
+        return dataDoubleProfile;
+    }
+
+    private static DataDouble ToDataDouble(DataDoubleSave save)
+    {
+        if(save == null) return new DataDouble(false, false);
+        DataDouble dataDouble = new DataDouble(save.isModeratorProfile, save.isClientProfile);
+        if(save.markers == null) return dataDouble;
+
+        foreach(MarkerEntry markerEntry in save.markers)
+        {
+            if(markerEntry == null || string.IsNullOrEmpty(markerEntry.markerName)) continue;
+            DoubleMarker marker = AddressableManager.Instance.RetrieveAddressable<DoubleMarker>(Constants.AddressablePrefixes.DoubleMarker + markerEntry.markerName.ToLower());
+
+            if(marker == null)
+            {
+                Debug.LogWarning($"DoublesManager: could not resolve DoubleMarker '{markerEntry.markerName}'. Skipping marker.");
+                continue;
+            }
+
+            dataDouble.SetMarker(marker, markerEntry.baseline, markerEntry.score);
+        }
+
+        return dataDouble;
+    }
+    #endregion
 }
