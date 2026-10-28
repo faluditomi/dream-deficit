@@ -82,6 +82,13 @@ public class SaveManager : Singleton<SaveManager>
         return null;
     }
 
+    // Clears the hydrated day before a scene transition so newly created IDayLoadables cannot be
+    // late-hydrated (AddDayLoadable) with the outgoing day's data. The next LoadDay re-hydrates everything.
+    public static void ClearCurrentDay()
+    {
+        currentDayData = null;
+    }
+
     public DayData GetCurrentDayData()
     {
         return currentDayData;

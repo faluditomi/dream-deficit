@@ -1,5 +1,7 @@
+using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class ChatClientUserEntryController : MonoBehaviour
@@ -8,9 +10,14 @@ public class ChatClientUserEntryController : MonoBehaviour
     private TMP_Text usernameText;
     private TMP_Text lastMessageText;
     private ChatClientController chatClientController;
-    private ChatLogController myChatLogController;
+    public ChatLogController myChatLogController { get; private set; }
     public ChatUser myChatUser { get; private set; }
     public bool isUnopened { get; private set; } = false;
+
+    private Button entryButton;
+    private UnityAction onClickAction;
+    private Action<string> onNewMessageHandler;
+    private Action<GameObject, int> onGainedFocusHandler;
 
     public void Setup(ChatUser chatUser, ChatLog chatLog, string lastMessage, Transform container)
     {
@@ -25,18 +32,30 @@ public class ChatClientUserEntryController : MonoBehaviour
         usernameText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
         lastMessageText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
         myChatLogController = ChatLogManager.Instance.InstantiateChatLog(chatLog, transform, false, container);
-
-        GetComponent<Button>().onClick.AddListener(() => {
+        entryButton = GetComponent<Button>();
+        onClickAction = () => {
             chatClientController.myChatLogController = myChatLogController;
             myChatLogController.Open();
-        });
-
-        myChatLogController.OnNewMessageEvent += (message) => {
+        };
+        entryButton.onClick.AddListener(onClickAction);
+        onNewMessageHandler = message => {
             UpdateMessagePreview(message);
             transform.SetAsFirstSibling();
         };
+        onGainedFocusHandler = OpenMessagePreview;
+        myChatLogController.OnNewMessageEvent += onNewMessageHandler;
+        myChatLogController.OnGainedFocusEvent += onGainedFocusHandler;
+    }
 
-        myChatLogController.OnGainedFocusEvent += OpenMessagePreview;
+    private void OnDestroy()
+    {
+        if(entryButton != null && onClickAction != null) entryButton.onClick.RemoveListener(onClickAction);
+
+        if(myChatLogController != null)
+        {
+            if(onNewMessageHandler != null) myChatLogController.OnNewMessageEvent -= onNewMessageHandler;
+            if(onGainedFocusHandler != null) myChatLogController.OnGainedFocusEvent -= onGainedFocusHandler;
+        }
     }
 
     private void UpdateMessagePreview(string message)

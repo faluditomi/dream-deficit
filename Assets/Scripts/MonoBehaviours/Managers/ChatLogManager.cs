@@ -30,9 +30,20 @@ public class ChatLogManager : Singleton<ChatLogManager>, IDayLoadable, IDaySavab
         return fallback != null ? fallback : null;
     }
 
+    public void ClearChatLogControllers()
+    {
+        foreach(ChatLogController chatLogController in chatLogControllerCache.Values)
+        {
+            if(chatLogController != null) Destroy(chatLogController.gameObject);
+        }
+
+        chatLogControllerCache.Clear();
+    }
+
     public void LoadFromDayData(DayData dayData)
     {
-        unlockedChatLogs = new List<ChatLog>();
+        ClearChatLogControllers();
+        unlockedChatLogs.Clear();
 
         dayData.unlockedChatLogNames.ForEach(chatLogName =>
         {
@@ -56,26 +67,33 @@ public class ChatLogManager : Singleton<ChatLogManager>, IDayLoadable, IDaySavab
             return null;
         }
 
-        if(chatLogControllerCache.ContainsKey(chatLog))
+        if(chatLogControllerCache.TryGetValue(chatLog, out ChatLogController cached))
         {
-            return chatLogControllerCache[chatLog];    
-        }
-        else
-        {
-            Transform container = parent != null ? parent : ResolveWindowContainer();
-            ChatLogController chatLogController = Instantiate(chatLogPrefab, container).GetComponent<ChatLogController>();
-            chatLogController.Setup(chatLog, needsTopBar);
-            if(needsTopBar) chatLogController.GetComponent<TopBarHandler>().Close();
-            chatLogControllerCache.Add(chatLog, chatLogController);
-            chatLogController.OnDestroyEvent += () => chatLogControllerCache.Remove(chatLog);
+            if(cached != null) return cached;
 
-            if(initialiser.GetComponentInChildren<MessageNotificationController>() != null)
+            // a destroyed controller is a cache miss, so drop the stale key and instantiate a fresh one
+            chatLogControllerCache.Remove(chatLog);
+        }
+
+        Transform container = parent != null ? parent : ResolveWindowContainer();
+        ChatLogController chatLogController = Instantiate(chatLogPrefab, container).GetComponent<ChatLogController>();
+        chatLogController.Setup(chatLog, needsTopBar);
+        if(needsTopBar) chatLogController.GetComponent<TopBarHandler>().Close();
+        chatLogControllerCache.Add(chatLog, chatLogController);
+        chatLogController.OnDestroyEvent += () =>
+        {
+            // Destroy is deferred to the end of the frame. A controller cleared for a new day must not
+            // evict the controller that replaced it under the same ChatLog key during that frame.
+            if(chatLogControllerCache.TryGetValue(chatLog, out ChatLogController cachedController) && cachedController == chatLogController)
             {
-                initialiser.GetComponentInChildren<MessageNotificationController>().Setup(new List<ChatLogController>() { chatLogController });
+                chatLogControllerCache.Remove(chatLog);
             }
+        };
 
-            return chatLogController;
-        }
+        MessageNotificationController entryNotification = initialiser.GetComponentInChildren<MessageNotificationController>();
+        if(entryNotification != null) entryNotification.Setup(new List<ChatLogController>() { chatLogController });
+
+        return chatLogController;
     }
 
     public void UnlockChatLog(ChatLog chatLog)
@@ -92,7 +110,7 @@ public class ChatLogManager : Singleton<ChatLogManager>, IDayLoadable, IDaySavab
 
     public ChatLogController GetChatLogController(ChatLog chatLog)
     {
-        return chatLogControllerCache.ContainsKey(chatLog) ? chatLogControllerCache[chatLog] : null;
+        return chatLogControllerCache.TryGetValue(chatLog, out ChatLogController cached) && cached != null ? cached : null;
     }
 
     public bool IsChatLogInFocus(ChatLogController chatLogController)

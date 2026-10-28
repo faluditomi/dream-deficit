@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class ChatClientController : BaseWindowController, IDayLoadable
@@ -24,11 +22,13 @@ public class ChatClientController : BaseWindowController, IDayLoadable
 
     public void LoadFromDayData(DayData dayData)
     {
-        List<ChatUser> activeEntries = SaveManager.Instance.GetCurrentDayData().GetActiveChatClientUsers();
+        List<ChatUser> activeEntries = dayData.GetActiveChatClientUsers();
         userEntryControllers.Clear();
         foreach(Transform child in userListContent) Destroy(child.gameObject);
         ChatClientUserEntryController supervisorEntryInstance = null;
-        
+        myChatLogController = null;
+        List<ChatLogController> chatLogControllers = new List<ChatLogController>();
+
         foreach(ChatUser chatUser in activeEntries)
         {
             ChatLog chatLog = AddressableManager.Instance.RetrieveAddressable<ChatLog>(Constants.AddressablePrefixes.ChatLog + chatUser.name.ToString().ToLower());
@@ -44,16 +44,13 @@ public class ChatClientController : BaseWindowController, IDayLoadable
             if(chatUser.name == Constants.ChatUser.Phoebe.ToString().ToLower()) supervisorEntryInstance = entryInstance;
             string lastMessage = GetLastDeliveredMessage(chatLog);
             entryInstance.Setup(chatUser, chatLog, lastMessage, chatWindowHolder);
-
+            ChatLogController entryChatLogController = entryInstance.myChatLogController;
+            if(entryChatLogController != null && !chatLogControllers.Contains(entryChatLogController)) chatLogControllers.Add(entryChatLogController);
             if(myChatLogController == null) myChatLogController = ChatLogManager.Instance.GetChatLogController(chatLog);
         }
 
+        if(myInitialiserMessageNotificationController != null) myInitialiserMessageNotificationController.Setup(chatLogControllers);
         if(myChatLogController != null) myChatLogController.Open();
-
-        if(myInitialiserMessageNotificationController != null)
-        {
-            myInitialiserMessageNotificationController.Setup(chatWindowHolder.GetComponentsInChildren<ChatLogController>().ToList());
-        }
     }
 
     public void ResetNotificationState(ChatClientStateSave chatClientStateSave)
@@ -72,7 +69,7 @@ public class ChatClientController : BaseWindowController, IDayLoadable
             globalChatNotificationCounter += chatUserState.unreadMessageCount;
         }
 
-        myInitialiserMessageNotificationController.SetNotificationCount(globalChatNotificationCounter);
+        if(myInitialiserMessageNotificationController != null) myInitialiserMessageNotificationController.SetNotificationCount(globalChatNotificationCounter);
     }
 
     public override void WindowSpecificSetup(Transform initialiser)

@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
 {
+    // WorkStart and DayEnd events are called by the conversation system
     private SequenceEventChannel dayStartEventChannel;
     private SequenceEventChannel workEndEventChannel;
     private TMP_Text timeText;
@@ -65,21 +66,17 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
         timeText = GameObject.Find(Constants.GameObjectNames.Clock).transform.Find(Constants.GameObjectNames.Time).GetComponent<TMP_Text>();
         UpdateTimeText();
     }
-
-    // TODO: when we go to the 2nd day in game, the chat client doesn't get set up properly.
-    //       but when we close the game on the 2nd day and load it again, the chat client sets up perfectly... how?
-    // TODO: read the kilo chat
+    
     public void StartDay()
     {
         SaveManager.Instance.LoadDay(currentDayNumber);
         currentDayTime = dayLengthInSeconds;
         SetupGameObjectDependencies();
+        NotificationStateManager.Instance.ResetNotificationState();
+        SaveManager.Instance.SaveDay(currentDayNumber, DaySaveState.DayStart);
         ConversationManager.Instance?.OnDayChanged();
         dayStartEventChannel.Raise();
         Debug.Log("Raised: Day Start Event");
-        NotificationStateManager.Instance.ResetNotificationState();
-        // TODO: this might not be in the right place, but we do have to save the DayStart state somewhere
-        SaveManager.Instance.SaveDay(currentDayNumber, DaySaveState.DayStart);
     }
 
     public void TriggerDayTimePassing()
@@ -174,8 +171,9 @@ public class GameManager : Singleton<GameManager>, IRunLoadable, IRunSavable
     }
 
     #region Coroutines
-    private IEnumerator LoadSceneBehaviour(string sceneName, Action codeToRunAfter = null)
+    public IEnumerator LoadSceneBehaviour(string sceneName, Action codeToRunAfter = null)
     {
+        SaveManager.ClearCurrentDay();
         Scene oldScene = SceneManager.GetActiveScene();
         AsyncOperation sceneLoadOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         sceneLoadOperation.allowSceneActivation = false;
