@@ -23,16 +23,12 @@ public class MessageNotificationController : MonoBehaviour
     public void Setup(List<ChatLogController> chatLogControllers)
     {
         UnsubscribeAll();
-        unreadMessageCount = 0;
-
         myChatLogControllers = chatLogControllers != null && chatLogControllers.Count > 0
             ? new List<ChatLogController>(chatLogControllers)
             : new List<ChatLogController>();
-
         // include inactive: Setup hides these children, and a later Setup on the same instance must find them again
         unreadMessageCounter = GetComponentInChildren<TextMeshProUGUI>(true);
         notificationBackground = GetComponentInChildren<Image>(true);
-
         if(unreadMessageCounter == null || notificationBackground == null) return;
 
         foreach(ChatLogController chatLogController in myChatLogControllers)

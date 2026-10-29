@@ -66,6 +66,7 @@ public class ChatClientController : BaseWindowController, IDayLoadable
             userEntryController.transform.SetAsFirstSibling();
             if(chatUserState.isLastMessageUnread) userEntryController.MarkCurrentMessageAsUnopened();
             userEntryController.transform.GetComponentInChildren<MessageNotificationController>().SetNotificationCount(chatUserState.unreadMessageCount);
+            userEntryController.myChatLogController.unreadMessages = chatUserState.unreadMessageCount;
             globalChatNotificationCounter += chatUserState.unreadMessageCount;
         }
 
