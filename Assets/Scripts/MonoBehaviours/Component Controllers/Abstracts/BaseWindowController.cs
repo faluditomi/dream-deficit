@@ -18,6 +18,7 @@ public abstract class BaseWindowController : SaveLoadBehaviour
     protected void SetupBaseWindow(GameObject targetWindow, string windowName, bool isTopBarVisible = true)
     {
         windowGameObject = targetWindow;
+        windowGameObject.AddComponent<ScrollbarBehaviour>();
         topBarHandler = windowGameObject.AddComponent<TopBarHandler>();
         topBarHandler.Setup(windowGameObject, windowName, this, isTopBarVisible);
 
@@ -32,12 +33,13 @@ public abstract class BaseWindowController : SaveLoadBehaviour
         }
     }
 
-    public virtual void WindowSpecificSetup(Transform initialiser)
-    {
-        // This can be implemented by inheriting window scripts in case they want to do some extra setup.
-        // It has to be called by the script that initialises the window that wants to use it.
-        // It was created so that the ChatClientWindow can set up it's own MessageNotificationController.
-    }
+    /// <summary>
+    /// This can be implemented by inheriting window scripts in case they want to do some extra setup.
+    /// It has to be called by the script that initialises the window that wants to use it.
+    /// It was created so that the ChatClientWindow can set up it's own MessageNotificationController.
+    /// </summary>
+    /// <param name="initialiser"></param>
+    public virtual void WindowSpecificSetup(Transform initialiser) { }
 
     public bool GetIsOpen()
     {

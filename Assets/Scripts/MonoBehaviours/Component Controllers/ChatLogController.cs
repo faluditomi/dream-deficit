@@ -12,6 +12,7 @@ public class ChatLogController : BaseWindowController
     private ConversationRunner runner;
     private readonly List<UserChatResponseOptionController> draftInstances = new List<UserChatResponseOptionController>();
     public event System.Action<string> OnNewMessageEvent;
+    public event System.Action OnNewChoiceEvent;
     public event System.Action OnDestroyEvent;
     public int unreadMessages = 0;
 
@@ -111,6 +112,7 @@ public class ChatLogController : BaseWindowController
             UserChatResponseOptionController draftInstance = Instantiate(UserChatResponseOptionPrefab, bubbleContainer).GetComponent<UserChatResponseOptionController>();
             draftInstance.Setup(option.previewText, () => runner.ResolveChoice(option.guid));
             draftInstances.Add(draftInstance);
+            OnNewChoiceEvent?.Invoke();
         }
     }
 
