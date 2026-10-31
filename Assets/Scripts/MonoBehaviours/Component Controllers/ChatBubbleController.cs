@@ -27,7 +27,7 @@ public class ChatBubbleController : MonoBehaviour
         usernameText.text = chatUser.username;
         messageText.text = myChatBubble.message;
 
-        usernameText.gameObject.AddComponent<HighlightHandler>().Setup(chatlog, myChatBubble, nodeGuid, true);
+        usernameText.gameObject.AddComponent<HighlightHandler>().SetupOnlyHighlight();
         messageText.gameObject.AddComponent<HighlightHandler>().Setup(chatlog, myChatBubble, nodeGuid, true);
 
         isSetUp = true;

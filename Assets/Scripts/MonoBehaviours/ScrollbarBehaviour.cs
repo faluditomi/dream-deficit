@@ -73,7 +73,6 @@ public class ScrollbarBehaviour : MonoBehaviour, IBeginDragHandler, IEndDragHand
 
     private void OnNewContentBehaviour()
     {
-        Debug.Log(isAtBottom);
         if(isAtBottom && newContentCoroutine == null) newContentCoroutine = StartCoroutine(ScrollToBottomBehaviour());
     }
 

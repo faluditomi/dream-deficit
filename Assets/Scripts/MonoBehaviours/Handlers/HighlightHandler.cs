@@ -17,7 +17,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
     private FlagData previousHoveredFlag;
     private FlagData hoveredFlag;
 
-    public bool canMark;
+    public bool canFlag;
     private bool hasTemporaryHighlight = false;
     private int persistentTemporaryStart = -1;
     private int persistentTemporaryEnd = -1;
@@ -29,13 +29,15 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         myText = GetComponent<TMP_Text>();
         rawText = myText.text;
         myText.richText = true;
+        //TODO: these events are the reason why previously placed flags get different colours when a new flag is added elsewhere
+        //      we should instead not call these events in the manager, but simply here in the handler
         FlagManager.Instance.OnNewFlagPlaced += flagData => Rebuild(flagData.ResolvedFlagType.colour);
         FlagManager.Instance.OnFlagRemoved += flagData => Rebuild(Color.clear);
     }
 
     public void SetupOnlyHighlight()
     {
-        canMark = false;
+        canFlag = false;
     }
 
     public void Setup(ChatLog chatLog, ChatBubble chatBubble, string nodeGuid, bool canMark)
@@ -43,7 +45,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         this.chatLog = chatLog;
         this.chatBubble = chatBubble;
         this.nodeGuid = nodeGuid;
-        this.canMark = canMark;
+        this.canFlag = canMark;
     }
 
     private List<FlagData> GetFlags()
@@ -54,6 +56,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
     public void OnMouseHover()
     {
+        if(!GameManager.Instance.isDayPassing) return;
         int hoveredCharIndex = GetCurrentCharIndex();
         var flags = GetFlags();
         List<FlagData> overlapping = flags.FindAll(m => hoveredCharIndex >= m.startIndex && hoveredCharIndex <= m.endIndex);
@@ -167,7 +170,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
             return;
         }
 
-        Color highlightColour = activeFlagType != null ? activeFlagType.colour : activeColour;
+        Color highlightColour = activeFlagType != null && canFlag ? activeFlagType.colour : activeColour;
         Rebuild(highlightColour);
     }
 
@@ -198,10 +201,10 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
     private void CanMarkMouseUp(FlagType activeFlagType)
     {
-        if(!canMark || activeFlagType == null) return;
+        if(!canFlag || activeFlagType == null) return;
         FlagData flag = null;
 
-        if(canMark && currentSelectionStart >= 0 && currentSelectionEnd >= 0)
+        if(canFlag && currentSelectionStart >= 0 && currentSelectionEnd >= 0)
         {
             int start = Mathf.Min(currentSelectionStart, currentSelectionEnd);
             int end = Mathf.Max(currentSelectionStart, currentSelectionEnd);
@@ -214,7 +217,7 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
     private void HighlightMouseUp(FlagType activeFlagType)
     {
-        if(canMark && activeFlagType != null) return;
+        if(canFlag && activeFlagType != null) return;
         int start = Mathf.Min(currentSelectionStart, currentSelectionEnd);
         int end = Mathf.Max(currentSelectionStart, currentSelectionEnd);
 
