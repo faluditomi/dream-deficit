@@ -11,6 +11,7 @@ public class ChatLogController : BaseWindowController
     private GameObject typingIdicator;
     private ConversationRunner runner;
     private readonly List<UserChatResponseOptionController> draftInstances = new List<UserChatResponseOptionController>();
+    private bool pendingFlagRebuild;
     public event System.Action<string> OnNewMessageEvent;
     public event System.Action OnNewChoiceEvent;
     public event System.Action OnDestroyEvent;
@@ -72,9 +73,17 @@ public class ChatLogController : BaseWindowController
             }
         }
 
-        foreach(HighlightHandler highlightHandler in GetComponentsInChildren<HighlightHandler>()) highlightHandler.Rebuild(Color.clear);
+        pendingFlagRebuild = true;
         // NOTE: an unanswered choice stays pending in the runner and re-presents its drafts on display (spec: re-present on next display)
         if(runner != null && runner.HasPendingChoice) OnRunnerChoicePresented();
+    }
+
+    // Paints flags after the whole synchronous day-load pass completes, so prepopulated saved flags render regardless of IDayLoadable registration order.
+    private void LateUpdate()
+    {
+        if(!pendingFlagRebuild) return;
+        pendingFlagRebuild = false;
+        foreach(HighlightHandler highlightHandler in GetComponentsInChildren<HighlightHandler>(true)) highlightHandler.Rebuild(Color.clear);
     }
 
     private void InstantiateBubble(ChatBubble chatBubble, string nodeGuid)

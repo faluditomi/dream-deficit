@@ -60,7 +60,7 @@ public class HighlightManager : Singleton<HighlightManager>
         currentHighlightable = null;
     }
 
-    private IHighlightable GetTopHighlightableUnderMouse()
+    public IHighlightable GetTopHighlightableUnderMouse()
     {
         pointerData.position = Mouse.current.position.ReadValue();
         results.Clear();

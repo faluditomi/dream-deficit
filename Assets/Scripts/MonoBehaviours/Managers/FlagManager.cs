@@ -14,8 +14,6 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
     public List<FlagType> activeFlagTypeCache = new List<FlagType>();
     private Dictionary<FlagType, FlagIndicatorController> activeFlagIndicators = new Dictionary<FlagType, FlagIndicatorController>();
     private InputAction flagHoldAction;
-    public event Action<FlagData> OnNewFlagPlaced;
-    public event Action<FlagData> OnFlagRemoved;
     // non-serialized is needed, because otherwise activeFlagType wouldn't be null on startup, which messes up multiple systems
     [System.NonSerialized] public FlagType activeFlagType;
     private SequenceEventChannel flagOverloadSequenceEventChannel;
@@ -52,7 +50,7 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
         placedFlags.Clear();
         activeFlagTypeCache.AddRange(dayData.GetFlagTypes());
         SetActiveFlagTypes();
-        dayData.flagData.ForEach(flagData => PrePopulateFlag(flagData));
+        if(dayData.flagData != null) dayData.flagData.ForEach(flagData => placedFlags.Add(flagData));
     }
 
     public void SaveToDayData(DayData dayData)
@@ -82,9 +80,9 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
         }
     }
 
-    public void AddFlag(ChatLog chatLog, ChatBubble chatBubble, string nodeGuid, int start, int end)
+    public FlagData AddFlag(ChatLog chatLog, ChatBubble chatBubble, string nodeGuid, int start, int end)
     {
-        if(!GameManager.Instance.isDayPassing) return;
+        if(!GameManager.Instance.isDayPassing) return null;
 
         FlagData flagData = new FlagData(
             activeFlagType,
@@ -97,15 +95,8 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
         );
 
         placedFlags.Add(flagData);
-        OnNewFlagPlaced?.Invoke(flagData);
         FlagOverloadEventCheck(chatLog, chatBubble, nodeGuid);
-    }
-
-    public void PrePopulateFlag(FlagData flagData)
-    {
-        placedFlags.Add(flagData);
-        if(!flagData.isRemoved) OnNewFlagPlaced?.Invoke(flagData);
-
+        return flagData;
     }
 
     private float CalculateFlagAccuracy(ChatBubble chatBubble, int start, int end)
@@ -142,11 +133,13 @@ public class FlagManager : Singleton<FlagManager>, IDayLoadable, IDaySavable
         }
     }
 
-    public void RemoveFlag(FlagData flagData)
+    public bool RemoveFlag(FlagData flagData)
     {
-        if(!GameManager.Instance.isDayPassing) return;
-        if(flagData != null) flagData.isRemoved = true;
-        OnFlagRemoved?.Invoke(flagData);
+        if(!GameManager.Instance.isDayPassing) return false;
+        if(flagData == null) return false;
+
+        flagData.isRemoved = true;
+        return true;
     }
 
     public void SetActiveFlagTypes()

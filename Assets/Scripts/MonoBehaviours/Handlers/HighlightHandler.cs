@@ -29,10 +29,21 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         myText = GetComponent<TMP_Text>();
         rawText = myText.text;
         myText.richText = true;
-        //TODO: these events are the reason why previously placed flags get different colours when a new flag is added elsewhere
-        //      we should instead not call these events in the manager, but simply here in the handler
-        FlagManager.Instance.OnNewFlagPlaced += flagData => Rebuild(flagData.ResolvedFlagType.colour);
-        FlagManager.Instance.OnFlagRemoved += flagData => Rebuild(Color.clear);
+    }
+
+    private void Update()
+    {
+        // If we hover over a flag and quickly yank the mouse out of the window, it can remain red if the OnMouseHover() doesn't get called to clear it.
+        // This fixes that by checking if the mouse is still over this object, and if not, clearing the highlight.
+        if(previousHoveredFlag == null) return;
+        var topHighlightable = HighlightManager.Instance.GetTopHighlightableUnderMouse();
+        if(!ReferenceEquals(topHighlightable, this))
+        {
+            currentSelectionStart = previousHoveredFlag.startIndex;
+            currentSelectionEnd = previousHoveredFlag.endIndex;
+            Rebuild(previousHoveredFlag.ResolvedFlagType.colour);
+            previousHoveredFlag = hoveredFlag = null;
+        }
     }
 
     public void SetupOnlyHighlight()
@@ -181,8 +192,10 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
 
         if(currentSelectionStart == currentSelectionEnd && activeFlagType == null)
         {
-            FlagManager.Instance.RemoveFlag(hoveredFlag);
+            if(hoveredFlag != null) FlagManager.Instance.RemoveFlag(hoveredFlag);
+            ResetSelectionState();
             hoveredFlag = previousHoveredFlag = null;
+            Rebuild(Color.clear);
         }
         else
         {
@@ -199,20 +212,35 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
         Rebuild(Color.clear);
     }
 
+    private void ResetSelectionState()
+    {
+        currentSelectionStart = currentSelectionEnd = -1;
+        hasTemporaryHighlight = false;
+        persistentTemporaryStart = persistentTemporaryEnd = -1;
+    }
+
     private void CanMarkMouseUp(FlagType activeFlagType)
     {
         if(!canFlag || activeFlagType == null) return;
-        FlagData flag = null;
 
         if(canFlag && currentSelectionStart >= 0 && currentSelectionEnd >= 0)
         {
             int start = Mathf.Min(currentSelectionStart, currentSelectionEnd);
             int end = Mathf.Max(currentSelectionStart, currentSelectionEnd);
-            if(start != end) FlagManager.Instance.AddFlag(chatLog, chatBubble, nodeGuid, start, end);
+
+            if(start != end)
+            {
+                FlagData flagData = FlagManager.Instance.AddFlag(chatLog, chatBubble, nodeGuid, start, end);
+
+                if(flagData != null)
+                {
+                    ResetSelectionState();
+                    Rebuild(Color.clear);
+                }
+            }
         }
 
         currentSelectionStart = currentSelectionEnd = -1;
-        Color newFlagColour = flag != null ? flag.ResolvedFlagType.colour : Color.clear;
     }
 
     private void HighlightMouseUp(FlagType activeFlagType)
@@ -300,15 +328,20 @@ public class HighlightHandler : MonoBehaviour, IHighlightable
             }
         }
 
-        foreach(var flag in flags)
+        for(int f = flags.Count - 1; f >= 0; f--)
         {
+            var flag = flags[f];
+            if(flag == null || flag.isRemoved) continue;
+            FlagType flagType = flag.ResolvedFlagType;
+            if(flagType == null || flagType.colour.a <= 0f) continue;
+            Color flagColour = flagType.colour;
             int start = Mathf.Max(0, flag.startIndex);
             int end = Mathf.Min(length - 1, flag.endIndex);
 
             for(int i = start; i <= end; i++)
             {
                 if(hasMark[i]) continue;
-                markColor[i] += flag.ResolvedFlagType.colour;
+                markColor[i] = flagColour;
                 hasMark[i] = true;
             }
         }
