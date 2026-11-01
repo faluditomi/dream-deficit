@@ -8,6 +8,8 @@ public class ConversationNodeData
     public ConversationNodeKind kind;
     // used by Bubble nodes — full ChatBubble carries chatUser/message/delay/typingLength/flaggables
     public ChatBubble bubble = new ChatBubble();
+    // used by Bubble nodes — effects applied when the bubble is posted (each may have its own delay)
+    public List<ConversationEffectData> effects = new List<ConversationEffectData>();
     // used by Choice nodes — one entry per player draft
     public List<ConversationChoiceOptionData> options = new List<ConversationChoiceOptionData>();
     // used by Choice nodes — while a day-blocking choice is unresolved the day does not end

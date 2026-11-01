@@ -758,6 +758,10 @@ public class ConversationGraphEditor : EditorWindow
         EditorGUILayout.Space();
         DrawFlaggableControls(bubble);
         DrawFlaggables(bubble);
+
+        if(selectedNodeData.effects == null) selectedNodeData.effects = new List<ConversationEffectData>();
+        EditorGUILayout.Space();
+        DrawEffects(selectedNodeData.effects, ConversationEditorTooltips.BubbleEffectsHeader);
     }
 
     private void DrawMessageEditor(ChatBubble bubble)
@@ -987,7 +991,8 @@ public class ConversationGraphEditor : EditorWindow
                 PersistGraph();
             }
 
-            DrawEffects(option.effects);
+            if(option.effects == null) option.effects = new List<ConversationEffectData>();
+            DrawEffects(option.effects, ConversationEditorTooltips.EffectsHeader);
 
             if(GUILayout.Button("Remove Option"))
             {
@@ -1063,9 +1068,10 @@ public class ConversationGraphEditor : EditorWindow
         return pickedIndex < names.Length ? names[pickedIndex] : currentValue;
     }
 
-    private void DrawEffects(List<ConversationEffectData> effects)
+    private void DrawEffects(List<ConversationEffectData> effects, string headerTooltip)
     {
-        EditorGUILayout.LabelField(new GUIContent("Effects (applied on pick)", ConversationEditorTooltips.EffectsHeader), EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(new GUIContent("Effects", headerTooltip), EditorStyles.boldLabel);
+        // callers own the list (and initialize it when null) so added rows persist to the asset
         if(effects == null) return;
 
         int effectToRemove = -1;
@@ -1110,6 +1116,16 @@ public class ConversationGraphEditor : EditorWindow
                     }
                     break;
                 }
+            }
+
+            EditorGUILayout.LabelField(new GUIContent("Delay", ConversationEditorTooltips.EffectDelay), GUILayout.Width(34f));
+            float newDelay = EditorGUILayout.FloatField(effect.delaySeconds, GUILayout.Width(45f));
+            float clampedDelay = Mathf.Max(0f, newDelay);
+            if(!Mathf.Approximately(clampedDelay, effect.delaySeconds))
+            {
+                RecordChange("Edit effect delay");
+                effect.delaySeconds = clampedDelay;
+                PersistGraph();
             }
 
             if(GUILayout.Button("-", GUILayout.Width(25))) effectToRemove = i;
@@ -1408,9 +1424,10 @@ public class ConversationGraphEditor : EditorWindow
         public const string OptionPreviewText = "Text shown on the player's draft reply. May differ from the posted message.";
         public const string PostedBy = "Chat identity that posts the bubble when this option is picked — normally the player.";
         public const string PostedMessage = "Message actually posted to the log when this option is picked.";
-        public const string EffectOperation = "What happens when this option is picked: SetSignal records a string signal; RaiseEvent broadcasts a sequence event.";
-        public const string EffectValueSignal = "Signal name recorded on pick. Entry/Wait conditions can require this signal.";
-        public const string EffectValueEvent = "Sequence event raised on pick. WorkStart starts the work clock; DayEnd ends the day (defers behind day-blocking choices).";
+        public const string EffectOperation = "What happens when this effect fires: SetSignal records a string signal; RaiseEvent broadcasts a sequence event.";
+        public const string EffectValueSignal = "Signal name recorded when this effect fires. Entry/Wait conditions can require this signal.";
+        public const string EffectValueEvent = "Sequence event raised when this effect fires. WorkStart starts the work clock; DayEnd ends the day (defers behind day-blocking choices).";
+        public const string EffectDelay = "Seconds to wait after the choice is picked or the bubble posts before this effect fires. 0 fires immediately.";
         public const string ConditionKind = "Gate type: Event requires a specific sequence event; DayMin/DayMax bound the day number; RequiredSignal requires a signal.";
         public const string ConditionValueEvent = "Event type that must fire for this condition to pass.";
         public const string ConditionValueSignal = "Signal name that must have been set for this condition to pass.";
@@ -1426,6 +1443,7 @@ public class ConversationGraphEditor : EditorWindow
         public const string ChoiceData = "Settings for this choice node.";
         public const string OptionsHeader = "One draft reply per option; the player picks one to continue the thread.";
         public const string EffectsHeader = "Effects applied to game state when this option is picked.";
+        public const string BubbleEffectsHeader = "Effects applied to game state when this bubble node is posted; each effect can carry its own delay.";
         public const string EntryScheduling = "Controls when this entry activates relative to other entries.";
         public const string WaitConditions = "Conditions that must all pass before a thread parked at this wait resumes.";
         public const string EntryConditions = "Conditions that must all pass for this entry to activate. An empty list means always eligible.";

@@ -22,6 +22,7 @@ MonoBehaviour:
       delayLength: 0
       typingIndicatorLength: 0
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions:
@@ -46,6 +47,7 @@ MonoBehaviour:
       delayLength: 0.4
       typingIndicatorLength: 0.6
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -61,6 +63,7 @@ MonoBehaviour:
       delayLength: 0
       typingIndicatorLength: 0
       flaggables: []
+    effects: []
     options:
     - guid: e3d46c8e-1a16-4968-a654-d717ef0bd6c9
       previewText: '"we should push back, innit"'
@@ -74,9 +77,11 @@ MonoBehaviour:
       - operation: 0
         stringValue: sided_pushback
         intValue: 0
+        delaySeconds: 0
       - operation: 1
         stringValue: WorkStart
         intValue: 0
+        delaySeconds: 0
     - guid: c27152dc-a3a0-49d2-b53a-462cffc72f6b
       previewText: '"let''s just comply"'
       postedBubble:
@@ -89,9 +94,11 @@ MonoBehaviour:
       - operation: 0
         stringValue: sided_comply
         intValue: 0
+        delaySeconds: 0
       - operation: 1
         stringValue: WorkStart
         intValue: 0
+        delaySeconds: 0
     - guid: 2357f4dc-b2a6-454c-9ef2-539f18182d15
       previewText: "\"enough \u2014 let's work\""
       postedBubble:
@@ -104,6 +111,7 @@ MonoBehaviour:
       - operation: 1
         stringValue: WorkStart
         intValue: 0
+        delaySeconds: 0
     blocksDay: 1
     conditions: []
     exclusive: 0
@@ -118,6 +126,7 @@ MonoBehaviour:
       delayLength: 0.5
       typingIndicatorLength: 0.7
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -133,6 +142,7 @@ MonoBehaviour:
       delayLength: 0.5
       typingIndicatorLength: 0.7
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -148,6 +158,7 @@ MonoBehaviour:
       delayLength: 0.5
       typingIndicatorLength: 0.7
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -163,6 +174,7 @@ MonoBehaviour:
       delayLength: 0
       typingIndicatorLength: 0
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions:
@@ -181,13 +193,14 @@ MonoBehaviour:
       delayLength: 0
       typingIndicatorLength: 0
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
     exclusive: 0
     exclusiveGroupId: 
     isRepeatable: 0
-    editorPosition: {x: 2560, y: 40}
+    editorPosition: {x: 2752, y: 40}
   - guid: 50f00893-adbe-4607-b2de-02f5de4a14a8
     kind: 0
     bubble:
@@ -196,6 +209,7 @@ MonoBehaviour:
       delayLength: 1
       typingIndicatorLength: 0.7
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -211,6 +225,7 @@ MonoBehaviour:
       delayLength: 0.8
       typingIndicatorLength: 0.5
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -218,33 +233,6 @@ MonoBehaviour:
     exclusiveGroupId: 
     isRepeatable: 0
     editorPosition: {x: 1720, y: 40}
-  - guid: 47ddc0d4-00bc-4594-a76a-7268901be7a5
-    kind: 0
-    bubble:
-      chatUser: 2
-      message: 'Accuracy = <accuracy>
-
-        Precision = <precision>
-
-        PolicyIq
-        = <policyIq>
-
-        Ambition = <ambition>
-
-        Efficiency = <efficiency>
-
-        Consistency
-        = <consistency>'
-      delayLength: 1.2
-      typingIndicatorLength: 2
-      flaggables: []
-    options: []
-    blocksDay: 0
-    conditions: []
-    exclusive: 0
-    exclusiveGroupId: 
-    isRepeatable: 0
-    editorPosition: {x: 2000, y: 40}
   - guid: d93c23f0-5772-4445-9197-edbc999270e9
     kind: 1
     bubble:
@@ -253,19 +241,8 @@ MonoBehaviour:
       delayLength: 0
       typingIndicatorLength: 0
       flaggables: []
+    effects: []
     options:
-    - guid: 1829a818-e44c-436f-a958-d3329a0ff63d
-      previewText: fuck
-      postedBubble:
-        chatUser: 4
-        message: well, i'm fucekd, aren't i...
-        delayLength: 0
-        typingIndicatorLength: 0
-        flaggables: []
-      effects:
-      - operation: 1
-        stringValue: DayEnd
-        intValue: 0
     - guid: 945260ed-759a-44b5-83d8-f79d508cf13e
       previewText: how's that?
       postedBubble:
@@ -274,16 +251,33 @@ MonoBehaviour:
         delayLength: 0
         typingIndicatorLength: 0
         flaggables: []
-      effects:
-      - operation: 1
-        stringValue: DayEnd
-        intValue: 0
+      effects: []
     blocksDay: 1
     conditions: []
     exclusive: 0
     exclusiveGroupId: 
     isRepeatable: 0
     editorPosition: {x: 2280, y: 40}
+  - guid: abce8994-ad79-4ce7-9b99-608dbce0cc64
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: aight, innit
+      delayLength: 0.5
+      typingIndicatorLength: 1
+      flaggables: []
+    effects:
+    - operation: 1
+      stringValue: DayEnd
+      intValue: 0
+      delaySeconds: 4
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 2524, y: 40}
   edges:
   - fromNodeGuid: 5eb9923e-d266-41f5-b577-c389808354fe
     fromOptionGuid: 
@@ -315,15 +309,15 @@ MonoBehaviour:
   - fromNodeGuid: 50f00893-adbe-4607-b2de-02f5de4a14a8
     fromOptionGuid: 
     toNodeGuid: aca5a4c0-048f-44c4-8cd4-de7f5a0e00c5
-  - fromNodeGuid: aca5a4c0-048f-44c4-8cd4-de7f5a0e00c5
-    fromOptionGuid: 
-    toNodeGuid: 47ddc0d4-00bc-4594-a76a-7268901be7a5
-  - fromNodeGuid: 47ddc0d4-00bc-4594-a76a-7268901be7a5
-    fromOptionGuid: 
-    toNodeGuid: d93c23f0-5772-4445-9197-edbc999270e9
   - fromNodeGuid: d93c23f0-5772-4445-9197-edbc999270e9
     fromOptionGuid: 1829a818-e44c-436f-a958-d3329a0ff63d
     toNodeGuid: 36d8d70d-a3f7-427f-8935-6666cb3ab15e
+  - fromNodeGuid: aca5a4c0-048f-44c4-8cd4-de7f5a0e00c5
+    fromOptionGuid: 
+    toNodeGuid: d93c23f0-5772-4445-9197-edbc999270e9
+  - fromNodeGuid: abce8994-ad79-4ce7-9b99-608dbce0cc64
+    fromOptionGuid: 
+    toNodeGuid: 36d8d70d-a3f7-427f-8935-6666cb3ab15e
   - fromNodeGuid: d93c23f0-5772-4445-9197-edbc999270e9
     fromOptionGuid: 945260ed-759a-44b5-83d8-f79d508cf13e
-    toNodeGuid: 36d8d70d-a3f7-427f-8935-6666cb3ab15e
+    toNodeGuid: abce8994-ad79-4ce7-9b99-608dbce0cc64

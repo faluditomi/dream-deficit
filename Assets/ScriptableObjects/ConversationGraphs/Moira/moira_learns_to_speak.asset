@@ -22,6 +22,7 @@ MonoBehaviour:
       delayLength: 3
       typingIndicatorLength: 5
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -37,6 +38,7 @@ MonoBehaviour:
       delayLength: 0
       typingIndicatorLength: 0
       flaggables: []
+    effects: []
     options:
     - guid: 0f344812-0f07-4e4f-88cd-d9fa74bb0117
       previewText: WHAT IN THE HELL?!?
@@ -70,6 +72,7 @@ MonoBehaviour:
       delayLength: 0.8
       typingIndicatorLength: 6
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -85,6 +88,7 @@ MonoBehaviour:
       delayLength: 0.5
       typingIndicatorLength: 4
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -100,6 +104,7 @@ MonoBehaviour:
       delayLength: 0
       typingIndicatorLength: 0
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -115,6 +120,7 @@ MonoBehaviour:
       delayLength: 0
       typingIndicatorLength: 0
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions:

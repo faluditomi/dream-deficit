@@ -329,7 +329,16 @@ public class ConversationRunner
             PlayedBubbleRecord record = new PlayedBubbleRecord { graphName = graphName, nodeGuid = node.guid };
             history.Add(record);
             OnBubblePlayed?.Invoke(record);
+            // Advance first so a synchronous save triggered by a zero-delay effect
+            // (e.g. RaiseEvent(DayEnd)) persists this thread at an UNPOSTED node; applying
+            // before the advance would let a reload re-post the bubble. The local `node`
+            // reference stays valid for the effects call.
             AdvanceToNext(thread);
+            // bubble effects fire when the message posts; per-effect delays are handled by the manager
+            if(node.effects != null && node.effects.Count > 0 && ConversationManager.Instance != null)
+            {
+                ConversationManager.Instance.ApplyEffects(node.effects);
+            }
             ProcessCurrentNode();
         }
     }

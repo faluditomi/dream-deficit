@@ -18,6 +18,16 @@ public class ConversationManager : Singleton<ConversationManager>, IRunLoadable,
     private readonly HashSet<Constants.SequenceEventType> eventsRaisedThisDay = new HashSet<Constants.SequenceEventType>();
     private int eventsRaisedDayNumber = int.MinValue;
 
+    // Runtime-only delayed effects (never persisted). Timers count down in Update and are
+    // applied in authored order once due.
+    private sealed class PendingEffect
+    {
+        public ConversationEffectData effect;
+        public float remainingSeconds;
+    }
+
+    private readonly List<PendingEffect> pendingEffects = new List<PendingEffect>();
+
     /// True while the given event has been raised at least once on the current day. Used by
     /// event-gated wait nodes so a raise that the log was too busy to consume is not lost.
     public bool HasEventBeenRaisedThisDay(Constants.SequenceEventType eventType)
@@ -67,12 +77,39 @@ public class ConversationManager : Singleton<ConversationManager>, IRunLoadable,
     private void Update()
     {
         foreach(ConversationRunner runner in runners.Values) runner.Tick(Time.deltaTime);
+        TickPendingEffects(Time.deltaTime);
+    }
+
+    /// Counts down queued delayed effects and applies those that came due. Due effects are
+    /// collected first and applied after the iteration/removal pass, so an effect that
+    /// re-enters ApplyEffects cannot mutate the collection being iterated.
+    private void TickPendingEffects(float deltaTime)
+    {
+        if(pendingEffects.Count == 0) return;
+
+        List<PendingEffect> dueEffects = null;
+        for(int i = 0; i < pendingEffects.Count; i++)
+        {
+            PendingEffect pending = pendingEffects[i];
+            pending.remainingSeconds -= deltaTime;
+            if(pending.remainingSeconds > 0f) continue;
+
+            if(dueEffects == null) dueEffects = new List<PendingEffect>();
+            dueEffects.Add(pending);
+        }
+
+        if(dueEffects == null) return;
+
+        foreach(PendingEffect due in dueEffects) pendingEffects.Remove(due);
+        foreach(PendingEffect due in dueEffects) ApplyEffect(due.effect);
     }
 
     /// Replaces all runtime chat state from a loaded save. Existing runner instances are
     /// REUSED rather than recreated, so chat log windows that subscribed to them stay wired.
     public void LoadFromRunData(RunData runData)
     {
+        // pending delayed effects belong to the run being replaced — never let them fire into a different save
+        pendingEffects.Clear();
         signals.Clear();
         if(runData.chatSignals != null) signals.AddRange(runData.chatSignals);
         hadDayBlockingChoice = false;
@@ -169,6 +206,8 @@ public class ConversationManager : Singleton<ConversationManager>, IRunLoadable,
     /// one-shot entry activation guards for earlier days expire, then day-gated parked waits re-check.
     public void OnDayChanged()
     {
+        // a pending delayed effect must not leak into the next day
+        pendingEffects.Clear();
         // a new day starts with no raises latched — an event-gated wait must observe this
         // day's raise, not a raise from a previous day
         eventsRaisedThisDay.Clear();
@@ -212,28 +251,46 @@ public class ConversationManager : Singleton<ConversationManager>, IRunLoadable,
         if(!signals.Contains(signalName)) signals.Add(signalName);
     }
 
-    /// Applies data-driven choice effects.
+    /// Applies data-driven choice effects. Effects with no delay are applied immediately and
+    /// synchronously; effects with a positive delaySeconds are queued and fire from Update.
     public void ApplyEffects(List<ConversationEffectData> effects)
     {
+        if(effects == null) return;
+
         foreach(ConversationEffectData effect in effects)
         {
-            switch(effect.operation)
-            {
-                case ConversationEffectOperation.SetSignal:
-                    SetSignal(effect.stringValue);
-                    break;
+            if(effect == null) continue;
 
-                case ConversationEffectOperation.RaiseEvent:
-                    if(Enum.TryParse(effect.stringValue, true, out Constants.SequenceEventType eventType))
-                    {
-                        OnSequenceEvent(eventType);
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"ConversationManager: could not parse RaiseEvent value '{effect.stringValue}'.");
-                    }
-                    break;
+            if(effect.delaySeconds > 0f)
+            {
+                pendingEffects.Add(new PendingEffect { effect = effect, remainingSeconds = effect.delaySeconds });
+                continue;
             }
+
+            ApplyEffect(effect);
+        }
+    }
+
+    private void ApplyEffect(ConversationEffectData effect)
+    {
+        if(effect == null) return;
+
+        switch(effect.operation)
+        {
+            case ConversationEffectOperation.SetSignal:
+                SetSignal(effect.stringValue);
+                break;
+
+            case ConversationEffectOperation.RaiseEvent:
+                if(Enum.TryParse(effect.stringValue, true, out Constants.SequenceEventType eventType))
+                {
+                    OnSequenceEvent(eventType);
+                }
+                else
+                {
+                    Debug.LogWarning($"ConversationManager: could not parse RaiseEvent value '{effect.stringValue}'.");
+                }
+                break;
         }
     }
 
