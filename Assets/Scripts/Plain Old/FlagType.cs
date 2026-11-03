@@ -3,34 +3,41 @@ using UnityEngine.InputSystem;
 
 public static class Flags
 {
-    // NOTE: watch out not to have two active flag types with the same keycode
-    public static readonly FlagType CopyPasteSpam = new
+    // Watch out not to have two active flag types with the same keycode.
+    public static readonly FlagType Scam = new
     (
-        "Copy Paste Spam",
-        "The often unsolicited and irritating act of publishing identical or nearly identical content repeatedly with the intent to disrupt, promote, or troll.",
+        "Scam",
+        "The act of deceiving someone for financial gain or other benefits.",
         Color.darkMagenta,
-        Key.C
-    );
-    public static readonly FlagType SynchronisedActivitySpike = new
-    (
-        "Synchronised Activity Spike",
-        "An unusual burst of activity in a condensed timeframe from multiple sources that may indicate coordination.",
-        Color.darkBlue,
         Key.S
     );
-    public static readonly FlagType PersuasionPattern = new
+    public static readonly FlagType Harassment = new
     (
-        "Persuasion Pattern",
+        "Harassment",
+        "The persistent and unwanted attention or behavior that is intended to intimidate, offend, or upset another person.",
+        Color.darkBlue,
+        Key.H
+    );
+    public static readonly FlagType Manipulation = new
+    (
+        "Manipulation",
         "The exercise of emotional pressure, guilt-tripping, or other manipulative tactics to coerce others into sharing content or engaging in specific behaviors.",
         Color.darkSeaGreen,
-        Key.P
+        Key.M
     );
-    public static readonly FlagType NarrativeShaping = new
+    public static readonly FlagType Trolling = new
     (
-        "Narrative Shaping",
-        "The strategic dissemination of information, often through selective sharing or framing, to influence public perception in a way that aligns with a harmful agenda.",
+        "Trolling",
+        "The deliberate act of posting inflammatory, irrelevant, or offensive content with the intent to provoke a reaction or disrupt a conversation.",
         Color.darkOrange,
-        Key.N
+        Key.T
+    );
+    public static readonly FlagType InformationRisk = new
+    (
+        "Information Risk",
+        "The potential for harm or negative consequences resulting from the sharing of sensitive, personal, or confidential information.",
+        Color.darkRed,
+        Key.I
     );
 }
 

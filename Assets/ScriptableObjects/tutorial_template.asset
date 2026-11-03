@@ -17,31 +17,46 @@ MonoBehaviour:
     dayData:
       dayNumber: 1
       activeAssignments:
-      - chatLogPath: test_assignment
-        isBonus: 1
+      - chatLogPath: test_assignment_1
+        isBonus: 0
       unlockedChatLogNames: []
       flagTypeNames:
-      - Copy Paste Spam
-      - Persuasion Pattern
-      - Synchronised Activity Spike
+      - Trolling
+      - Manipulation
       activeChatClientUsers:
       - phoebe
-      - moira
+      - mara
       flagData: []
   - dayNumber: 2
     dayData:
       dayNumber: 2
       activeAssignments:
-      - chatLogPath: test_assignment
+      - chatLogPath: test_assignment_2
         isBonus: 0
       unlockedChatLogNames: []
       flagTypeNames:
-      - Copy Paste Spam
-      - Synchronised Activity Spike
-      - Persuasion Pattern
-      - Narrative Shaping
+      - Trolling
+      - Manipulation
+      - Scam
       activeChatClientUsers:
       - phoebe
-      - moira
       - mara
+      - moira
+      flagData: []
+  - dayNumber: 3
+    dayData:
+      dayNumber: 3
+      activeAssignments:
+      - chatLogPath: test_assignment_3
+        isBonus: 0
+      - chatLogPath: test_assignment_4
+        isBonus: 1
+      unlockedChatLogNames: []
+      flagTypeNames:
+      - Trolling
+      - Manipulation
+      - Scam
+      - Harassment
+      - Information Risk
+      activeChatClientUsers: []
       flagData: []

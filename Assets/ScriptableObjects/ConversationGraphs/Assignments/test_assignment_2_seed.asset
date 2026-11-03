@@ -1,0 +1,112 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e5b7c0756d8d42b62d2cf79fd15a7, type: 3}
+  m_Name: test_assignment_2_seed
+  m_EditorClassIdentifier: Assembly-CSharp::ConversationGraph
+  isSeed: 1
+  nodes:
+  - guid: 893c81e4-e331-4e4d-97df-1b226f8f8680
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: i am a nigerian princess and i want to give you million dollars
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables:
+      - flagType:
+          name: Scam
+          description: The act of deceiving someone for financial gain or other benefits.
+          colour: {r: 0.5450981, g: 0, b: 0.5450981, a: 1}
+          keycode: 33
+        spanText: i am a nigerian princess and i want to give you million dollars
+        occurrence: 0
+        startIndex: 0
+        endIndex: 62
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 40}
+  - guid: 596b037b-6822-4030-9848-3fa3255a0d42
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: send me your bank accound details and 3 numbers on back and i giv
+        moonei
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables:
+      - flagType:
+          name: Scam
+          description: The act of deceiving someone for financial gain or other benefits.
+          colour: {r: 0.5450981, g: 0, b: 0.5450981, a: 1}
+          keycode: 33
+        spanText: send me your bank accound details and 3 numbers on back and i giv
+          moonei
+        occurrence: 0
+        startIndex: 0
+        endIndex: 71
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 180}
+  - guid: 16f4a374-40db-4ecc-aac4-a56fc1614b9f
+    kind: 0
+    bubble:
+      chatUser: 3
+      message: bitch...
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables: []
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 308}
+  - guid: 0a303331-f541-4c16-8c3c-fc763d19ee3d
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: quick, i am in danger
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables:
+      - flagType:
+          name: Manipulation
+          description: The exercise of emotional pressure, guilt-tripping, or other
+            manipulative tactics to coerce others into sharing content or engaging
+            in specific behaviors.
+          colour: {r: 0.5607843, g: 0.7372549, b: 0.5607843, a: 1}
+          keycode: 27
+        spanText: quick, i am in danger
+        occurrence: 0
+        startIndex: 0
+        endIndex: 20
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 431}
+  edges: []

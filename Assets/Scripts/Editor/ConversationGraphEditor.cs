@@ -906,9 +906,9 @@ public class ConversationGraphEditor : EditorWindow
                 flaggable.occurrence = Mathf.Max(0, newOccurrence);
                 PersistGraph();
             }
-
-            EditorGUILayout.LabelField(new GUIContent("Indexes", ConversationEditorTooltips.Indexes), $"{flaggable.startIndex} - {flaggable.endIndex}");
-            EditorGUILayout.LabelField(new GUIContent("Resolved Text", ConversationEditorTooltips.ResolvedText), flaggable.GetSelectedText(editedMessage));
+            
+            EditorGUILayout.LabelField(new GUIContent("Indexes", ConversationEditorTooltips.Indexes), new GUIContent($"{flaggable.startIndex} - {flaggable.endIndex}"));
+            EditorGUILayout.LabelField(new GUIContent("Resolved Text", ConversationEditorTooltips.ResolvedText), new GUIContent(flaggable.GetSelectedText(editedMessage)));
 
             if(GUILayout.Button("Re-sync indexes"))
             {

@@ -1,0 +1,107 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e5b7c0756d8d42b62d2cf79fd15a7, type: 3}
+  m_Name: test_assignment_4_seed
+  m_EditorClassIdentifier: Assembly-CSharp::ConversationGraph
+  isSeed: 1
+  nodes:
+  - guid: 2ccfc80e-5f1a-4bb2-9dd8-d9700f1524bc
+    kind: 0
+    bubble:
+      chatUser: 3
+      message: let me tell you my social security number
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables: []
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 40}
+  - guid: d210feae-3d6e-4d8f-ba53-754a2333202b
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: mara no
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables: []
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 180}
+  - guid: 952ba7fa-a4fe-4829-b34f-3c5bdbca002b
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: nonnonnonoooo
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables: []
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 306}
+  - guid: ed7895bf-5fbb-40bd-bb81-36807e09d3c9
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: 987123984128
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables:
+      - flagType:
+          name: Information Risk
+          description: The potential for harm or negative consequences resulting
+            from the sharing of sensitive, personal, or confidential information.
+          colour: {r: 0.5450981, g: 0, b: 0, a: 1}
+          keycode: 23
+        spanText: 987123984128
+        occurrence: 0
+        startIndex: 0
+        endIndex: 11
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 452}
+  - guid: 31f7954b-41e9-4efd-a0c3-1e38d048c37a
+    kind: 0
+    bubble:
+      chatUser: 2
+      message: AAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables: []
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 590}
+  edges: []

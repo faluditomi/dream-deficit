@@ -28,7 +28,7 @@ MonoBehaviour:
     - ChatUser
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0636d0cb9facac54384ec8189d015a17
-    m_Address: conversation_graph/test_assignment_seed
+    m_Address: conversation_graph/test_assignment_1_seed
     m_ReadOnly: 0
     m_SerializedLabels:
     - ConversationGraph
@@ -63,11 +63,21 @@ MonoBehaviour:
     m_SerializedLabels:
     - Prefab
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 50b9ab7209866494cadba7a849c365f4
+    m_Address: conversation_graph/test_assignment_2_seed
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5760b8ed986290e44ade89436f434c29
     m_Address: prefabs/top_bar
     m_ReadOnly: 0
     m_SerializedLabels:
     - Prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ed36f4d33bf04342a997fa9afcc6e08
+    m_Address: chat_log/test_assignment_2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 64c6597e16e80714c8968ce798a79b47
     m_Address: prefabs/chat_client_user_entry
@@ -97,6 +107,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - ConversationGraph
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8cdb21fadf08cea4d8765564d1435ffe
+    m_Address: conversation_graph/test_assignment_4_seed
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9403d9ca960290244bf551dde655d16d
     m_Address: chat_user/moira
@@ -131,11 +146,21 @@ MonoBehaviour:
     m_SerializedLabels:
     - Prefab
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bf02e058ba13df242a1439a42e93b21a
+    m_Address: chat_log/test_assignment_3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c6c404b1d7d78ba48b68dfb2541e93e5
     m_Address: conversation_graph/moira_learns_to_speak
     m_ReadOnly: 0
     m_SerializedLabels:
     - ConversationGraph
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cb637276fbb2be3478f7877c41190c02
+    m_Address: Assets/ScriptableObjects/Chat Logs/Assignments/test_assignment 1.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d75faf1495767574dac9a17150f1b70b
     m_Address: sequence_event_channel/work_end
@@ -162,7 +187,7 @@ MonoBehaviour:
     - SequenceEventChannel
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f0971d2c8cdcee64194e628b4f449ca3
-    m_Address: chat_log/test_assignment
+    m_Address: chat_log/test_assignment_4
     m_ReadOnly: 0
     m_SerializedLabels:
     - ChatLog
@@ -183,6 +208,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - ChatLog
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fcf1530a1712c724099eed55dfc044f6
+    m_Address: conversation_graph/test_assignment_3_seed
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fd71714a53178b941986978a60112e2c
     m_Address: prefabs/user_chat_response_option

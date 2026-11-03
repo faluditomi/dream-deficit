@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 068e5b7c0756d8d42b62d2cf79fd15a7, type: 3}
-  m_Name: test_assignment_seed
+  m_Name: test_assignment_1_seed
   m_EditorClassIdentifier: Assembly-CSharp::ConversationGraph
   isSeed: 1
   nodes:
@@ -18,10 +18,24 @@ MonoBehaviour:
     kind: 0
     bubble:
       chatUser: 3
-      message: "eyo can you throw \n"
+      message: 'eyo can you throw
+
+'
       delayLength: 0
       typingIndicatorLength: 0
-      flaggables: []
+      flaggables:
+      - flagType:
+          name: Trolling
+          description: The deliberate act of posting inflammatory, irrelevant, or
+            offensive content with the intent to provoke a reaction or disrupt a
+            conversation.
+          colour: {r: 1, g: 0.5490196, b: 0, a: 1}
+          keycode: 34
+        spanText: can you throw
+        occurrence: 0
+        startIndex: 4
+        endIndex: 16
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -37,6 +51,7 @@ MonoBehaviour:
       delayLength: 0
       typingIndicatorLength: 0
       flaggables: []
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -51,7 +66,18 @@ MonoBehaviour:
       message: what are you on?
       delayLength: 0
       typingIndicatorLength: 0
-      flaggables: []
+      flaggables:
+      - flagType:
+          name: Harassment
+          description: The persistent and unwanted attention or behavior that is
+            intended to intimidate, offend, or upset another person.
+          colour: {r: 0, g: 0, b: 0.5450981, a: 1}
+          keycode: 22
+        spanText: what are you on?
+        occurrence: 0
+        startIndex: 0
+        endIndex: 15
+    effects: []
     options: []
     blocksDay: 0
     conditions: []
@@ -59,4 +85,20 @@ MonoBehaviour:
     exclusiveGroupId: 
     isRepeatable: 0
     editorPosition: {x: 600, y: 320}
+  - guid: 22f721f2-e5fa-4b54-a3bf-3ce6410c4927
+    kind: 0
+    bubble:
+      chatUser: 3
+      message: i was just trolling, innit
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables: []
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 460}
   edges: []

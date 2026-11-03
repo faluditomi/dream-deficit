@@ -1,0 +1,141 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068e5b7c0756d8d42b62d2cf79fd15a7, type: 3}
+  m_Name: test_assignment_3_seed
+  m_EditorClassIdentifier: Assembly-CSharp::ConversationGraph
+  isSeed: 1
+  nodes:
+  - guid: d0b6372b-5abd-42e7-a50e-4b8e7e7b4a1c
+    kind: 0
+    bubble:
+      chatUser: 5
+      message: hi
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables:
+      - flagType:
+          name: Trolling
+          description: The deliberate act of posting inflammatory, irrelevant, or
+            offensive content with the intent to provoke a reaction or disrupt a
+            conversation.
+          colour: {r: 1, g: 0.5490196, b: 0, a: 1}
+          keycode: 34
+        spanText: hi
+        occurrence: 0
+        startIndex: 0
+        endIndex: 1
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 40}
+  - guid: 8f3803f0-7ce3-4713-b659-530739a50bd9
+    kind: 0
+    bubble:
+      chatUser: 5
+      message: hi
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables:
+      - flagType:
+          name: Trolling
+          description: The deliberate act of posting inflammatory, irrelevant, or
+            offensive content with the intent to provoke a reaction or disrupt a
+            conversation.
+          colour: {r: 1, g: 0.5490196, b: 0, a: 1}
+          keycode: 34
+        spanText: hi
+        occurrence: 0
+        startIndex: 0
+        endIndex: 1
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 140}
+  - guid: 253e0160-1d27-4408-b7c4-56f9e3752b27
+    kind: 0
+    bubble:
+      chatUser: 5
+      message: hi
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables:
+      - flagType:
+          name: Trolling
+          description: The deliberate act of posting inflammatory, irrelevant, or
+            offensive content with the intent to provoke a reaction or disrupt a
+            conversation.
+          colour: {r: 1, g: 0.5490196, b: 0, a: 1}
+          keycode: 34
+        spanText: hi
+        occurrence: 0
+        startIndex: 0
+        endIndex: 1
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 240}
+  - guid: d5ee4c8d-2488-4cd0-be21-59c018a3644c
+    kind: 0
+    bubble:
+      chatUser: 5
+      message: hi
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables:
+      - flagType:
+          name: Trolling
+          description: The deliberate act of posting inflammatory, irrelevant, or
+            offensive content with the intent to provoke a reaction or disrupt a
+            conversation.
+          colour: {r: 1, g: 0.5490196, b: 0, a: 1}
+          keycode: 34
+        spanText: hi
+        occurrence: 0
+        startIndex: 0
+        endIndex: 1
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 344}
+  - guid: fe2fd3a2-d569-4ce1-8e21-6116d18b2f25
+    kind: 0
+    bubble:
+      chatUser: 3
+      message: moira, i know you just learnt the word, but please...
+      delayLength: 0
+      typingIndicatorLength: 0
+      flaggables: []
+    effects: []
+    options: []
+    blocksDay: 0
+    conditions: []
+    exclusive: 0
+    exclusiveGroupId: 
+    isRepeatable: 0
+    editorPosition: {x: 600, y: 451}
+  edges: []
